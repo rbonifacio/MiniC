@@ -69,7 +69,9 @@ src/parser/
 ├── literals.rs     # Integers, floats, strings, booleans
 ├── identifiers.rs  # Variable names
 ├── expressions.rs  # Arithmetic, relational, boolean expressions
-├── statements.rs  # Assignment, if, while
+├── statements.rs   # Assignment, if, while, call, block
+├── functions.rs    # Function declarations
+├── program.rs      # Top-level program: functions* body*
 ```
 
 ### 4.1 Literals
@@ -109,11 +111,59 @@ Statements use `alt` for choice and `tuple` for sequences:
 
 ```rust
 pub fn statement(input: &str) -> IResult<&str, Stmt> {
-    preceded(multispace0, alt((if_statement, while_statement, assignment)))(input)
+    preceded(multispace0, alt((
+        if_statement,
+        while_statement,
+        call_statement,
+        block_statement,
+        assignment,
+    )))(input)
 }
 ```
 
-`if_statement` and `while_statement` call `statement` recursively for their bodies, enabling nested control flow.
+`if_statement` and `while_statement` call `statement` recursively for their bodies, enabling nested control flow. `call_statement` parses a function call at statement level (e.g., `foo(1, 2)`). `block_statement` parses `{ stmt ; stmt ; ... }` and produces `Stmt::Block { seq }`; it enables multi-statement function bodies and compound if/while bodies.
+
+### 4.4 Functions
+
+Function declarations use the syntax `def name(params) body`:
+
+```rust
+pub fn fun_decl(input: &str) -> IResult<&str, FunDecl> {
+    preceded(multispace0, tuple((
+        tag("def"),
+        multispace1,
+        identifier,
+        delimited(char('('), separated_list0(...), char(')')),
+        preceded(multispace0, statement),
+    )))(input)
+}
+```
+
+The body is a single statement. Parameters are comma-separated identifiers; the list may be empty.
+
+### 4.5 Function Calls
+
+Function calls appear in two places:
+
+1. **As expressions** (in `primary`): `identifier(args)` is tried before a plain identifier. So `foo(1, 2)` parses as `Expr::Call { name, args }`, not `Expr::Ident`.
+2. **As statements**: `call_statement` uses `parse_call` to parse `name(args)` and produces `Stmt::Call`.
+
+`parse_call` returns `(String, Vec<Expr>)` and is shared by both expression and statement parsers.
+
+### 4.6 Program
+
+The top-level parser produces a `Program { functions, body }`:
+
+```rust
+pub fn program(input: &str) -> IResult<&str, Program> {
+    map(
+        tuple((many0(fun_decl), many0(statement))),
+        |(functions, body)| Program { functions, body },
+    )(input)
+}
+```
+
+It parses zero or more function declarations, then zero or more statements (the main body). Use `all_consuming(program)` to require that the entire input is consumed.
 
 ---
 
@@ -127,7 +177,7 @@ The expression parser is structured as a chain of functions, each handling one p
 
 | Level | Function | Operators | Binds |
 |-------|----------|-----------|-------|
-| Highest | `primary` | literals, identifiers, `(expr)` | — |
+| Highest | `primary` | literals, `identifier(args)` (call), identifiers, `(expr)` | — |
 | | `unary` | `-` | — |
 | | `multiplicative` | `*`, `/` | left |
 | | `additive` | `+`, `-` | left |
@@ -228,12 +278,38 @@ delimited(
 
 ---
 
-## 6. Summary
+## 6. Tests
+
+The parser is covered by two test suites:
+
+### 6.1 Unit tests (`tests/parser.rs`)
+
+Unit tests parse individual constructs (literals, identifiers, expressions, statements, functions, blocks) from inline strings. They verify each parser in isolation and cover edge cases (e.g., invalid identifiers, unbalanced parentheses).
+
+### 6.2 Program integration tests (`tests/program.rs`)
+
+Integration tests parse complete MiniC programs from fixture files in `tests/fixtures/`. They read `.minic` files, parse them with `all_consuming(program)`, and assert on the resulting `Program` structure.
+
+| Fixture | Content | Purpose |
+|---------|---------|---------|
+| `empty.minic` | (empty) | Empty program |
+| `statements_only.minic` | `x = 1` and `y = 2` | Body only, no functions |
+| `function_single.minic` | `def foo() x = 1` | Single function, no body |
+| `function_with_block.minic` | `def add(x, y) { x = x + y; x = x }` | Function with block body |
+| `full_program.minic` | Two functions and body with calls | Complete program |
+| `invalid_syntax.minic` | Incomplete `def foo(` | Invalid input; parse must fail |
+
+Tests use `env!("CARGO_MANIFEST_DIR")` so fixture paths work regardless of the working directory. Input is trimmed before parsing to handle trailing newlines.
+
+---
+
+## 7. Summary
 
 - **Parsing** turns source text into an AST.
 - **Combinators** combine small parsers into larger ones.
 - **Nom** provides combinators like `alt`, `tuple`, `map`, `preceded`, `delimited`.
 - **Precedence** is encoded by the call chain: each level calls the next higher level for operands.
 - **Left-associativity** is achieved by a loop that accumulates the left operand and repeatedly extends it with `op(acc, right)`.
+- **Tests** are split into unit tests (inline strings) and integration tests (fixture files).
 
 For more on nom, see the [nom documentation](https://docs.rs/nom/).

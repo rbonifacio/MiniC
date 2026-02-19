@@ -29,12 +29,25 @@ pub enum Expr {
     Not(Box<Expr>),
     And(Box<Expr>, Box<Expr>),
     Or(Box<Expr>, Box<Expr>),
+    /// Function call: name(args)
+    Call { name: String, args: Vec<Expr> },
+}
+
+/// A function declaration.
+#[derive(Debug, Clone, PartialEq)]
+pub struct FunDecl {
+    pub name: String,
+    pub params: Vec<String>,
+    pub body: Box<Stmt>,
 }
 
 /// A statement.
 #[derive(Debug, Clone, PartialEq)]
 pub enum Stmt {
     Assign { target: String, value: Box<Expr> },
+    /// Block of statements: `{ stmt ; stmt ; ... }`
+    Block { seq: Vec<Stmt> },
+    Call { name: String, args: Vec<Expr> },
     If {
         cond: Box<Expr>,
         then_branch: Box<Stmt>,
@@ -43,8 +56,9 @@ pub enum Stmt {
     While { cond: Box<Expr>, body: Box<Stmt> },
 }
 
-/// A complete MiniC program: a sequence of statements.
+/// A complete MiniC program: function declarations and main body.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Program {
-    pub statements: Vec<Stmt>,
+    pub functions: Vec<FunDecl>,
+    pub body: Vec<Stmt>,
 }

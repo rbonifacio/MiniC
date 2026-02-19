@@ -1,23 +1,50 @@
 //! Statement parsers for MiniC.
 
 use crate::ir::ast::Stmt;
-use crate::parser::expressions::expression;
+use crate::parser::expressions::{expression, parse_call};
 use crate::parser::identifiers::identifier;
 use nom::{
     branch::alt,
     bytes::complete::tag,
-    character::complete::multispace0,
+    character::complete::{char, multispace0},
     combinator::{map, opt},
-    sequence::{preceded, tuple},
+    multi::separated_list0,
+    sequence::{delimited, preceded, tuple},
     IResult,
 };
 
-/// Parse any statement: if | while | assignment.
+/// Parse any statement: if | while | call | block | assignment.
 pub fn statement(input: &str) -> IResult<&str, Stmt> {
     preceded(
         multispace0,
-        alt((if_statement, while_statement, assignment)),
+        alt((
+            if_statement,
+            while_statement,
+            call_statement,
+            block_statement,
+            assignment,
+        )),
     )(input)
+}
+
+/// Parse a block statement: `{ stmt ; stmt ; ... }`.
+fn block_statement(input: &str) -> IResult<&str, Stmt> {
+    map(
+        delimited(
+            preceded(multispace0, char('{')),
+            separated_list0(
+                preceded(multispace0, char(';')),
+                preceded(multispace0, statement),
+            ),
+            preceded(multispace0, char('}')),
+        ),
+        |seq| Stmt::Block { seq },
+    )(input)
+}
+
+/// Parse a function call as a statement: `identifier ( expr_list )`.
+fn call_statement(input: &str) -> IResult<&str, Stmt> {
+    map(parse_call, |(name, args)| Stmt::Call { name, args })(input)
 }
 
 /// Parse an if-then-else statement: `if expr then stmt [else stmt]`.

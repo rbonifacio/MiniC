@@ -2,7 +2,7 @@
 
 use MiniC::ir::ast::{Expr, Literal, Stmt};
 use MiniC::parser::{
-    assignment, expression, identifier, literal, statement,
+    assignment, expression, fun_decl, identifier, literal, statement,
     literals::{integer_literal, float_literal, string_literal, boolean_literal, Literal as ParserLiteral},
 };
 use nom::combinator::all_consuming;
@@ -368,4 +368,108 @@ fn test_while_whitespace() {
 fn test_invalid_while() {
     assert!(statement("while x").is_err());
     assert!(statement("while do x = 1").is_err());
+}
+
+// --- Functions ---
+
+#[test]
+fn test_fun_decl_with_params() {
+    let result = fun_decl("def foo(x, y) x = x + y").unwrap().1;
+    assert_eq!(result.name, "foo");
+    assert_eq!(result.params, vec!["x", "y"]);
+    assert!(matches!(result.body.as_ref(), Stmt::Assign { target, .. } if target == "x"));
+    if let Stmt::Assign { value, .. } = result.body.as_ref() {
+        assert!(matches!(value.as_ref(), Expr::Add(_, _)));
+    }
+}
+
+#[test]
+fn test_fun_decl_no_params() {
+    let result = fun_decl("def bar() x = 1").unwrap().1;
+    assert_eq!(result.name, "bar");
+    assert!(result.params.is_empty());
+    assert!(matches!(result.body.as_ref(), Stmt::Assign { target, value } if target == "x" && value.as_ref() == &Expr::Literal(Literal::Int(1))));
+}
+
+#[test]
+fn test_call_as_expression() {
+    let result = expression("foo(1, 2)").unwrap().1;
+    assert!(matches!(result, Expr::Call { ref name, ref args } if name == "foo" && args.len() == 2));
+    if let Expr::Call { args, .. } = result {
+        assert_eq!(args[0], Expr::Literal(Literal::Int(1)));
+        assert_eq!(args[1], Expr::Literal(Literal::Int(2)));
+    }
+}
+
+#[test]
+fn test_call_no_args() {
+    let result = expression("baz()").unwrap().1;
+    assert!(matches!(result, Expr::Call { ref name, ref args } if name == "baz" && args.is_empty()));
+}
+
+#[test]
+fn test_call_in_expression() {
+    let result = expression("foo(1) + 2").unwrap().1;
+    assert!(matches!(result, Expr::Add(_, _)));
+    if let Expr::Add(left, right) = result {
+        assert!(matches!(left.as_ref(), Expr::Call { ref name, ref args } if name == "foo" && args.len() == 1));
+        assert_eq!(*right, Expr::Literal(Literal::Int(2)));
+    }
+}
+
+#[test]
+fn test_call_as_statement() {
+    let result = statement("foo(1, 2)").unwrap().1;
+    assert!(matches!(result, Stmt::Call { ref name, ref args } if name == "foo" && args.len() == 2));
+}
+
+// --- Blocks ---
+
+#[test]
+fn test_empty_block() {
+    let result = statement("{}").unwrap().1;
+    assert!(matches!(result, Stmt::Block { ref seq } if seq.is_empty()));
+}
+
+#[test]
+fn test_block_single_statement() {
+    let result = statement("{ x = 1 }").unwrap().1;
+    assert!(matches!(result, Stmt::Block { ref seq } if seq.len() == 1));
+    if let Stmt::Block { seq } = result {
+        assert!(matches!(seq[0], Stmt::Assign { ref target, .. } if target == "x"));
+    }
+}
+
+#[test]
+fn test_block_multiple_statements() {
+    let result = statement("{ x = 1; y = 2 }").unwrap().1;
+    assert!(matches!(result, Stmt::Block { ref seq } if seq.len() == 2));
+    if let Stmt::Block { seq } = result {
+        assert!(matches!(seq[0], Stmt::Assign { ref target, .. } if target == "x"));
+        assert!(matches!(seq[1], Stmt::Assign { ref target, .. } if target == "y"));
+    }
+}
+
+#[test]
+fn test_block_in_function_body() {
+    let result = fun_decl("def foo(x, y) { x = x + 1; y = y + 1 }").unwrap().1;
+    assert!(matches!(result.body.as_ref(), Stmt::Block { ref seq } if seq.len() == 2));
+}
+
+#[test]
+fn test_block_in_if_body() {
+    let result = statement("if x then { a = 1; b = 2 }").unwrap().1;
+    assert!(matches!(result, Stmt::If { .. }));
+    if let Stmt::If { then_branch, .. } = result {
+        assert!(matches!(then_branch.as_ref(), Stmt::Block { ref seq } if seq.len() == 2));
+    }
+}
+
+#[test]
+fn test_block_in_while_body() {
+    let result = statement("while x do { a = 1; b = 2 }").unwrap().1;
+    assert!(matches!(result, Stmt::While { .. }));
+    if let Stmt::While { body, .. } = result {
+        assert!(matches!(body.as_ref(), Stmt::Block { ref seq } if seq.len() == 2));
+    }
 }

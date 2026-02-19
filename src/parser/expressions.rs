@@ -8,14 +8,30 @@ use nom::{
     bytes::complete::tag,
     character::complete::{char, multispace0},
     combinator::map,
+    multi::separated_list0,
     sequence::{delimited, pair, preceded, tuple},
     IResult,
 };
 
-/// Primary: literal, identifier, or parenthesized expression.
+/// Parse a function call: `identifier ( expr_list )`. Returns (name, args).
+pub fn parse_call(input: &str) -> IResult<&str, (String, Vec<Expr>)> {
+    let (rest, name) = preceded(multispace0, identifier)(input)?;
+    let (rest, args) = delimited(
+        preceded(multispace0, tag("(")),
+        separated_list0(
+            preceded(multispace0, tag(",")),
+            preceded(multispace0, expression),
+        ),
+        preceded(multispace0, tag(")")),
+    )(rest)?;
+    Ok((rest, (name.to_string(), args)))
+}
+
+/// Primary: literal, call, identifier, or parenthesized expression.
 fn primary(input: &str) -> IResult<&str, Expr> {
     alt((
         map(literal, |l| Expr::Literal(l.into())),
+        map(parse_call, |(name, args)| Expr::Call { name, args }),
         map(identifier, |s: &str| Expr::Ident(s.to_string())),
         delimited(
             preceded(multispace0, char('(')),

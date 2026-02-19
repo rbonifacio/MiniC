@@ -1,0 +1,9 @@
+def inc(x) {
+  x = x + 1;
+  x = x
+}
+
+def main() y = 0
+
+inc(1)
+y = 42
