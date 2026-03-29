@@ -1,0 +1,25 @@
+# --run prints 42, true, hello from the hello program
+$ ./target/debug/mini_c --run tests/fixtures/interpreter_hello.minic
+42
+true
+hello
+>=0
+
+# --run computes factorial(5)=120, factorial(1)=1, factorial(0)=1
+$ ./target/debug/mini_c --run tests/fixtures/interpreter_factorial.minic
+120
+1
+1
+>=0
+
+# --run mutates an array element and prints the three values
+$ ./target/debug/mini_c --run tests/fixtures/interpreter_array.minic
+10
+99
+30
+>=0
+
+# --run on a type-error program fails before interpretation
+$ ./target/debug/mini_c --run tests/fixtures/cli_type_mismatch.minic
+>2 /Type error/
+>=1

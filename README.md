@@ -24,7 +24,8 @@ void main() {
 
 ```bash
 cargo build          # compile the project
-cargo test           # run the full test suite (129 tests)
+cargo test           # run the Rust library tests
+shelltest tests/cli/ # run the CLI tests (requires cargo build first)
 ```
 
 The binary accepts two commands:
@@ -64,39 +65,43 @@ $ minic --check hello.minic
 'hello.minic' is well-typed.
 ```
 
-### Syntax errors
+### Malformed programs
 
-The parser catches malformed programs before any type checking occurs. Here are
-two examples.
+The MiniC parser is lenient by design: it uses a `many0` combinator that
+collects as many valid function declarations as it can and stops silently on
+anything it cannot recognise. This means most malformed programs do not produce
+a parse error — they produce an empty (or partial) function list, and the type
+checker then reports the problem.
 
-**Missing closing brace:**
-
-```c
-void main() {
-  int x = 1;
-  print(x)
-```
-
-```bash
-$ minic --check missing_brace.minic
-Parse error: ...
-```
-
-**Using `def` instead of a type for a function (not valid MiniC syntax):**
+**Using an unknown keyword instead of a type:**
 
 ```c
 def greet(str name) {
   print(name)
 }
-
-void main() {
-  greet("Bob")
-}
 ```
+
+The parser skips the unrecognised `def` line and finds no functions. The type
+checker then rejects the result:
 
 ```bash
 $ minic --check bad_keyword.minic
-Parse error: ...
+Type error: program must have a main function
+```
+
+**Assigning the wrong type to a variable:**
+
+```c
+void main() {
+  int x = "hello"
+}
+```
+
+This parses successfully but is rejected by the type checker:
+
+```bash
+$ minic --check type_mismatch.minic
+Type error: declaration of x: expected Int, got Str
 ```
 
 ### Type errors

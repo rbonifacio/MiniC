@@ -7,13 +7,12 @@ new tests.
 
 ## Overview
 
-All tests live in the `tests/` directory as **integration tests**. They use
-only the public API of the `mini_c` library crate — there are no
-`#[cfg(test)]` blocks inside source files. Run the full suite with:
+MiniC has two complementary testing layers:
 
-```bash
-cargo test
-```
+| Layer | Tool | What it tests |
+|-------|------|---------------|
+| Library tests | `cargo test` | Parser, type checker, interpreter, stdlib — via the Rust API |
+| CLI tests | `shelltest` | Binary behaviour — flags, output, exit codes |
 
 ```
 tests/
@@ -22,14 +21,108 @@ tests/
 ├── type_checker.rs  # Type-checking tests
 ├── interpreter.rs   # End-to-end execution tests
 ├── stdlib.rs        # Standard library function tests
-└── fixtures/        # MiniC source files used by program.rs
-    ├── empty.minic
-    ├── function_single.minic
-    ├── function_with_block.minic
-    ├── full_program.minic
-    ├── invalid_syntax.minic
-    └── …
+├── fixtures/        # MiniC source files shared by both layers
+│   ├── empty.minic
+│   ├── function_single.minic
+│   ├── function_with_block.minic
+│   ├── full_program.minic
+│   ├── invalid_syntax.minic
+│   ├── cli_type_mismatch.minic
+│   └── …
+└── cli/             # shelltestrunner test files
+    ├── check.test   # --check flag scenarios
+    ├── run.test     # --run flag scenarios
+    └── errors.test  # bad arguments and missing files
 ```
+
+Run both layers:
+
+```bash
+cargo build          # required before shelltest (tests the debug binary)
+cargo test           # Rust library tests
+shelltest tests/cli/ # CLI tests
+```
+
+---
+
+## CLI Tests with shelltestrunner
+
+[shelltestrunner](https://github.com/simonmichael/shelltestrunner) (`shelltest`)
+is a small Haskell tool that reads plain-text `.test` files and checks that a
+command produces the expected stdout, stderr, and exit code. It is ideal for
+testing CLI programs because the tests are language-agnostic, easy to read, and
+require no test harness code.
+
+### Test file format
+
+Each test is a short block:
+
+```
+# optional comment — used as the test name in output
+$ command to run
+expected stdout (verbatim, or omit if none)
+>2 expected stderr line (or >2 /regex/)
+>= expected exit code
+```
+
+Only the fields you specify are checked. Omitting `>=` skips exit-code
+validation; omitting `>2` skips stderr validation.
+
+### The three test files
+
+**`tests/cli/check.test`** — `--check` flag scenarios:
+
+| Scenario | Expected |
+|----------|----------|
+| Valid program | `'<file>' is well-typed.` on stdout, exit 0 |
+| Type error | Type error message on stderr, exit 1 |
+| Malformed program | Type error on stderr, exit 1 |
+
+**`tests/cli/run.test`** — `--run` flag scenarios:
+
+| Scenario | Expected |
+|----------|----------|
+| `interpreter_hello.minic` | `42 / true / hello` on stdout, exit 0 |
+| `interpreter_factorial.minic` | `120 / 1 / 1` on stdout, exit 0 |
+| `interpreter_array.minic` | `10 / 99 / 30` on stdout, exit 0 |
+| Program with type error | Type error on stderr, exit 1 |
+
+**`tests/cli/errors.test`** — bad invocations:
+
+| Scenario | Expected |
+|----------|----------|
+| No arguments | Usage message on stderr, exit 1 |
+| Unknown flag | Usage message on stderr, exit 1 |
+| Flag without file | Usage message on stderr, exit 1 |
+| Non-existent file | File error on stderr, exit 1 |
+
+### Running shelltest
+
+```bash
+shelltest tests/cli/         # run all CLI tests
+shelltest tests/cli/ -c      # with colour output
+shelltest tests/cli/ -j4     # in parallel (4 threads)
+shelltest tests/cli/run.test # one file only
+```
+
+shelltest is included in the Nix dev shell (`flake.nix`). After `direnv allow`
+or `nix develop`, `shelltest` is available on your PATH.
+
+### Adding a new CLI test
+
+1. Add (or reuse) a `.minic` fixture in `tests/fixtures/`.
+2. Open the relevant `.test` file in `tests/cli/` (or create a new one).
+3. Append a test block:
+
+```
+# describe what this tests
+$ ./target/debug/mini_c --run tests/fixtures/my_program.minic
+expected output line 1
+expected output line 2
+>=0
+```
+
+4. Run `shelltest tests/cli/` to verify it passes.
 
 ---
 

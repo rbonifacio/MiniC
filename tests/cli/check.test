@@ -1,0 +1,19 @@
+# --check on a valid program reports well-typed and exits 0
+$ ./target/debug/mini_c --check tests/fixtures/interpreter_hello.minic
+'tests/fixtures/interpreter_hello.minic' is well-typed.
+>=0
+
+# --check on a second valid program (factorial)
+$ ./target/debug/mini_c --check tests/fixtures/interpreter_factorial.minic
+'tests/fixtures/interpreter_factorial.minic' is well-typed.
+>=0
+
+# --check on a program with a type error exits 1 with a type error on stderr
+$ ./target/debug/mini_c --check tests/fixtures/cli_type_mismatch.minic
+>2 /Type error: declaration of x/
+>=1
+
+# --check on a syntactically malformed program reports a type error (no main parsed)
+$ ./target/debug/mini_c --check tests/fixtures/invalid_syntax.minic
+>2 /Type error: program must have a main function/
+>=1

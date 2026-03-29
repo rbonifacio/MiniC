@@ -1,0 +1,19 @@
+# no arguments prints usage to stderr and exits 1
+$ ./target/debug/mini_c
+>2 /Usage:/
+>=1
+
+# unknown flag prints usage to stderr and exits 1
+$ ./target/debug/mini_c --unknown tests/fixtures/interpreter_hello.minic
+>2 /Usage:/
+>=1
+
+# flag with no file argument prints usage to stderr and exits 1
+$ ./target/debug/mini_c --check
+>2 /Usage:/
+>=1
+
+# non-existent file prints a file-not-found error to stderr and exits 1
+$ ./target/debug/mini_c --run nonexistent.minic
+>2 /Error reading/
+>=1
