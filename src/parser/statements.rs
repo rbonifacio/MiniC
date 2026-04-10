@@ -29,7 +29,7 @@
 //!
 //! Both `int x = 0` (declaration) and `x = 0` (assignment) begin with an
 //! identifier-like token, so the order of alternatives in [`statement`]
-//! matters. Declaration is tried first because it starts with a type keyword
+//! matters. Declaration is tried first because it starts with type_definition keyword
 //! (`int`, `float`, …), which is unambiguous. If declaration fails, the
 //! parser backtracks and tries assignment.
 //!
@@ -42,8 +42,8 @@
 
 use crate::ir::ast::{Expr, ExprD, Statement, StatementD, UncheckedExpr, UncheckedStmt};
 use crate::parser::expressions::{expression, parse_call};
-use crate::parser::functions::type_name;
 use crate::parser::identifiers::identifier;
+use crate::parser::types::type_definition;
 use nom::{
     branch::alt,
     bytes::complete::tag,
@@ -86,7 +86,7 @@ fn return_statement(input: &str) -> IResult<&str, UncheckedStmt> {
 fn decl_statement(input: &str) -> IResult<&str, UncheckedStmt> {
     map(
         tuple((
-            type_name,
+            type_definition,
             preceded(nom::character::complete::multispace1, identifier),
             preceded(multispace0, nom::bytes::complete::tag("=")),
             preceded(multispace0, expression),

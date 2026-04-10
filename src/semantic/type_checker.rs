@@ -94,19 +94,28 @@ pub fn type_check(program: &UncheckedProgram) -> Result<CheckedProgram, TypeErro
 
     let mut env = Environment::<Type>::new();
 
-    // Register native stdlib functions as Type::Fun bindings.
+    // Register native stdlib functions as Type::Function bindings.
     let registry = NativeRegistry::default();
     for (name, entry) in registry.iter() {
         env.declare(
             name.clone(),
-            Type::Fun(entry.params.clone(), Box::new(entry.return_type.clone())),
+            Type::Function {
+                params: entry.params.clone(),
+                return_type: Box::new(entry.return_type.clone()),
+            },
         );
     }
 
-    // Register user-defined function signatures as Type::Fun bindings.
+    // Register user-defined function signatures as Type::Function bindings.
     for f in &program.functions {
-        let param_tys = f.params.iter().map(|(_, ty)| ty.clone()).collect();
-        env.declare(f.name.clone(), Type::Fun(param_tys, Box::new(f.return_type.clone())));
+        let param_tys = f.params.iter().map(|param| param.ty.clone()).collect();
+        env.declare(
+            f.name.clone(),
+            Type::Function {
+                params: param_tys,
+                return_type: Box::new(f.return_type.clone()),
+            },
+        );
     }
 
     // Clean snapshot: only function bindings, no variable bindings.
@@ -117,7 +126,10 @@ pub fn type_check(program: &UncheckedProgram) -> Result<CheckedProgram, TypeErro
         let checked = type_check_fun_decl(f, &mut env, &fn_snapshot)?;
         functions.push(checked);
     }
-    Ok(Program { functions })
+    Ok(Program {
+        tagged_types: program.tagged_types.clone(),
+        functions,
+    })
 }
 
 fn type_check_fun_decl(
@@ -127,8 +139,8 @@ fn type_check_fun_decl(
 ) -> Result<CheckedFunDecl, TypeError> {
     // Restore to clean function-only state, then add parameters.
     env.restore(fn_snapshot.clone());
-    for (name, ty) in &f.params {
-        env.declare(name.clone(), ty.clone());
+    for param in &f.params {
+        env.declare(param.name.clone(), param.ty.clone());
     }
     let body = type_check_stmt(&f.body, env, &f.return_type)?;
     Ok(FunDecl {
@@ -150,7 +162,10 @@ fn type_check_stmt(
                 return Err(TypeError::new("cannot declare variable of type void"));
             }
             if env.get(name).is_some() {
-                return Err(TypeError::new(format!("redeclaration of variable: {}", name)));
+                return Err(TypeError::new(format!(
+                    "redeclaration of variable: {}",
+                    name
+                )));
             }
             let init_checked = type_check_expr_to_typed(init, env)?;
             if !types_compatible(&init_checked.ty, ty) {
@@ -263,13 +278,11 @@ fn type_check_stmt(
     })
 }
 
-fn check_call(
-    name: &str,
-    args: &[CheckedExpr],
-    env: &Environment<Type>,
-) -> Result<(), TypeError> {
+fn check_call(name: &str, args: &[CheckedExpr], env: &Environment<Type>) -> Result<(), TypeError> {
     match env.get(name) {
-        Some(Type::Fun(param_tys, _)) => {
+        Some(Type::Function {
+            params: param_tys, ..
+        }) => {
             if args.len() != param_tys.len() {
                 return Err(TypeError::new(format!(
                     "function '{}' expects {} arguments, got {}",
@@ -342,10 +355,7 @@ fn type_check_expr_to_typed(
     Ok(ExprD { exp, ty })
 }
 
-fn type_check_expr_inner(
-    e: &Expr<()>,
-    env: &Environment<Type>,
-) -> Result<Expr<Type>, TypeError> {
+fn type_check_expr_inner(e: &Expr<()>, env: &Environment<Type>) -> Result<Expr<Type>, TypeError> {
     match e {
         Expr::Literal(l) => Ok(Expr::Literal(l.clone())),
         Expr::Ident(name) => Ok(Expr::Ident(name.clone())),
@@ -400,16 +410,20 @@ fn type_check_expr_inner(
             Box::new(type_check_expr_to_typed(r, env)?),
         )),
         Expr::Call { name, args } => {
-            let args_checked: Result<Vec<_>, _> =
-                args.iter().map(|a| type_check_expr_to_typed(a, env)).collect();
+            let args_checked: Result<Vec<_>, _> = args
+                .iter()
+                .map(|a| type_check_expr_to_typed(a, env))
+                .collect();
             Ok(Expr::Call {
                 name: name.clone(),
                 args: args_checked?,
             })
         }
         Expr::ArrayLit(elems) => {
-            let elems_checked: Result<Vec<_>, _> =
-                elems.iter().map(|e| type_check_expr_to_typed(e, env)).collect();
+            let elems_checked: Result<Vec<_>, _> = elems
+                .iter()
+                .map(|e| type_check_expr_to_typed(e, env))
+                .collect();
             Ok(Expr::ArrayLit(elems_checked?))
         }
         Expr::Index { base, index } => Ok(Expr::Index {
@@ -419,14 +433,11 @@ fn type_check_expr_inner(
     }
 }
 
-fn type_check_expr(
-    e: &UncheckedExpr,
-    env: &Environment<Type>,
-) -> Result<Type, TypeError> {
+fn type_check_expr(e: &UncheckedExpr, env: &Environment<Type>) -> Result<Type, TypeError> {
     match &e.exp {
         Expr::Literal(l) => Ok(literal_type(l)),
         Expr::Ident(name) => match env.get(name) {
-            Some(Type::Fun(_, _)) => Err(TypeError::new(format!(
+            Some(Type::Function { .. }) => Err(TypeError::new(format!(
                 "cannot use function '{}' as a value",
                 name
             ))),
@@ -486,11 +497,16 @@ fn type_check_expr(
             }
         }
         Expr::Call { name, args } => {
-            let args_checked: Result<Vec<_>, _> =
-                args.iter().map(|a| type_check_expr_to_typed(a, env)).collect();
+            let args_checked: Result<Vec<_>, _> = args
+                .iter()
+                .map(|a| type_check_expr_to_typed(a, env))
+                .collect();
             let args_checked = args_checked?;
             match env.get(name) {
-                Some(Type::Fun(param_tys, return_ty)) => {
+                Some(Type::Function {
+                    params: param_tys,
+                    return_type,
+                }) => {
                     if args_checked.len() != param_tys.len() {
                         return Err(TypeError::new(format!(
                             "function '{}' expects {} arguments, got {}",
@@ -512,7 +528,7 @@ fn type_check_expr(
                             )));
                         }
                     }
-                    Ok((**return_ty).clone())
+                    Ok((**return_type).clone())
                 }
                 Some(_) => Err(TypeError::new(format!("'{}' is not a function", name))),
                 None => Err(TypeError::new(format!("undefined function: {}", name))),

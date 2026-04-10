@@ -22,13 +22,18 @@
 
 use nom::{
     bytes::complete::{take_while, take_while1},
-    combinator::{recognize, verify},
-    sequence::pair,
+    character::complete::multispace1,
+    combinator::{map, recognize, verify},
+    sequence::{pair, preceded, tuple},
     IResult,
 };
 
+use crate::{ir::ast::IdentifierDecl, parser::types::type_definition};
+
 /// Reserved words: boolean literals and type names.
-const RESERVED: &[&str] = &["true", "false", "int", "float", "bool", "str", "void", "return"];
+const RESERVED: &[&str] = &[
+    "true", "false", "struct", "union", "enum", "int", "float", "bool", "str", "void", "return",
+];
 
 /// Parse an identifier (variable name).
 /// Must start with letter or underscore; subsequent chars may be letter, digit, or underscore.
@@ -39,4 +44,16 @@ pub fn identifier(input: &str) -> IResult<&str, &str> {
         take_while(|c: char| c.is_alphanumeric() || c == '_'),
     ));
     verify(id_parser, |s: &str| !RESERVED.contains(&s))(input)
+}
+
+/// Parse an identifier declaration: `Type name`.
+/// Must only be called for parameters and tagged union members
+pub fn identifier_decl(input: &str) -> IResult<&str, IdentifierDecl> {
+    map(
+        tuple((type_definition, preceded(multispace1, identifier))),
+        |(ty, name)| IdentifierDecl {
+            name: name.to_string(),
+            ty,
+        },
+    )(input)
 }

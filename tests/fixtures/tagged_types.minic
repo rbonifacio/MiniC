@@ -1,0 +1,5 @@
+struct Point { int x; int y; }
+union Payload { int code; struct Point p; }
+enum Kind { A; B = 2; }
+
+void main() { return; }

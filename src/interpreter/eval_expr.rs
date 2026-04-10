@@ -168,8 +168,8 @@ pub fn eval_call(
                 )));
             }
             let snapshot = env.snapshot();
-            for ((param_name, _), val) in decl.params.iter().zip(args.into_iter()) {
-                env.declare(param_name.clone(), val);
+            for (param, val) in decl.params.iter().zip(args.into_iter()) {
+                env.declare(param.name.clone(), val);
             }
             let result = exec_stmt(&decl.body, env)?;
             env.restore(snapshot);
