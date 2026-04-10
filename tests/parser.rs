@@ -931,3 +931,44 @@ fn test_array_in_expression() {
     assert!(matches!(result.exp, Expr::Index { ref base, ref index }
         if matches!(base.exp, Expr::ArrayLit(_)) && index.exp == Expr::Literal(Literal::Int(0))));
 }
+
+#[test]
+fn test_member_access_expression() {
+    let result = expression("point.x").unwrap().1;
+    assert!(matches!(
+        result.exp,
+        Expr::Member { ref base, ref member }
+            if matches!(base.exp, Expr::Ident(ref s) if s == "point") && member == "x"
+    ));
+}
+
+#[test]
+fn test_chained_member_access_expression() {
+    let result = expression("root.left.value").unwrap().1;
+    assert!(matches!(result.exp, Expr::Member { ref member, .. } if member == "value"));
+    if let Expr::Member { ref base, .. } = result.exp {
+        assert!(matches!(base.exp, Expr::Member { ref member, .. } if member == "left"));
+    }
+}
+
+#[test]
+fn test_member_access_with_index_expression() {
+    let result = expression("items.head[0]").unwrap().1;
+    assert!(matches!(result.exp, Expr::Index { ref base, .. } if matches!(base.exp, Expr::Member { ref member, .. } if member == "head")));
+}
+
+#[test]
+fn test_member_assignment_target() {
+    let result = assignment("p.x = 1;").unwrap().1;
+    assert!(matches!(
+        result.stmt,
+        Statement::Assign { ref target, ref value }
+            if matches!(target.exp, Expr::Member { ref member, .. } if member == "x")
+                && value.exp == Expr::Literal(Literal::Int(1))
+    ));
+}
+
+#[test]
+fn test_invalid_member_access_trailing_dot() {
+    assert!(all_consuming(expression)("point.").is_err());
+}

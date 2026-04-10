@@ -160,7 +160,7 @@ fn while_statement(input: &str) -> IResult<&str, UncheckedStmt> {
     ))
 }
 
-/// Parse an lvalue: identifier followed by zero or more `[ expr ]` suffixes.
+/// Parse an lvalue: identifier followed by zero or more `[ expr ]` or `.member` suffixes.
 fn lvalue(input: &str) -> IResult<&str, UncheckedExpr> {
     let (mut rest, id) = preceded(multispace0, identifier)(input)?;
     let mut acc = ExprD {
@@ -168,24 +168,40 @@ fn lvalue(input: &str) -> IResult<&str, UncheckedExpr> {
         ty: (),
     };
     loop {
-        let index_parse = delimited(
+        if let Ok((r, index)) = delimited(
             preceded(multispace0, char('[')),
             preceded(multispace0, expression),
             preceded(multispace0, char(']')),
-        )(rest);
-        match index_parse {
-            Ok((r, index)) => {
-                acc = ExprD {
-                    exp: Expr::Index {
-                        base: Box::new(acc),
-                        index: Box::new(index),
-                    },
-                    ty: (),
-                };
-                rest = r;
-            }
-            Err(_) => break,
+        )(rest)
+        {
+            acc = ExprD {
+                exp: Expr::Index {
+                    base: Box::new(acc),
+                    index: Box::new(index),
+                },
+                ty: (),
+            };
+            rest = r;
+            continue;
         }
+
+        if let Ok((r, (_, member))) = tuple((
+            preceded(multispace0, char('.')),
+            preceded(multispace0, identifier),
+        ))(rest)
+        {
+            acc = ExprD {
+                exp: Expr::Member {
+                    base: Box::new(acc),
+                    member: member.to_string(),
+                },
+                ty: (),
+            };
+            rest = r;
+            continue;
+        }
+
+        break;
     }
     Ok((rest, acc))
 }

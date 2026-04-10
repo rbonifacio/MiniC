@@ -125,6 +125,11 @@ pub enum Expr<Ty> {
         base: Box<ExprD<Ty>>,
         index: Box<ExprD<Ty>>,
     },
+    /// Member access: `base.member`
+    Member {
+        base: Box<ExprD<Ty>>,
+        member: String,
+    },
 }
 
 /// Statement with type decoration.
