@@ -31,7 +31,7 @@ else
 fi
 
 ## find and tag proptest (if exists)
-PROPTEST_PATH=$(find ~/.cargo/registry/src -type d -name "proptest-*" 2>/dev/null | head -1)
+PROPTEST_PATH=$(find ~/.cargo/registry/src/index.crates.io-* -type d -name "proptest-*" 2>/dev/null | head -1)
 if [ -n "$PROPTEST_PATH" ]; then
     echo "Generating proptest tags..."
     ctags -R --languages=Rust -f proptest.tags "$PROPTEST_PATH/src"
