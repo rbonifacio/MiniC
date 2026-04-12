@@ -672,3 +672,47 @@ fn test_array_in_expression() {
     assert!(matches!(result.exp, Expr::Index { ref base, ref index }
         if matches!(base.exp, Expr::ArrayLit(_)) && index.exp == Expr::Literal(Literal::Int(0))));
 }
+
+#[test]
+fn test_string_concat() {
+    assert_eq!(
+        expression(r#""Hello, " ++ "world""#).map(|(r, e)| (r, e.exp)),
+        Ok((
+            "",
+            Expr::Concat(
+                Box::new(ExprD {
+                    exp: Expr::Literal(Literal::Str("Hello, ".to_string())),
+                    ty: (),
+                }),
+                Box::new(ExprD {
+                    exp: Expr::Literal(Literal::Str("world".to_string())),
+                    ty: (),
+                })
+            )
+        ))
+    );
+}
+
+#[test]
+fn test_string_concat_left_associative() {
+    let result = expression(r#""a" ++ "b" ++ "c""#).unwrap().1.exp;
+    match &result {
+        Expr::Concat(left, right) => {
+            assert_eq!(right.exp, Expr::Literal(Literal::Str("c".to_string())));
+            match &left.exp {
+                Expr::Concat(left2, right2) => {
+                    assert_eq!(left2.exp, Expr::Literal(Literal::Str("a".to_string())));
+                    assert_eq!(right2.exp, Expr::Literal(Literal::Str("b".to_string())));
+                }
+                _ => panic!("expected nested Concat"),
+            }
+        }
+        _ => panic!("expected Concat"),
+    }
+}
+
+#[test]
+fn test_string_concat_whitespace_and_precedence() {
+    let result = expression(r#""x" ++ "y" * 2"#).unwrap().1.exp;
+    assert!(matches!(result, Expr::Concat(_, _)));
+}
