@@ -160,6 +160,12 @@ fn additive(input: &str) -> IResult<&str, UncheckedExpr> {
             rest = r;
             continue;
         }
+        let str_concat = tuple((multispace0, tag("++"), multispace0, multiplicative))(rest);
+        if let Ok((r, (_, _, _, e))) = str_concat {
+            acc = wrap(Expr::Concat(Box::new(acc), Box::new(e)));
+            rest = r;
+            continue;
+        }
         break;
     }
     Ok((rest, acc))

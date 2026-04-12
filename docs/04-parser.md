@@ -103,7 +103,7 @@ expression
           └── logical_and   (and)
                 └── logical_not   (!)
                       └── relational   (==  !=  <  <=  >  >=)
-                            └── additive     (+  -)
+                            └── additive     (+  - ++)
                                   └── multiplicative   (*  /)
                                         └── unary      (unary -)
                                               └── primary   (atoms + indexing)

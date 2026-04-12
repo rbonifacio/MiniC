@@ -69,6 +69,8 @@ pub fn eval_expr(expr: &CheckedExpr, env: &mut Environment<Value>) -> Result<Val
         Expr::Mul(l, r) => numeric_binop(eval_expr(l, env)?, eval_expr(r, env)?, |a, b| a * b, |a, b| a * b),
         Expr::Div(l, r) => numeric_binop(eval_expr(l, env)?, eval_expr(r, env)?, |a, b| a / b, |a, b| a / b),
 
+        Expr::Concat(l, r) => string_binop(eval_expr(l, env)?, eval_expr(r, env)?, |a, b| a + &b),
+
         Expr::Lt(l, r) => numeric_cmp(eval_expr(l, env)?, eval_expr(r, env)?, |a, b| a < b, |a, b| a < b),
         Expr::Le(l, r) => numeric_cmp(eval_expr(l, env)?, eval_expr(r, env)?, |a, b| a <= b, |a, b| a <= b),
         Expr::Gt(l, r) => numeric_cmp(eval_expr(l, env)?, eval_expr(r, env)?, |a, b| a > b, |a, b| a > b),
@@ -204,6 +206,20 @@ fn numeric_binop(
         (Value::Float(a), Value::Int(b)) => Ok(Value::Float(float_op(a, b as f64))),
         (l, r) => Err(RuntimeError::new(format!(
             "arithmetic requires numeric operands, got: {} and {}",
+            l, r
+        ))),
+    }
+}
+
+fn string_binop(
+    lv: Value,
+    rv: Value,
+    concat_op: impl Fn(String, String) -> String,
+) -> Result<Value, RuntimeError> {
+    match (lv, rv) {
+        (Value::Str(a), Value::Str(b)) => Ok(Value::Str(concat_op(a, b))),
+        (l, r) => Err(RuntimeError::new(format!(
+            "string concatenation requires Str operands, got: {} and {}",
             l, r
         ))),
     }

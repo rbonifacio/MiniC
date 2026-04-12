@@ -87,6 +87,7 @@ pub enum Expr<Ty> {
     Neg(Box<ExprD<Ty>>),
     Add(Box<ExprD<Ty>>, Box<ExprD<Ty>>),
     Sub(Box<ExprD<Ty>>, Box<ExprD<Ty>>),
+    Concat(Box<ExprD<Ty>>, Box<ExprD<Ty>>),
     Mul(Box<ExprD<Ty>>, Box<ExprD<Ty>>),
     Div(Box<ExprD<Ty>>, Box<ExprD<Ty>>),
     Eq(Box<ExprD<Ty>>, Box<ExprD<Ty>>),

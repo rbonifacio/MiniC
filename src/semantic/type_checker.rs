@@ -358,6 +358,10 @@ fn type_check_expr_inner(
             Box::new(type_check_expr_to_typed(l, env)?),
             Box::new(type_check_expr_to_typed(r, env)?),
         )),
+        Expr::Concat(l, r) => Ok(Expr::Concat(
+            Box::new(type_check_expr_to_typed(l, env)?),
+            Box::new(type_check_expr_to_typed(r, env)?),
+        )),
         Expr::Mul(l, r) => Ok(Expr::Mul(
             Box::new(type_check_expr_to_typed(l, env)?),
             Box::new(type_check_expr_to_typed(r, env)?),
@@ -445,6 +449,11 @@ fn type_check_expr(
             let lt = type_check_expr(l, env)?;
             let rt = type_check_expr(r, env)?;
             numeric_binop_result(&lt, &rt)
+        }
+        Expr::Concat(l, r) => {
+            let lt = type_check_expr(l, env)?;
+            let rt = type_check_expr(r, env)?;
+            string_binop_result(&lt, &rt)
         }
         Expr::Eq(l, r) | Expr::Ne(l, r) => {
             let lt = type_check_expr(l, env)?;
@@ -562,6 +571,13 @@ fn numeric_binop_result(l: &Type, r: &Type) -> Result<Type, TypeError> {
             Ok(Type::Float)
         }
         _ => Err(TypeError::new("arithmetic operands must be Int or Float")),
+    }
+}
+
+fn string_binop_result(l: &Type, r: &Type) -> Result<Type, TypeError> {
+    match (l, r) {
+        (Type::Str, Type::Str) => Ok(Type::Str),
+        _ => Err(TypeError::new("string concatenation requires Str operands")),
     }
 }
 
