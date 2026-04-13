@@ -55,14 +55,20 @@ pub mod exec_stmt;
 pub mod value;
 
 use crate::environment::Environment;
-use crate::ir::ast::CheckedProgram;
+use crate::ir::ast::{CheckedProgram, TagType, TaggedTypeDecl};
 use crate::stdlib::NativeRegistry;
+
+use std::collections::HashMap;
 
 use eval_expr::eval_call;
 use value::{FnValue, RuntimeError, Value};
 
+type TaggedRuntimeTable = HashMap<(TagType, String), TaggedTypeDecl>;
+
 /// Interpret a type-checked MiniC program, starting execution at `main`.
 pub fn interpret(program: &CheckedProgram) -> Result<(), RuntimeError> {
+    let tagged_table = build_tagged_runtime_table(&program.tagged_types)?;
+
     let mut env = Environment::<Value>::new();
 
     // Register native stdlib functions as Value::Fn(FnValue::Native) bindings.
@@ -73,13 +79,32 @@ pub fn interpret(program: &CheckedProgram) -> Result<(), RuntimeError> {
 
     // Register user-defined functions as Value::Fn(FnValue::UserDefined) bindings.
     for fun in &program.functions {
-        env.declare(fun.name.clone(), Value::Fn(FnValue::UserDefined(fun.clone())));
+        env.declare(
+            fun.name.clone(),
+            Value::Fn(FnValue::UserDefined(fun.clone())),
+        );
     }
 
     if env.get("main").is_none() {
         return Err(RuntimeError::new("no 'main' function found"));
     }
 
-    eval_call("main", vec![], &mut env)?;
+    eval_call("main", vec![], &mut env, &tagged_table)?;
     Ok(())
+}
+
+fn build_tagged_runtime_table(
+    tagged_types: &[TaggedTypeDecl],
+) -> Result<TaggedRuntimeTable, RuntimeError> {
+    let mut table = TaggedRuntimeTable::new();
+    for decl in tagged_types {
+        let key = (decl.tag_type.clone(), decl.tag_name.clone());
+        if table.insert(key, decl.clone()).is_some() {
+            return Err(RuntimeError::new(format!(
+                "duplicate tagged type declaration at runtime: {:?} {}",
+                decl.tag_type, decl.tag_name
+            )));
+        }
+    }
+    Ok(table)
 }
