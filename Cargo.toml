@@ -9,3 +9,7 @@ nom = "7"
 [dev-dependencies]
 nom = "7"
 proptest = "1.10.0"
+
+[[test]]
+name = "property"
+path = "tests/property/mod.rs"
