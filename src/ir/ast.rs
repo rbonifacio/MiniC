@@ -49,7 +49,7 @@
 //! everything, keeping the special case local to one function.
 
 /// Tagged types: struct, union, enum
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum TagType {
     Struct,
     Union,
