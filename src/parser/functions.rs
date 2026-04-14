@@ -60,14 +60,40 @@ pub fn type_name(input: &str) -> IResult<&str, Type> {
 
 /// Parser auxiliar
 fn fun_type(input: &str) -> IResult<&str, Type> {
+    // tenta reconhecer a palavra-chave "fn" ignorando espacos antes dela
     let (rest, _) = preceded(multispace0, tag("fn"))(input)?;
+
+    // faz o parsing da lista de parametros dentro dos parênteses
     let (rest, params) = delimited(
         preceded(multispace0, tag("(")),
-        separated_list0(preceded(multispace0, tag(",")), type_name),
+        separated_list0(
+            preceded(multispace0, tag(",")),
+            preceded(multispace0, type_name),
+        ),
         preceded(multispace0, tag(")")),
     )(rest)?;
+
+    // detectar vírgula inválida logo após '(' → fn(,)
+    let check_params = rest.trim_start();
+    if check_params.starts_with(",") {
+        return Err(nom::Err::Error(
+            nom::error::Error::new(rest, nom::error::ErrorKind::Tag),
+        ));
+    }
+
+    // consome o símbolo "->", que separa parametros do tipo de retorno
     let (rest, _) = preceded(multispace0, tag("->"))(rest)?;
+    // faz o parsing do tipo de retorno da funcao
     let (rest, ret) = preceded(multispace0, type_name)(rest)?;
+
+    // evitar confundir com lambda
+    let check = rest.trim_start();
+    if check.starts_with("{") {
+        return Err(nom::Err::Error(
+            nom::error::Error::new(rest, nom::error::ErrorKind::Tag),
+        ));
+    }
+    // se tudo deu certo, retorna o tipo de funcao construido
     Ok((rest, Type::Fun(params, Box::new(ret))))
 }
 
