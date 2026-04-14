@@ -152,6 +152,12 @@ fn type_check_stmt(
             if env.get(name).is_some() {
                 return Err(TypeError::new(format!("redeclaration of variable: {}", name)));
             }
+            let init = init.as_ref().ok_or_else(|| {
+                TypeError::new(format!(
+                    "variable '{}' must be initialized",
+                    name
+                ))
+            })?;
             let init_checked = type_check_expr_to_typed(init, env)?;
             if !types_compatible(&init_checked.ty, ty) {
                 return Err(TypeError::new(format!(
@@ -163,7 +169,7 @@ fn type_check_stmt(
             Statement::Decl {
                 name: name.clone(),
                 ty: ty.clone(),
-                init: Box::new(init_checked),
+                init: Some(Box::new(init_checked)),
             }
         }
         Statement::Assign { target, value } => {
@@ -407,6 +413,31 @@ fn type_check_expr_inner(
                 args: args_checked?,
             })
         }
+        Expr::CallExpr { chmd, args } => {
+            let chmd_checked = type_check_expr_to_typed(chmd, env)?;
+            let args_checked: Result<Vec<_>, _> =
+                args.iter().map(|a| type_check_expr_to_typed(a, env)).collect();
+            Ok(Expr::CallExpr {
+                chmd: Box::new(chmd_checked),
+                args: args_checked?,
+            })
+        }
+        Expr::Lambda { params, return_tipo, crp } => {
+            let mut lambda_env = Environment::<Type>::new();
+            lambda_env.restore(env.snapshot());
+
+            for (name, ty) in params.iter() {
+                lambda_env.declare(name.clone(), ty.clone());
+            }
+
+            let body_checked = type_check_stmt(crp, &mut lambda_env, return_tipo)?;
+
+            Ok(Expr::Lambda {
+                params: params.clone(),
+                return_tipo: return_tipo.clone(),
+                crp: Box::new(body_checked),
+            })
+        }
         Expr::ArrayLit(elems) => {
             let elems_checked: Result<Vec<_>, _> =
                 elems.iter().map(|e| type_check_expr_to_typed(e, env)).collect();
@@ -426,10 +457,6 @@ fn type_check_expr(
     match &e.exp {
         Expr::Literal(l) => Ok(literal_type(l)),
         Expr::Ident(name) => match env.get(name) {
-            Some(Type::Fun(_, _)) => Err(TypeError::new(format!(
-                "cannot use function '{}' as a value",
-                name
-            ))),
             Some(ty) => Ok(ty.clone()),
             None => Err(TypeError::new(format!("undeclared variable: {}", name))),
         },
@@ -517,6 +544,49 @@ fn type_check_expr(
                 Some(_) => Err(TypeError::new(format!("'{}' is not a function", name))),
                 None => Err(TypeError::new(format!("undefined function: {}", name))),
             }
+        }
+        Expr::CallExpr { chmd, args } => {
+            let chmd_ty = type_check_expr(chmd, env)?;
+            let args_checked: Result<Vec<_>, _> =
+                args.iter().map(|a| type_check_expr_to_typed(a, env)).collect();
+            let args_checked = args_checked?;
+            if let Type::Fun(param_tys, return_ty) = chmd_ty {
+                if args_checked.len() != param_tys.len() {
+                    return Err(TypeError::new(format!(
+                        "function value expects {} arguments, got {}",
+                        param_tys.len(),
+                        args_checked.len()
+                    )));
+                }
+                for (i, (arg, param_ty)) in
+                    args_checked.iter().zip(param_tys.iter()).enumerate()
+                {
+                    if !types_compatible(&arg.ty, param_ty) {
+                        return Err(TypeError::new(format!(
+                            "argument {} to function value: expected {:?}, got {:?}",
+                            i + 1,
+                            param_ty,
+                            arg.ty
+                        )));
+                    }
+                }
+                Ok(*return_ty)
+            } else {
+                Err(TypeError::new("attempting to call a non-function value"))
+            }
+        }
+        Expr::Lambda { params, return_tipo, crp } => {
+            let mut lambda_env = Environment::<Type>::new();
+            lambda_env.restore(env.snapshot());
+
+            for (name, ty) in params.iter() {
+                lambda_env.declare(name.clone(), ty.clone());
+            }
+
+            type_check_stmt(crp, &mut lambda_env, return_tipo)?;
+
+            let param_tys = params.iter().map(|(_, ty)| ty.clone()).collect();
+            Ok(Type::Fun(param_tys, Box::new(return_tipo.clone())))
         }
         Expr::ArrayLit(elems) => {
             if elems.is_empty() {

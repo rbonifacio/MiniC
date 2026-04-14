@@ -61,6 +61,7 @@
 //! needs `Value`, and `Value` needs to reference the callable type.
 
 use std::fmt;
+use std::collections::HashMap;
 
 use crate::ir::ast::CheckedFunDecl;
 
@@ -72,6 +73,11 @@ pub type NativeFn = fn(Vec<Value>) -> Result<Value, RuntimeError>;
 pub enum FnValue {
     UserDefined(CheckedFunDecl),
     Native(NativeFn),
+
+    Closure {
+        decl: CheckedFunDecl,
+        captured: HashMap<String, Value>,
+    },
 }
 
 impl PartialEq for FnValue {
@@ -79,6 +85,7 @@ impl PartialEq for FnValue {
         match (self, other) {
             (FnValue::UserDefined(a), FnValue::UserDefined(b)) => a == b,
             (FnValue::Native(a), FnValue::Native(b)) => (*a as usize) == (*b as usize),
+            (FnValue::Closure { decl: da, .. }, FnValue::Closure { decl: db, .. }) => da == db,
             _ => false,
         }
     }
@@ -89,6 +96,7 @@ impl fmt::Debug for FnValue {
         match self {
             FnValue::UserDefined(decl) => write!(f, "UserDefined({})", decl.name),
             FnValue::Native(_) => write!(f, "Native(<fn ptr>)"),
+            FnValue::Closure { decl, .. } => write!(f, "Closure({})", decl.name),
         }
     }
 }

@@ -340,6 +340,7 @@ fn test_decl_statement() {
     assert!(matches!(result.stmt, Statement::Decl { ref name, ref ty, .. }
         if name == "x" && ty == &Type::Int));
     if let Statement::Decl { ref init, .. } = result.stmt {
+        let init = init.as_ref().expect("Decl init should be present");
         assert_eq!(init.exp, Expr::Literal(Literal::Int(42)));
     }
 

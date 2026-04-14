@@ -27,6 +27,7 @@ fn test_type_check_int_float_coercion() {
     let prog = result.unwrap();
     let main_fn = prog.functions.iter().find(|f| f.name == "main").unwrap();
     if let mini_c::ir::ast::Statement::Decl { ref init, .. } = main_fn.body.stmt {
+        let init = init.as_ref().expect("Decl init should be present");
         assert_eq!(init.ty, Type::Float);
     } else {
         panic!("expected Decl");

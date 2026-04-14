@@ -96,7 +96,7 @@ fn decl_statement(input: &str) -> IResult<&str, UncheckedStmt> {
             wrap(Statement::Decl {
                 name: name.to_string(),
                 ty,
-                init: Box::new(init),
+                init: Some(Box::new(init)),
             })
         },
     )(input)
