@@ -145,7 +145,8 @@ pub enum Statement<Ty> {
     Decl {
         name: String,
         ty: Type,
-        init: Option<Box<ExprD<Ty>>>, /// Adicionado para suportar algo como 'fn(int) -> int f;'
+        /// Adicionado para suportar algo como 'fn(int) -> int f;'
+        init: Option<Box<ExprD<Ty>>>, 
     },
     Assign {
         target: Box<ExprD<Ty>>,
