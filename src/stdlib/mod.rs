@@ -12,8 +12,10 @@
 //!   return type) with the Rust function that implements the behaviour.
 //!
 //! The default registry (via `NativeRegistry::default()`) registers:
-//! `print`, `readInt`, `readFloat`, `readString` (IO), and `pow`, `sqrt`
-//! (math). Implementations live in the [`io`] and [`math`] sub-modules.
+//! `print`, `readInt`, `readFloat`, `readString` (IO), `pow`, `sqrt`
+//! (math), and string utilities like `len`, `substr`, `toUpper`, `toLower`,
+//! `strToInt`, `strToFloat`, `contains`. Implementations live in the [`io`],
+//! [`math`], and [`string`] sub-modules.
 //!
 //! # Design Decisions
 //!
@@ -55,6 +57,7 @@ use crate::interpreter::value::NativeFn;
 
 pub mod io;
 pub mod math;
+pub mod string;
 
 /// A registry entry: MiniC type signature + Rust implementation.
 pub struct NativeEntry {
@@ -127,6 +130,43 @@ impl Default for NativeRegistry {
             params: vec![Type::Float],
             return_type: Type::Float,
             func: math::sqrt_fn,
+        });
+
+        // String
+        r.register("len", NativeEntry {
+            params: vec![Type::Any],
+            return_type: Type::Int,
+            func: string::len,
+        });
+        r.register("substr", NativeEntry {
+            params: vec![Type::Str, Type::Int, Type::Int],
+            return_type: Type::Str,
+            func: string::substr,
+        });
+        r.register("toUpper", NativeEntry {
+            params: vec![Type::Str],
+            return_type: Type::Str,
+            func: string::to_upper,
+        });
+        r.register("toLower", NativeEntry {
+            params: vec![Type::Str],
+            return_type: Type::Str,
+            func: string::to_lower,
+        });
+        r.register("strToInt", NativeEntry {
+            params: vec![Type::Str],
+            return_type: Type::Int,
+            func: string::str_to_int,
+        });
+        r.register("strToFloat", NativeEntry {
+            params: vec![Type::Str],
+            return_type: Type::Float,
+            func: string::str_to_float,
+        });
+        r.register("contains", NativeEntry {
+            params: vec![Type::Any, Type::Any],
+            return_type: Type::Bool,
+            func: string::contains,
         });
 
         r
