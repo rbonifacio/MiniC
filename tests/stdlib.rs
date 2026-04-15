@@ -2,6 +2,7 @@ use mini_c::interpreter::value::Value;
 use mini_c::ir::ast::Type;
 use mini_c::stdlib::io::print_fn;
 use mini_c::stdlib::math::{pow_fn, sqrt_fn};
+use mini_c::stdlib::string::{contains, len, substr};
 use mini_c::stdlib::NativeRegistry;
 
 // --- io tests ---
@@ -86,6 +87,88 @@ fn test_sqrt_wrong_type() {
     assert!(result.is_err());
 }
 
+// --- string tests ---
+
+#[test]
+fn test_len_string() {
+    let result = len(vec![Value::Str("hello".to_string())]);
+    assert_eq!(result, Ok(Value::Int(5)));
+}
+
+#[test]
+fn test_len_array() {
+    let result = len(vec![Value::Array(vec![Value::Int(1), Value::Int(2), Value::Int(3)])]);
+    assert_eq!(result, Ok(Value::Int(3)));
+}
+
+#[test]
+fn test_contains_string() {
+    let result = contains(vec![
+        Value::Str("abcdef".to_string()),
+        Value::Str("cd".to_string()),
+    ]);
+    assert_eq!(result, Ok(Value::Bool(true)));
+}
+
+#[test]
+fn test_contains_array() {
+    let result = contains(vec![
+        Value::Array(vec![Value::Int(1), Value::Int(2), Value::Int(3)]),
+        Value::Int(2),
+    ]);
+    assert_eq!(result, Ok(Value::Bool(true)));
+}
+
+#[test]
+fn test_substr_valid_slice() {
+    let result = substr(vec![
+        Value::Str("abcdef".to_string()),
+        Value::Int(2),
+        Value::Int(3),
+    ]);
+    assert_eq!(result, Ok(Value::Str("cde".to_string())));
+}
+
+#[test]
+fn test_substr_start_out_of_bounds() {
+    let result = substr(vec![
+        Value::Str("abc".to_string()),
+        Value::Int(4),
+        Value::Int(1),
+    ]);
+    assert!(result.is_err());
+}
+
+#[test]
+fn test_substr_range_out_of_bounds() {
+    let result = substr(vec![
+        Value::Str("abc".to_string()),
+        Value::Int(2),
+        Value::Int(2),
+    ]);
+    assert!(result.is_err());
+}
+
+#[test]
+fn test_substr_negative_start_rejected() {
+    let result = substr(vec![
+        Value::Str("abc".to_string()),
+        Value::Int(-1),
+        Value::Int(1),
+    ]);
+    assert!(result.is_err());
+}
+
+#[test]
+fn test_substr_negative_length_rejected() {
+    let result = substr(vec![
+        Value::Str("abc".to_string()),
+        Value::Int(0),
+        Value::Int(-1),
+    ]);
+    assert!(result.is_err());
+}
+
 // --- registry tests ---
 
 #[test]
@@ -97,6 +180,13 @@ fn test_default_registry_contains_all_stdlib() {
     assert!(r.lookup("readString").is_some());
     assert!(r.lookup("pow").is_some());
     assert!(r.lookup("sqrt").is_some());
+    assert!(r.lookup("len").is_some());
+    assert!(r.lookup("substr").is_some());
+    assert!(r.lookup("toUpper").is_some());
+    assert!(r.lookup("toLower").is_some());
+    assert!(r.lookup("strToInt").is_some());
+    assert!(r.lookup("strToFloat").is_some());
+    assert!(r.lookup("contains").is_some());
 }
 
 #[test]
@@ -118,4 +208,20 @@ fn test_print_uses_type_any() {
     let r = NativeRegistry::default();
     let entry = r.lookup("print").unwrap();
     assert_eq!(entry.params, vec![Type::Any]);
+}
+
+#[test]
+fn test_len_uses_type_any() {
+    let r = NativeRegistry::default();
+    let entry = r.lookup("len").unwrap();
+    assert_eq!(entry.params, vec![Type::Any]);
+    assert_eq!(entry.return_type, Type::Int);
+}
+
+#[test]
+fn test_contains_uses_type_any() {
+    let r = NativeRegistry::default();
+    let entry = r.lookup("contains").unwrap();
+    assert_eq!(entry.params, vec![Type::Any, Type::Any]);
+    assert_eq!(entry.return_type, Type::Bool);
 }
