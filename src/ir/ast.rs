@@ -99,6 +99,8 @@ pub enum Expr<Ty> {
     Not(Box<ExprD<Ty>>),
     And(Box<ExprD<Ty>>, Box<ExprD<Ty>>),
     Or(Box<ExprD<Ty>>, Box<ExprD<Ty>>),
+    Len(Box<ExprD<Ty>>),
+    Contains(Box<ExprD<Ty>>, Box<ExprD<Ty>>),
     /// Function call: name(args)
     Call {
         name: String,

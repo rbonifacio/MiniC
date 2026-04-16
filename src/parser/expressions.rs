@@ -43,7 +43,7 @@ use nom::{
     character::complete::{char, multispace0},
     combinator::map,
     multi::separated_list0,
-    sequence::{delimited, pair, preceded, tuple},
+    sequence::{delimited, pair, preceded, tuple, separated_pair},
     IResult,
 };
 
@@ -65,11 +65,42 @@ pub fn parse_call(input: &str) -> IResult<&str, (String, Vec<UncheckedExpr>)> {
     Ok((rest, (name.to_string(), args)))
 }
 
-/// Atom: literal, call, array literal, identifier, or parenthesized expression.
+/// Parse length: `len ( expr )`. Returns the inner expr.
+pub fn parse_len(input: &str) -> IResult<&str, UncheckedExpr> {
+    let (rest, _) = preceded(multispace0, tag("len"))(input)?;
+    let (rest, arg) = delimited(
+        preceded(multispace0, tag("(")),
+        preceded(multispace0, expression),
+        preceded(multispace0, tag(")")),
+    )(rest)?;
+    Ok((rest, arg))
+}
+
+/// Parse contains: `contains ( expr, expr )`. Returns (container, item).
+pub fn parse_contains(input: &str) -> IResult<&str, (UncheckedExpr, UncheckedExpr)> {
+    let (rest, _) = preceded(multispace0, tag("contains"))(input)?;
+    let (rest, (container, item)) = delimited(
+        preceded(multispace0, tag("(")),
+        separated_pair(
+            preceded(multispace0, expression),
+            preceded(multispace0, tag(",")),
+            preceded(multispace0, expression),
+        ),
+        preceded(multispace0, tag(")")),
+    )(rest)?;
+    Ok((rest, (container, item)))
+}
+
+/// Atom: literal, len, contains, call, array literal, identifier, or parenthesized expression.
 fn atom(input: &str) -> IResult<&str, UncheckedExpr> {
     alt((
         map(literal, |l| wrap(Expr::Literal(l.into()))),
+        map(parse_len, |arg| wrap(Expr::Len(Box::new(arg)))),
+        map(parse_contains, |(container, item)| {
+            wrap(Expr::Contains(Box::new(container), Box::new(item)))
+        }),
         map(parse_call, |(name, args)| wrap(Expr::Call { name, args })),
+
         map(
             delimited(
                 preceded(multispace0, char('[')),
