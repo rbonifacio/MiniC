@@ -403,6 +403,11 @@ fn type_check_expr_inner(
             Box::new(type_check_expr_to_typed(l, env)?),
             Box::new(type_check_expr_to_typed(r, env)?),
         )),
+        Expr::Len(arg) => Ok(Expr::Len(Box::new(type_check_expr_to_typed(arg, env)?))),
+        Expr::Contains(container, item) => Ok(Expr::Contains(
+                Box::new(type_check_expr_to_typed(container, env)?),
+                Box::new(type_check_expr_to_typed(item, env)?),
+        )),
         Expr::Call { name, args } => {
             let args_checked: Result<Vec<_>, _> =
                 args.iter().map(|a| type_check_expr_to_typed(a, env)).collect();
@@ -492,6 +497,34 @@ fn type_check_expr(
                 Ok(Type::Bool)
             } else {
                 Err(TypeError::new("and/or require Bool operands"))
+            }
+        }
+        Expr::Len(arg) => {
+            let ty = type_check_expr(arg, env)?;
+            match ty {
+                Type::Str | Type::Array(_) => Ok(Type::Int),
+                _ => Err(TypeError::new("len requires a string or array operand")),
+            }
+        }
+        Expr::Contains(container, item) => {
+            let container_ty = type_check_expr(container, env)?;
+            let item_ty = type_check_expr(item, env)?;
+            match container_ty {
+                Type::Str => {
+                    if item_ty == Type::Str {
+                        Ok(Type::Bool)
+                    } else {
+                        Err(TypeError::new("contains: string container requires string item"))
+                    }
+                }
+                Type::Array(elem_ty) => {
+                    if types_compatible(&item_ty, &elem_ty) {
+                        Ok(Type::Bool)
+                    } else {
+                        Err(TypeError::new("contains: array item type mismatch"))
+                    }
+                }
+                _ => Err(TypeError::new("contains requires a string or array container")),
             }
         }
         Expr::Call { name, args } => {
