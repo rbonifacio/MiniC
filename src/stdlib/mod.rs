@@ -13,8 +13,8 @@
 //!
 //! The default registry (via `NativeRegistry::default()`) registers:
 //! `print`, `readInt`, `readFloat`, `readString` (IO), `pow`, `sqrt`
-//! (math), and string utilities like `len`, `substr`, `toUpper`, `toLower`,
-//! `strToInt`, `strToFloat`, `contains`. Implementations live in the [`io`],
+//! (math), and string utilities like `substr`, `toUpper`, `toLower`,
+//! `strToInt`, `strToFloat`. Implementations live in the [`io`],
 //! [`math`], and [`string`] sub-modules.
 //!
 //! # Design Decisions
@@ -133,11 +133,6 @@ impl Default for NativeRegistry {
         });
 
         // String
-        r.register("len", NativeEntry {
-            params: vec![Type::Any],
-            return_type: Type::Int,
-            func: string::len,
-        });
         r.register("substr", NativeEntry {
             params: vec![Type::Str, Type::Int, Type::Int],
             return_type: Type::Str,
@@ -162,11 +157,6 @@ impl Default for NativeRegistry {
             params: vec![Type::Str],
             return_type: Type::Float,
             func: string::str_to_float,
-        });
-        r.register("contains", NativeEntry {
-            params: vec![Type::Any, Type::Any],
-            return_type: Type::Bool,
-            func: string::contains,
         });
 
         r
