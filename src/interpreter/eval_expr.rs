@@ -123,6 +123,43 @@ pub fn eval_expr(expr: &CheckedExpr, env: &mut Environment<Value>) -> Result<Val
             Ok(Value::Array(vals?))
         }
 
+        Expr::Len(arg) => {
+            let val = eval_expr(arg, env)?;
+            match val {
+                Value::Str(s) => Ok(Value::Int(s.chars().count() as i64)),
+                Value::Array(elems) => Ok(Value::Int(elems.len() as i64)),
+                v => Err(RuntimeError::new(format!(
+                    "len: expected string or array argument, got: {}",
+                    v
+                ))),
+            }
+        }
+
+        Expr::Contains(container, item) => {
+            let container_val = eval_expr(container, env)?;
+            let item_val = eval_expr(item, env)?;
+            match container_val {
+                Value::Str(s) => {
+                    if let Value::Str(item_str) = item_val {
+                        Ok(Value::Bool(s.contains(&item_str)))
+                    } else {
+                        Err(RuntimeError::new("contains: string container requires string item"))
+                    }
+                }
+                Value::Array(elems) => {
+                    if let Some(_) = elems.iter().find(|&e| values_equal(e, &item_val)) {
+                        Ok(Value::Bool(true))
+                    } else {
+                        Ok(Value::Bool(false))
+                    }
+                }
+                v => Err(RuntimeError::new(format!(
+                    "contains: expected string or array container, got: {}",
+                    v
+                ))),
+            }
+        }
+
         Expr::Index { base, index } => {
             let base_val = eval_expr(base, env)?;
             let idx_val = eval_expr(index, env)?;
