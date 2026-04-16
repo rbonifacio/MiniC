@@ -221,3 +221,17 @@ fn test_type_check_contains_returns_bool() {
     assert!(result.is_err());
     assert!(result.unwrap_err().message.contains("expected Int, got Bool"));
 }
+
+#[test]
+fn test_type_check_len_rejects_int_operand() {
+    let result = parse_and_type_check("void main() { int n = len(42); }");
+    assert!(result.is_err());
+    assert!(result.unwrap_err().message.contains("len requires a string or array operand"));
+}
+
+#[test]
+fn test_type_check_contains_rejects_string_and_int() {
+    let result = parse_and_type_check("void main() { bool ok = contains(\"abc\", 1); }");
+    assert!(result.is_err());
+    assert!(result.unwrap_err().message.contains("string container requires string item"));
+}

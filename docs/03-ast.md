@@ -45,6 +45,8 @@ Expr::Literal(42)            -- the integer 42
 Expr::Ident("x")             -- the variable x
 Expr::Add(left, right)       -- left + right
 Expr::Mul(left, right)       -- left * right
+Expr::len(expr)              -- length of a string/array expression
+Expr::contains(a, b)         -- membership/substring check expression
 Expr::Call { name, args }    -- a function call
 Expr::Index { base, index }  -- base[index]
 ```

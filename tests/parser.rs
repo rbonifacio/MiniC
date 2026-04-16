@@ -540,6 +540,20 @@ fn test_call_in_expression() {
 }
 
 #[test]
+fn test_len_as_expression_node() {
+    let result = expression("len([1, 2, 3])").unwrap().1;
+    assert!(matches!(result.exp, Expr::Len(_)));
+    assert!(!matches!(result.exp, Expr::Call { .. }));
+}
+
+#[test]
+fn test_contains_as_expression_node() {
+    let result = expression("contains([1, 2, 3], 2)").unwrap().1;
+    assert!(matches!(result.exp, Expr::Contains(_, _)));
+    assert!(!matches!(result.exp, Expr::Call { .. }));
+}
+
+#[test]
 fn test_call_as_statement() {
     let result = statement("foo(1, 2);").unwrap().1;
     assert!(
@@ -658,7 +672,7 @@ fn test_multidimensional_indexed_assignment() {
 #[test]
 fn test_nested_index() {
     let result = expression("arr[i][j]").unwrap().1;
-    assert!(matches!(result.exp, Expr::Index { ref base, ref index }
+    assert!(matches!(result.exp, Expr::Index { ref index, .. }
         if matches!(index.exp, Expr::Ident(ref s) if s == "j")));
     if let Expr::Index { ref base, .. } = result.exp {
         assert!(matches!(base.exp, Expr::Index { ref base, ref index }

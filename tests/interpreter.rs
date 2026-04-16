@@ -256,3 +256,50 @@ fn test_stdlib_pow_float_args() {
     "#;
     assert!(run(src).is_ok(), "{}", run(src).unwrap_err());
 }
+
+// ---------------------------------------------------------------------------
+// 7.12 len/contains as core expressions
+// ---------------------------------------------------------------------------
+#[test]
+fn test_len_expression_with_string() {
+    let src = r#"
+        void main() {
+            int n = len("abc");
+            print(n);
+        }
+    "#;
+    assert!(run(src).is_ok(), "{}", run(src).unwrap_err());
+}
+
+#[test]
+fn test_len_expression_with_array() {
+    let src = r#"
+        void main() {
+            int n = len([1, 2, 3, 4]);
+            print(n);
+        }
+    "#;
+    assert!(run(src).is_ok(), "{}", run(src).unwrap_err());
+}
+
+#[test]
+fn test_contains_expression_with_string() {
+    let src = r#"
+        void main() {
+            bool ok = contains("abcdef", "cd");
+            print(ok);
+        }
+    "#;
+    assert!(run(src).is_ok(), "{}", run(src).unwrap_err());
+}
+
+#[test]
+fn test_contains_expression_with_array() {
+    let src = r#"
+        void main() {
+            bool ok = contains([1, 2, 3], 2);
+            print(ok);
+        }
+    "#;
+    assert!(run(src).is_ok(), "{}", run(src).unwrap_err());
+}
