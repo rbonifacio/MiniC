@@ -110,7 +110,7 @@ fn decl_statement(input: &str) -> IResult<&str, UncheckedStmt> {
 
 /// Parse a block statement: `{ stmt* }`.
 /// Each statement inside the block carries its own terminator (`;` or `}`).
-fn block_statement(input: &str) -> IResult<&str, UncheckedStmt> {
+pub(crate) fn block_statement(input: &str) -> IResult<&str, UncheckedStmt> {
     map(
         delimited(
             preceded(multispace0, char('{')),

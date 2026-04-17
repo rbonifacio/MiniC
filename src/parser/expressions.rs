@@ -38,7 +38,7 @@ use crate::ir::ast::{Expr, ExprD, Param, UncheckedExpr};
 use crate::parser::identifiers::identifier;
 use crate::parser::functions::type_name;
 use crate::parser::literals::literal;
-use crate::parser::statements::statement;
+use crate::parser::statements::block_statement;
 use nom::{
     branch::alt,
     bytes::complete::tag,
@@ -87,7 +87,7 @@ fn lambda_expr(input: &str) -> IResult<&str, UncheckedExpr> {
     )(rest)?;
     let (rest, _) = preceded(multispace0, tag("->"))(rest)?;
     let (rest, return_tipo) = preceded(multispace0, type_name)(rest)?;
-    let (rest, crp) = preceded(multispace0, statement)(rest)?;
+    let (rest, crp) = preceded(multispace0, block_statement)(rest)?;
     Ok((
         rest,
         wrap(Expr::Lambda {
