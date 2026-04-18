@@ -256,3 +256,60 @@ fn test_stdlib_pow_float_args() {
     "#;
     assert!(run(src).is_ok(), "{}", run(src).unwrap_err());
 }
+
+// LAMBDA
+
+/// Executa o pipeline completo: Parser -> Type Check -> Interpret
+fn run_full(src: &str) -> Result<(), String> {
+    let (_, unchecked) = program(src).map_err(|e| format!("Parser Error: {:?}", e))?;
+    
+    // Passando &unchecked (Referência)
+    let checked = type_check(&unchecked).map_err(|e| format!("Type Error: {}", e.message))?;
+    
+    // Execução
+    interpret(&checked).map_err(|e| format!("Runtime Error: {}", e.message))?;
+    
+    Ok(())
+}
+
+// #[test]
+// fn test_exec_lambda_simple_math() {
+//     let src = r#"
+//         void main() {
+//             fn(int) -> int dobrar = fn(int n) -> int { return n * 2; };
+//             print(dobrar(10));
+//         }
+//     "#;
+//     assert!(run_full(src).is_ok(), "Falha na execução da lambda básica.");
+// }
+
+// #[test]
+// fn test_exec_closure_capture_success() {
+//     // Este teste valida se o seu interpretador injeta o HashMap 'captured' no ambiente
+//     let src = r#"
+//         void main() {
+//             int base = 100;
+//             fn(int) -> int somar = fn(int n) -> int { return n + base; };
+//             print(somar(50)); 
+//         }
+//     "#;
+    
+//     let result = run_full(src);
+//     assert!(
+//         result.is_ok(), 
+//         "A Closure falhou! Provavelmente a variável 'base' não foi injetada no ambiente da lambda. Erro: {:?}", 
+//         result.err()
+//     );
+// }
+
+#[test]
+fn test_exec_immediate_lambda_call() {
+    // Testa (fn(x)->x{...})(val)
+    let src = r#"
+        void main() {
+            int x = (fn(int a, int b) -> int { return a + b; })(5, 5);
+            print(x);
+        }
+    "#;
+    assert!(run_full(src).is_ok());
+}
