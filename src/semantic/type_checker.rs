@@ -650,6 +650,19 @@ fn types_compatible(a: &Type, b: &Type) -> bool {
         | (Type::Unit, Type::Unit) => true,
         (Type::Int, Type::Float) | (Type::Float, Type::Int) => true,
         (Type::Array(a), Type::Array(b)) => types_compatible(a, b),
+        (Type::Fun(params_a, ret_a), Type::Fun(params_b, ret_b)) => {
+            if params_a.len() != params_b.len() {
+                return false;
+            }
+
+            for (a, b) in params_a.iter().zip(params_b.iter()) {
+                if !types_compatible(a, b) {
+                    return false;
+                }
+            }
+
+            types_compatible(ret_a, ret_b)
+        },
         _ => false,
     }
 }

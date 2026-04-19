@@ -145,7 +145,12 @@ pub fn eval_expr(expr: &CheckedExpr, env: &mut Environment<Value>) -> Result<Val
         Expr::Call { name, args } => {
             let arg_vals: Result<Vec<Value>, RuntimeError> =
                 args.iter().map(|a| eval_expr(a, env)).collect();
-            eval_call(name, arg_vals?, env)
+
+            let callee = env.get(name)
+                .cloned()
+                .ok_or_else(|| RuntimeError::new(format!("undefined function '{}'", name)))?;
+
+            eval_call_value(callee, arg_vals?, env)
         }
 
         Expr::CallExpr { chmd, args } => {
