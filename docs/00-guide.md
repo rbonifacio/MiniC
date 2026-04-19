@@ -31,7 +31,7 @@ void main() {
 ```
 
 Pipeline do MiniC:
-1. Fazer parsing do código-fonte em uma AST.
+1. Fazer parsing do código-fonte para uma AST.
 2. Verificar tipos da AST.
 3. Interpretar (executar) a AST verificada.
 
@@ -66,84 +66,135 @@ fn add(x: i64, y: i64) -> i64 {
 ### 2) Structs (Dados com Campos Nomeados)
 
 ```rust
-struct Point {
+struct Example {
     x: i64,
     y: i64,
 }
 ```
 
-MiniC usa structs como wrappers da AST (nós de expressão com metadados).
-
 (Rust Book: <https://doc.rust-lang.org/book/ch05-00-structs.html>)
 
 ### 3) Enums (Uma de Várias Variantes)
 
+Enums em Rust têm três estilos principais de variante:
+- Tuple-like (`Name(T1, T2)`): campos posicionais, útil quando a ordem importa (ex.: operandos).
+- Struct-like (`Name { f1: T1, f2: T2 }`): campos nomeados, mais explícito e resistente à reordenação.
+- Unit-like (`Name`): etiqueta sem dados, para estados/flags.
+
 ```rust
-enum Value {
-    Int(i64),
-    Bool(bool),
-    Str(String),
+enum Example {
+    Tuple(i64, i64),           // tuple-like (posicional)
+    Record { x: i64, y: i64 }, // struct-like (campos nomeados)
+    Unit,                      // unit-like (sem dados)
 }
 ```
-
-Uma enum pode conter diferentes formas sob um tipo. Isso é central para AST e valores em tempo de execução.
 
 (Rust Book: <https://doc.rust-lang.org/book/ch06-00-enums.html>)
 
 ### 4) match (Ramificação por Variante)
 
+Use `match` ou `if let` para desestruturar enums:
+
 ```rust
-match value {
-    Value::Int(n) => println!("int: {}", n),
-    Value::Bool(b) => println!("bool: {}", b),
-    Value::Str(s) => println!("str: {}", s),
+match some_enum {
+    Expr::Tuple(a, b) => println!("posicional: {} {}", a, b),
+    Expr::Record { x, .. } => println!("campo x = {}", x),
+    Expr::Unit => println!("unit"),
 }
 ```
 
-Verificação de tipos e interpretação de MiniC são principalmente grandes instruções `match` explícitas.
+O compilador garante que o `match` seja exaustivo sobre todas as possibilidades do enum. Para ter um caso "catch-all", podemos usar `_ => {}` como o último match.
 
 (Rust Book: <https://doc.rust-lang.org/book/ch06-02-match.html>)
 
-### 5) Result para Tratamento de Erros
+### 5) Box para Árvores Recursivas
 
-```rust
-fn parse_number(s: &str) -> Result<i64, String> {
-    s.parse::<i64>().map_err(|e| e.to_string())
-}
-```
-
-`Result<T, E>` significa um de dois casos:
-- `Ok(T)` sucesso
-- `Err(E)` falha
-
-Parser, verificador de tipos e interpretador de MiniC todos dependem desse estilo.
-
-(Rust Book: <https://doc.rust-lang.org/book/ch09-00-error-handling.html>)
-
-### 6) Box para Árvores Recursivas
-
-Enums recursivas precisam de indireção:
+Tipos recursivos (como nós de expressão) precisam de `Box` para que o compilador saiba calcular seu tamanho:
 
 ```rust
 enum Expr {
     Int(i64),
     Add(Box<Expr>, Box<Expr>),
 }
-```
 
-Sem `Box`, Rust não consegue determinar o tamanho recursivo em tempo de compilação.
+// Construindo um nó Add:
+let left = Expr::Int(1);
+let right = Expr::Int(2);
+let add = Expr::Add(Box::new(left), Box::new(right));
+
+// Desestruturando com `match`:
+match expr_example {
+    Expr::Add(box Expr::Int(l), box Expr::Int(r)) => {
+        println!("Add node: {} + {} = {}", l, r, l + r);
+    }
+    _ => {}
+}
+```
 
 (Rust Book: <https://doc.rust-lang.org/book/ch15-01-box.html>)
 
-### 7) Generics (Parametrização da AST através de Fases)
+### 6) Result para Tratamento de Erros
 
-Nós da AST de MiniC são genéricos sobre um parâmetro de tipo `Ty` que carrega metadados específicos de cada fase. A mesma estrutura de árvore é usada após parsing e após type-checking:
-- Imediatamente após parsing: `Ty = ()` (sem informação de tipo)
-- Após type-checking: `Ty = Type` (com informação de tipo para cada sub-expressão)
+`Result<T, E>` significa um de dois casos:
+- `Ok(T)` sucesso
+- `Err(E)` falha
 
-Esse design previne acidentalmente misturar AST verificada com AST não verificada em tempo de compilação, pois são tipos diferentes (`Expr<()>` vs `Expr<Type>`).
+Ao chamar uma função que retorna `Result`, podemos:
+- Desempacotá-lo para lidar com ambos os casos, ou
+- Propagar o erro caso a função atual também retorne `Result`. 
 
-(Rust Book: generics <https://doc.rust-lang.org/book/ch10-00-generics.html>, ownership and borowing <https://doc.rust-lang.org/book/ch04-00-understanding-ownership.html>)
+```rust
+fn parse_to_number(input: &str) -> Result<i32, std::num::ParseIntError> {
+    input.parse::<i32>()
+}
+
+// chamando e lidando com o resultado explicitamente
+fn try_parse_number() {
+    match parse_number("42") {
+        Ok(n) => println!("numero: {}", n),
+        Err(e) => eprintln!("erro ao parsear: {}", e),
+    }
+}
+
+// propagando erros com `?`
+fn try_double(s: &str) -> Result<i64, String> {
+    let n = parse_number(s)?;
+    Ok(n * 2)
+}
+```
+
+(Rust Book: <https://doc.rust-lang.org/book/ch09-00-error-handling.html>)
+
+### 7) Generics
+
+Generics são parâmetros de tipo: permitem escrever uma definição uma única vez e instanciá-la com diferentes tipos.
+
+No MiniC, a [AST](../src/ir/ast.rs#L214) usa `Ty` como o tipo genérico nos nós. O parser produz `ExprD<()>` (sem tipos) e o type-checker produz `ExprD<Type>` (cada nó carrega seu `Type`).
+
+(Rust Book: <https://doc.rust-lang.org/book/ch10-00-generics.html>)
+
+### 8) Macros `#[derive(...)]`
+
+Na [AST](../src/ir/ast.rs), muitas structs/enums usam `#[derive(...)]`. Derives geram código boilerplate automaticamente durante a compilação.
+
+- `Debug`: permite imprimir o nó para debugging/tests (`{:?}`).
+- `Clone`: gera uma implementação automática de `clone()` para copiar nós quando necessário.
+- `PartialEq`/`Eq`: permitem comparar nós (útil em testes e transformações).
+- `Hash`: permite usar o valor como chave em `HashMap`/`HashSet`.
+
+(Rust Book: <https://doc.rust-lang.org/book/appendix-03-derivable-traits.html>)
+
+### 9) Ownership e Borrowing
+
+Breve resumo das regras essenciais do Rust aplicáveis ao projeto:
+
+- O borrow-checker é um verificador em tempo de compilação que evita dangling references e condições de corrida sem custo em tempo de execução.
+- Cada valor tem um dono. Quando o dono sai de escopo, o valor é liberado.
+- `&T` e `&mut T` são empréstimos (borrows). O *borrow-checker* garante que essas referências não ultrapassem o tempo de vida do dono e impede usos concorrentes inválidos.
+- Use `Box<T>` para tipos recursivos (p.ex., nós de AST).
+- Prefira `&str` para views de string e faça `clone()` só quando necessário.
+
+(Rust Book: <https://doc.rust-lang.org/book/ch04-00-understanding-ownership.html>)
 
 ## Parte B: Introdução Rápida a Nom (Apenas o Necessário)
 
@@ -170,8 +221,6 @@ Para MiniC, tipicamente:
 Então um parser retorna ambos:
 1. O que foi parseado.
 2. O que restou sem parsear.
-
-É por isso que a composição de parsers funciona naturalmente.
 
 (Referência: <https://docs.rs/nom/latest/nom/type.IResult.html>)
 
@@ -200,71 +249,71 @@ Para parsing de linguagem baseado em arquivo, complete é o padrão certo.
 
 - `tag("if")`: correspondência exata de string.
 - `char('(')`: correspondência exata de caractere.
-- `alt((a, b, c))`: tenta alternativas em ordem.
-- `tuple((a, b, c))`: faz parsing de sequência.
-- `preceded(a, b)`: faz parsing de `a` depois `b`, mantém `b`.
-- `delimited(a, b, c)`: faz parsing de `a b c`, mantém `b`.
-- `map(p, f)`: transforma saída de parsing em nó de AST.
-- `opt(p)`: parsing opcional (`Some` ou `None`).
-- `many0(p)`: repete zero ou mais vezes.
-- `separated_list0(sep, item)`: faz parsing de itens de lista separados por um separador.
-- `verify(p, pred)`: faz parsing com `p`, depois aplica predicado.
+- `alt((a, b, c))`: tenta parsers em ordem, aplica o primeiro que funcionar.
+- `tuple((a, b, c))`: aplica parsers em sequência.
+- `preceded(a, b)`: retorna `b` se for precedido por `a`. Descarta `a`. Usado para descartar whitespace.
+- `delimited(a, b, c)`: retorna `b` se estiver entre `a` e `c`. Descarta `a` e `c`. Usado para encontrar "{}", "()" e "[]".
+- `opt(p)`: pode ou não estar presente (p?).
+- `many0(p)`: se repete zero ou mais vezes (p*).
+- `many1(p)`: se repete um ou mais vezes (p+).
+- `separated_list0(sep, item)`: uma lista de `item` separada por `sep`. (Ex. parâmetros de função)
+- `verify(p, pred)`: verifica a condição `pred` sobre o resultado do parser `p`.
+- `map(p, f)`: aplica `f` sobre o resultado do parser `p`. Usado para transformar a saída dos parsers em nós da AST.
 
 Quando não tiver certeza qual combinator usar, consulte o guia de escolha: <https://github.com/rust-bakery/nom/blob/main/doc/choosing_a_combinator.md>.
 
-### 4) Três Comportamentos Importantes do Nom
-
-#### alt é ordenado
-
-`alt((a, b, c))` tenta da esquerda para a direita e retorna o primeiro sucesso.
-
-Então a ordem de branches indica diretamente o comportamento da linguagem.
+### 4) Comportamentos Importantes do Nom
 
 #### Sucesso do parser não implica consumo completo
 
-`many0(p)` coleta enquanto `p` sucede e para em falha recuperável. Similarmente, parsers individuais retornam `Ok((rest, value))` onde `rest` pode não estar vazio.
+Um parser em Nom retorna `Ok((rest, value))`. Mesmo quando `value` foi reconhecido com sucesso, parte da entrada pode sobrar em `rest`. Se você precisa garantir que o parser consuma toda a entrada (útil nos testes unitários), envolva-o com `all_consuming`:
 
-A responsabilidade de verificar consumo completo da entrada é do chamador, não do parser. Use `all_consuming` em testes ou validação explícita em produção.
+```rust
+let all = all_consuming(tag("str"));
+assert!(all("str").is_ok());      // consome tudo
+assert!(all("struct").is_err());  // sobra entrada -> erro
+```
 
-Referências API úteis: `alt` <https://docs.rs/nom/latest/nom/branch/fn.alt.html>, `many0` <https://docs.rs/nom/latest/nom/multi/fn.many0.html>, `separated_list0` <https://docs.rs/nom/latest/nom/multi/fn.separated_list0.html>, `all_consuming` <https://docs.rs/nom/latest/nom/combinator/fn.all_consuming.html>.
+(Nom:`all_consuming` <https://docs.rs/nom/latest/nom/combinator/fn.all_consuming.html>)
+
+#### alt é ordenado
+
+`alt((a, b, c))` tenta da esquerda para a direita e retorna o primeiro sucesso. A ordem dos branches afeta diretamente comportamento da linguagem.
+
+Exemplo onde a ordem importa (um branch é prefixo de outro):
+
+```rust
+let parser_wrong = alt((tag("str"), tag("struct")));
+assert_eq!(parser_wrong("struct"), Ok(("uct", "str")));
+// branch curto primeiro -> escolhe "str" e deixa "uct" sobrando
+
+let parser_right = alt((tag("struct"), tag("str")));
+assert_eq!(parser_right("struct"), Ok(("", "struct")));
+// branch longo primeiro -> escolhe "struct" como esperado
+```
+
+(Nom: `alt` <https://docs.rs/nom/latest/nom/branch/fn.alt.html>)
 
 ## Parte C: Arquitetura do Parser de MiniC
 
-Módulos do parser são divididos por categoria de gramática:
-- `src/parser/identifiers.rs`
-- `src/parser/literals.rs`
-- `src/parser/expressions.rs`
-- `src/parser/statements.rs`
-- `src/parser/functions.rs`
-- `src/parser/program.rs`
+Módulos do parser são divididos por categoria de gramática.
 
-Essa separação reflete a organização da gramática, permite que cada módulo tenha responsabilidade clara, facilita localizar code relacionado e mapeia intuitivamente da linguagem formal para o código Rust.
+Veja notas sobre arquitetura do parser em [docs/04-parser.md](04-parser.md), depois compare diretamente com a implementação.
 
-Veja notas sobre arquitetura do parser em [docs/04-parser.md](04-parser.md), depois compare diretamente com [src/parser/mod.rs](../src/parser/mod.rs).
+### 1) [Identificadores](../src/parser/identifiers.rs)
 
-### 1) Identificadores
-
-Padrão:
-1. Fazer parsing da forma de identificador.
-2. Rejeitar palavras-chave reservadas com `verify`.
-
-Isso separa claramente forma léxica de política de palavras-chave.
+Nomes de variáveis, funções, etc. Rejeita palavras-chave reservadas com `verify`.
 
 (Nom `verify`: <https://docs.rs/nom/latest/nom/combinator/fn.verify.html>)
 
-### 2) Literais
+### 2) [Literais](../src/parser/literals.rs)
 
-Faz parsing de int, float, string, bool.
+Faz parsing de int, float, string, bool. Parser de string suporta escapes (`\\`, `\"`, `\n`, `\t`).
 
-Escolhas de implementação notáveis:
-- Parser inteiro rejeita `12.34` como inteiro.
-- Parser de string suporta escapes (`\\`, `\"`, `\n`, `\t`) via combinators de escape.
+(Nom: `escaped_transform` <https://docs.rs/nom/latest/nom/bytes/complete/fn.escaped_transform.html>)
 
-(Referências de parse de texto do Nom: `escaped_transform` <https://docs.rs/nom/latest/nom/bytes/complete/fn.escaped_transform.html>, tabela de parser-chooser de parse de texto: <https://github.com/rust-bakery/nom/blob/main/doc/choosing_a_combinator.md>)
+### 3) [Expressões (Precedência + Associatividade)](../src/parser/expressions.rs)
 
-### 3) Expressões (Precedência + Associatividade)
-
-MiniC codifica precedência via camadas de função (função por nível), em ordem decrescente de precedência:
 - ou lógico (precedência mais baixa)
 - e lógico
 - não
@@ -275,56 +324,45 @@ MiniC codifica precedência via camadas de função (função por nível), em or
 - primário
 - atômico (precedência mais alta)
 
-Cada camada chama a camada anterior quando precisa de um operando. **Todos os operadores binários de MiniC são associativos à esquerda**, implementados com um loop de acumulador em cada nível: parseia o operando esquerdo, depois enquanto o operador esperado não falha, parseia o operador e o operando direito (que se torna o novo operando esquerdo).
+MiniC codifica precedência de operadores via camadas de função. Cada camada chama a camada anterior quando precisa de um operando. **Todos os operadores binários de MiniC são associativos à esquerda**, implementados com um loop de acumulador em cada nível: parseia o operando esquerdo, depois enquanto o operador esperado não falha, parseia o operador e o operando direito (que se torna o novo operando esquerdo).
 
 Exemplo: `1 - 2 - 3` se torna `(1 - 2) - 3` porque o primeiro `2` é consumido como direito, o resultado `(1 - 2)` vira o novo esquerdo, e `3` é consumido como novo direito.
 
-Código concreto: [src/parser/expressions.rs](../src/parser/expressions.rs) e testes em [tests/parser.rs](../tests/parser.rs).
+### 4) [Declarações](../src/parser/statements.rs)
 
-### 4) Declarações
-
-Parser de declaração é um conjunto ordenado de alternativas:
 - bloco
-- if
+- if 
 - while
 - return
-- declaração
-- declaração de chamada
+- declaração de variável
+- chamada de função
 - atribuição
 
 A ordem é deliberada, especialmente para formas com prefixos sobrepostos.
 
-### 5) Funções e Tipos
+### 5) [Funções e Tipos](../src/parser/functions.rs)
 
-Parser de tipo inclui formas escalares e de array.
+Declaração de função e tipos. 
 
-Porque `alt` é ordenado, prefixos mais longos (como formas de array 2D) devem vir listados antes dos mais curtos (formas 1D).
+Parser de tipo inclui formas escalares e de array. Porque `alt` é ordenado, prefixos mais longos (como formas de array 2D) são listados listados antes dos mais curtos (formas 1D).
 
-(Nom `alt`: <https://docs.rs/nom/latest/nom/branch/fn.alt.html>)
+### 6) [Parser de Programa](../src/parser/program.rs)
 
-### 6) Parser de Programa
-
-Parser de nível superior usa repetição sobre declarações de função.
-
-Tradeoff pedagógico:
-- Código simples
-- Mas você deve raciocinar cuidadosamente sobre comportamento de consumo parcial
-
-Se quiser melhorar esse comportamento ou diagnósticos, os guias de construção de parsers e erros do Nom são o próximo passo certo: <https://github.com/rust-bakery/nom/blob/main/doc/making_a_new_parser_from_scratch.md> e <https://github.com/rust-bakery/nom/blob/main/doc/error_management.md>.
+Parser de declarações top-level. Usa repetição sobre declarações de função.
 
 ## Parte D: AST, Verificação de Tipos e Interpretação
 
 ### 1) Design da AST
 
-Nós de AST representam:
-- Expressões
-- Declarações
-- Declarações de função
-- Programa
+Um nó da AST é uma unidade da árvore que representa uma construção sintática (ex.: expressão, declaração) e agrupa os campos necessários para representá-la.
 
-MiniC usa decorações genéricas de nó para que parser e verificador de tipo compartilhem a mesma forma.
+Nós seguem o padrão `Object<Ty>` + `ObjectD<Ty>`:
+- `Object<Ty>` descreve a forma de um objeto.
+- `ObjectD<Ty>` agrupa o objeto com o tipo que ele carrega para execução.
 
-Referências do projeto: [docs/03-ast.md](03-ast.md), [src/ir/ast.rs](../src/ir/ast.rs).
+Na prática: o parser produz `ObjectD<()>` (sem tipos) e o type-checker produz `ObjectD<Type>` (com tipos). Isso reaproveita a mesma forma estrutural entre fases sem duplicação.
+
+Arquivos: [docs/03-ast.md](03-ast.md), [src/ir/ast.rs](../src/ir/ast.rs).
 
 ### 2) Responsabilidades do Verificador de Tipos
 
@@ -334,11 +372,11 @@ Verificação de tipos valida:
 - Contagem/tipos de argumento de chamada de função
 - Digitação de operador de expressão
 - Indexação de array e consistência de elementos
-- cCorreção de tipo de retorno
+- Correção de tipo de retorno
 
 Usa um ambiente mapeando nomes para tipos.
 
-Referências do projeto: [docs/05-type-checker.md](05-type-checker.md), [src/semantic/type_checker.rs](../src/semantic/type_checker.rs).
+Arquivos: [docs/05-type-checker.md](05-type-checker.md), [src/semantic/type_checker.rs](../src/semantic/type_checker.rs).
 
 ### 3) Responsabilidades do Interpretador
 
@@ -350,94 +388,41 @@ Interpretador executa AST verificada:
 
 Usa um ambiente mapeando nomes para valores em tempo de execução.
 
-Referências do projeto: [docs/06-interpreter.md](06-interpreter.md), [src/interpreter/eval_expr.rs](../src/interpreter/eval_expr.rs), [src/interpreter/exec_stmt.rs](../src/interpreter/exec_stmt.rs).
+Arquivos: [docs/06-interpreter.md](06-interpreter.md), [src/interpreter/eval_expr.rs](../src/interpreter/eval_expr.rs), [src/interpreter/exec_stmt.rs](../src/interpreter/exec_stmt.rs).
 
-### 4) Equivalência do Ambiente
+## Parte E: Como Adicionar Funcionalidades
 
-As duas fases tem a mesma abstração central:
-- Ambiente semântico (`name -> Type`)
-- Ambiente de tempo de execução (`name -> Value`)
-
-## Parte E: Como Adicionar Funcionalidades (Fluxo de Trabalho do Aluno)
-
-Para cada nova funcionalidade de linguagem, use esta checklist:
+Para cada nova funcionalidade de linguagem, o ideal é fazer nessa ordem:
 1. Estender AST.
 2. Estender parser.
-3. Estender verificador de tipos.
-4. Estender interpretador.
-5. Adicionar testes.
-6. Atualizar docs.
+3. Adicionar testes de parser/programa.
+4. Estender type-checker.
+5. Adicionar testes de type-checker.
+6. Estender interpretador.
+7. Adicionar testes de interpretador.
+8. Verificar testes de stdlib e CLI
+8. Atualizar docs.
 
-Se você pular um passo, a funcionalidade fica incompleta.
-
-### Exemplo: Adicionar um Novo Operador Binário
-
-1. Adicionar variante de expressão nova à AST.
-2. Adicionar regra de parser na camada de precedência correta.
-3. Adicionar regra de tipo.
-4. Adicionar regra de avaliação em tempo de execução.
-5. Adicionar testes de precedência do parser + testes de tipo + testes de interpretador.
-
-### Exemplo: Adicionar uma Nova Declaração
-
-1. Adicionar variante de declaração.
-2. Adicionar branch de parser na ordem correta.
-3. Adicionar branch de verificação de tipos.
-4. Adicionar branch de execução.
-5. Adicionar testes de escopo de bloco e testes de integração.
-
-Para adições de funcionalidade que tocam builtins ou fiação de tempo de execução, consulte [docs/07-stdlib.md](07-stdlib.md), [docs/08-testing.md](08-testing.md), e [src/stdlib/mod.rs](../src/stdlib/mod.rs).
+Para adição de funcionalidades que impactam nas funções builtin em tempo de execução, consulte [docs/07-stdlib.md](07-stdlib.md) e [src/stdlib/mod.rs](../src/stdlib/mod.rs).
 
 ## Parte F: Estratégia de Teste Que Você Deveria Seguir
 
 Camadas de teste de MiniC:
-- Testes do parser
-- Testes do verificador de tipos
+- Testes do parser / programa
+- Testes do type-checker
 - Testes do interpretador
 - Testes CLI
 
-Use todas as quatro camadas ao adicionar funcionalidades não triviais.
-
 Regra prática:
-- um teste unitário para cada regra local
-- um teste ponta-a-ponta para cada comportamento visível ao usuário
+- em cada camada, pelo menos um teste unitário para cada regra de funcionamento da funcionalidade adicionada
+- um teste CLI para cada comportamento visível ao usuário
 
-Pontos de entrada de teste úteis:
-- Testes de parser: [tests/parser.rs](../tests/parser.rs)
-- Testes de programa: [tests/program.rs](../tests/program.rs)
-- Testes de verificador de tipos: [tests/type_checker.rs](../tests/type_checker.rs)
-- Testes de interpretador: [tests/interpreter.rs](../tests/interpreter.rs)
-- Testes de stdlib: [tests/stdlib.rs](../tests/stdlib.rs)
-- Testes CLI: [tests/cli](../tests/cli)
+Arquivos:
+- [tests/parser.rs](../tests/parser.rs)
+- [tests/program.rs](../tests/program.rs)
+- [tests/type_checker.rs](../tests/type_checker.rs)
+- [tests/interpreter.rs](../tests/interpreter.rs)
+- [tests/stdlib.rs](../tests/stdlib.rs)
+- [tests/cli](../tests/cli)
 
 Detalhes de estratégia de teste e convenções shelltest são documentados em [docs/08-testing.md](08-testing.md).
-
-## Parte G: Ordem de Leitura para Este Repositório
-
-Comece com docs:
-1. [docs/01-pipeline.md](01-language.md)
-2. [docs/02-pipeline.md](02-pipeline.md)
-3. [docs/03-ast.md](03-ast.md)
-4. [docs/04-parser.md](04-parser.md)
-5. [docs/05-type-checker.md](05-type-checker.md)
-6. [docs/06-interpreter.md](06-interpreter.md)
-7. [docs/07-stdlib.md](07-stdlib.md)
-8. [docs/08-testing.md](08-testing.md)
-
-Depois leia código nesta ordem:
-1. [src/ir/ast.rs](../src/ir/ast.rs)
-2. [src/parser/mod.rs](../src/parser/mod.rs) e submódulos do parser
-3. [src/semantic/type_checker.rs](../src/semantic/type_checker.rs)
-4. [src/interpreter/eval_expr.rs](../src/interpreter/eval_expr.rs)
-5. [src/interpreter/exec_stmt.rs](../src/interpreter/exec_stmt.rs)
-6. [src/stdlib/mod.rs](../src/stdlib/mod.rs)
-
-## Conclusão
-
-Você pode pensar em MiniC como quatro problemas de ensino conectados:
-1. Fazer parsing de sintaxe (combinadores Nom).
-2. Validar significado (verificador de tipos).
-3. Executar comportamento (interpretador).
-4. Preservar confiança (testes).
-
-Uma vez que consiga rastrear uma funcionalidade através de todas as quatro, você consegue estender a linguagem com confiança.
