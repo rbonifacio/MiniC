@@ -40,21 +40,13 @@
 //! for more detail on this mechanism.
 
 use crate::environment::Environment;
-use crate::ir::ast::{CheckedExpr, Expr, Literal, Member, TagType, TaggedTypeDecl, Type};
-
-use std::collections::HashMap;
+use crate::ir::ast::{AgtTypeMember, AgtTypeSpecifier, CheckedExpr, Expr, Literal, Type};
 
 use super::exec_stmt::exec_stmt;
 use super::value::{FnValue, RuntimeError, Value};
 
-type TaggedRuntimeTable = HashMap<(TagType, String), TaggedTypeDecl>;
-
 /// Evaluate a checked expression to a runtime value.
-pub fn eval_expr(
-    expr: &CheckedExpr,
-    env: &mut Environment<Value>,
-    tagged_table: &TaggedRuntimeTable,
-) -> Result<Value, RuntimeError> {
+pub fn eval_expr(expr: &CheckedExpr, env: &mut Environment<Value>) -> Result<Value, RuntimeError> {
     match &expr.exp {
         Expr::Literal(lit) => Ok(eval_literal(lit)),
 
@@ -63,7 +55,7 @@ pub fn eval_expr(
             .cloned()
             .ok_or_else(|| RuntimeError::new(format!("undefined variable '{}'", name))),
 
-        Expr::Neg(inner) => match eval_expr(inner, env, tagged_table)? {
+        Expr::Neg(inner) => match eval_expr(inner, env)? {
             Value::Int(n) => Ok(Value::Int(-n)),
             Value::Float(x) => Ok(Value::Float(-x)),
             v => Err(RuntimeError::new(format!(
@@ -73,67 +65,67 @@ pub fn eval_expr(
         },
 
         Expr::Add(l, r) => numeric_binop(
-            eval_expr(l, env, tagged_table)?,
-            eval_expr(r, env, tagged_table)?,
+            eval_expr(l, env)?,
+            eval_expr(r, env)?,
             |a, b| a + b,
             |a, b| a + b,
         ),
         Expr::Sub(l, r) => numeric_binop(
-            eval_expr(l, env, tagged_table)?,
-            eval_expr(r, env, tagged_table)?,
+            eval_expr(l, env)?,
+            eval_expr(r, env)?,
             |a, b| a - b,
             |a, b| a - b,
         ),
         Expr::Mul(l, r) => numeric_binop(
-            eval_expr(l, env, tagged_table)?,
-            eval_expr(r, env, tagged_table)?,
+            eval_expr(l, env)?,
+            eval_expr(r, env)?,
             |a, b| a * b,
             |a, b| a * b,
         ),
         Expr::Div(l, r) => numeric_binop(
-            eval_expr(l, env, tagged_table)?,
-            eval_expr(r, env, tagged_table)?,
+            eval_expr(l, env)?,
+            eval_expr(r, env)?,
             |a, b| a / b,
             |a, b| a / b,
         ),
 
         Expr::Lt(l, r) => numeric_cmp(
-            eval_expr(l, env, tagged_table)?,
-            eval_expr(r, env, tagged_table)?,
+            eval_expr(l, env)?,
+            eval_expr(r, env)?,
             |a, b| a < b,
             |a, b| a < b,
         ),
         Expr::Le(l, r) => numeric_cmp(
-            eval_expr(l, env, tagged_table)?,
-            eval_expr(r, env, tagged_table)?,
+            eval_expr(l, env)?,
+            eval_expr(r, env)?,
             |a, b| a <= b,
             |a, b| a <= b,
         ),
         Expr::Gt(l, r) => numeric_cmp(
-            eval_expr(l, env, tagged_table)?,
-            eval_expr(r, env, tagged_table)?,
+            eval_expr(l, env)?,
+            eval_expr(r, env)?,
             |a, b| a > b,
             |a, b| a > b,
         ),
         Expr::Ge(l, r) => numeric_cmp(
-            eval_expr(l, env, tagged_table)?,
-            eval_expr(r, env, tagged_table)?,
+            eval_expr(l, env)?,
+            eval_expr(r, env)?,
             |a, b| a >= b,
             |a, b| a >= b,
         ),
 
         Expr::Eq(l, r) => {
-            let lv = eval_expr(l, env, tagged_table)?;
-            let rv = eval_expr(r, env, tagged_table)?;
+            let lv = eval_expr(l, env)?;
+            let rv = eval_expr(r, env)?;
             Ok(Value::Bool(values_equal(&lv, &rv)))
         }
         Expr::Ne(l, r) => {
-            let lv = eval_expr(l, env, tagged_table)?;
-            let rv = eval_expr(r, env, tagged_table)?;
+            let lv = eval_expr(l, env)?;
+            let rv = eval_expr(r, env)?;
             Ok(Value::Bool(!values_equal(&lv, &rv)))
         }
 
-        Expr::Not(inner) => match eval_expr(inner, env, tagged_table)? {
+        Expr::Not(inner) => match eval_expr(inner, env)? {
             Value::Bool(b) => Ok(Value::Bool(!b)),
             v => Err(RuntimeError::new(format!(
                 "expected bool for '!', got: {}",
@@ -141,10 +133,10 @@ pub fn eval_expr(
             ))),
         },
         Expr::And(l, r) => {
-            let lv = eval_expr(l, env, tagged_table)?;
+            let lv = eval_expr(l, env)?;
             match lv {
                 Value::Bool(false) => Ok(Value::Bool(false)),
-                Value::Bool(true) => eval_expr(r, env, tagged_table),
+                Value::Bool(true) => eval_expr(r, env),
                 v => Err(RuntimeError::new(format!(
                     "expected bool for 'and', got: {}",
                     v
@@ -152,10 +144,10 @@ pub fn eval_expr(
             }
         }
         Expr::Or(l, r) => {
-            let lv = eval_expr(l, env, tagged_table)?;
+            let lv = eval_expr(l, env)?;
             match lv {
                 Value::Bool(true) => Ok(Value::Bool(true)),
-                Value::Bool(false) => eval_expr(r, env, tagged_table),
+                Value::Bool(false) => eval_expr(r, env),
                 v => Err(RuntimeError::new(format!(
                     "expected bool for 'or', got: {}",
                     v
@@ -164,16 +156,14 @@ pub fn eval_expr(
         }
 
         Expr::ArrayLit(elems) => {
-            let vals: Result<Vec<Value>, RuntimeError> = elems
-                .iter()
-                .map(|e| eval_expr(e, env, tagged_table))
-                .collect();
+            let vals: Result<Vec<Value>, RuntimeError> =
+                elems.iter().map(|e| eval_expr(e, env)).collect();
             Ok(Value::Array(vals?))
         }
 
         Expr::Index { base, index } => {
-            let base_val = eval_expr(base, env, tagged_table)?;
-            let idx_val = eval_expr(index, env, tagged_table)?;
+            let base_val = eval_expr(base, env)?;
+            let idx_val = eval_expr(index, env)?;
             match (base_val, idx_val) {
                 (Value::Array(elems), Value::Int(i)) => {
                     let i = i as usize;
@@ -193,32 +183,33 @@ pub fn eval_expr(
         }
 
         Expr::Call { name, args } => {
-            let arg_vals: Result<Vec<Value>, RuntimeError> = args
-                .iter()
-                .map(|a| eval_expr(a, env, tagged_table))
-                .collect();
-            eval_call(name, arg_vals?, env, tagged_table)
+            let arg_vals: Result<Vec<Value>, RuntimeError> =
+                args.iter().map(|a| eval_expr(a, env)).collect();
+            eval_call(name, arg_vals?, env)
         }
 
         Expr::Member { base, member } => {
-            let base_val = eval_expr(base, env, tagged_table)?;
+            let base_val = eval_expr(base, env)?;
             match &base.ty {
-                Type::Tagged { tag_type, tag_name } => match tag_type {
-                    TagType::Struct => match base_val {
+                Type::Aggregate {
+                    specifier,
+                    identifier,
+                } => match specifier {
+                    AgtTypeSpecifier::Struct => match base_val {
                         Value::Struct { fields, .. } => {
                             fields.get(member).cloned().ok_or_else(|| {
                                 RuntimeError::new(format!(
                                     "missing struct member '{}.{}'",
-                                    tag_name, member
+                                    identifier, member
                                 ))
                             })
                         }
                         other => Err(RuntimeError::new(format!(
                             "expected struct runtime value for {}, got {}",
-                            tag_name, other
+                            identifier, other
                         ))),
                     },
-                    TagType::Union => match base_val {
+                    AgtTypeSpecifier::Union => match base_val {
                         Value::Union {
                             active_field,
                             value,
@@ -229,21 +220,21 @@ pub fn eval_expr(
                             } else {
                                 Err(RuntimeError::new(format!(
                                     "union member '{}.{}' is inactive (active field: {})",
-                                    tag_name, member, active_field
+                                    identifier, member, active_field
                                 )))
                             }
                         }
                         other => Err(RuntimeError::new(format!(
                             "expected union runtime value for {}, got {}",
-                            tag_name, other
+                            identifier, other
                         ))),
                     },
-                    TagType::Enum => {
-                        enum_member_value(tag_name, member, tagged_table).map(Value::Int)
+                    AgtTypeSpecifier::Enum => {
+                        enum_member_value(identifier, member, env).map(Value::Int)
                     }
                 },
                 other => Err(RuntimeError::new(format!(
-                    "member access requires tagged base type, got {:?}",
+                    "member access requires aggregate base type, got {:?}",
                     other
                 ))),
             }
@@ -256,7 +247,6 @@ pub fn eval_call(
     name: &str,
     args: Vec<Value>,
     env: &mut Environment<Value>,
-    tagged_table: &TaggedRuntimeTable,
 ) -> Result<Value, RuntimeError> {
     match env.get(name).cloned() {
         Some(Value::Fn(FnValue::Native(f))) => (f)(args),
@@ -273,7 +263,7 @@ pub fn eval_call(
             for (param, val) in decl.params.iter().zip(args.into_iter()) {
                 env.declare(param.name.clone(), val);
             }
-            let result = exec_stmt(&decl.body, env, tagged_table)?;
+            let result = exec_stmt(&decl.body, env)?;
             env.restore(snapshot);
             Ok(result.unwrap_or(Value::Void))
         }
@@ -283,17 +273,17 @@ pub fn eval_call(
 }
 
 fn enum_member_value(
-    tag_name: &str,
+    agt_identifier: &str,
     member: &str,
-    tagged_table: &TaggedRuntimeTable,
+    env: &Environment<Value>,
 ) -> Result<i64, RuntimeError> {
-    let decl = tagged_table
-        .get(&(TagType::Enum, tag_name.to_string()))
-        .ok_or_else(|| RuntimeError::new(format!("unknown enum type '{}'", tag_name)))?;
+    let decl = env
+        .aggregate_type(&AgtTypeSpecifier::Enum, agt_identifier)
+        .ok_or_else(|| RuntimeError::new(format!("unknown enum type '{}'", agt_identifier)))?;
 
     let mut next_value: i64 = 0;
     for entry in &decl.members {
-        if let Member::Enumerator { name, value } = entry {
+        if let AgtTypeMember::Enumerator { name, value } = entry {
             let resolved = value.unwrap_or(next_value);
             if name == member {
                 return Ok(resolved);
@@ -304,12 +294,11 @@ fn enum_member_value(
 
     Err(RuntimeError::new(format!(
         "unknown enumerator '{}.{}'",
-        tag_name, member
+        agt_identifier, member
     )))
 }
 
 // --- Helpers ---
-
 fn eval_literal(lit: &Literal) -> Value {
     match lit {
         Literal::Int(n) => Value::Int(*n),

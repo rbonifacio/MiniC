@@ -44,13 +44,13 @@
 //! Centralising compatibility logic here means all callers (declaration,
 //! assignment, call-argument checking) share one consistent definition.
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
-use crate::environment::Environment;
+use crate::environment::{build_type_decl_map, Environment};
 use crate::ir::ast::{
-    CheckedExpr, CheckedFunDecl, CheckedProgram, CheckedStmt, Expr, ExprD, FunDecl, Literal,
-    Member, Program, Statement, StatementD, TagType, TaggedTypeDecl, Type, UncheckedExpr,
-    UncheckedFunDecl, UncheckedProgram, UncheckedStmt,
+    AggregateTypeDecl, AgtTypeMember, AgtTypeSpecifier, CheckedExpr, CheckedFunDecl,
+    CheckedProgram, CheckedStmt, Expr, ExprD, FunDecl, Literal, Program, Statement, StatementD,
+    Type, UncheckedExpr, UncheckedFunDecl, UncheckedProgram, UncheckedStmt,
 };
 use crate::stdlib::NativeRegistry;
 
@@ -76,12 +76,25 @@ impl std::fmt::Display for TypeError {
 
 impl std::error::Error for TypeError {}
 
-type TaggedTypeTable = HashMap<(TagType, String), TaggedTypeDecl>;
+fn check_type_decls_unique(decls: &[AggregateTypeDecl]) -> Result<(), TypeError> {
+    let mut seen = HashSet::new();
+    for decl in decls {
+        let key = (decl.specifier.clone(), decl.identifier.clone());
+        if !seen.insert(key) {
+            return Err(TypeError::new(format!(
+                "duplicate type declaration: {:?} {}",
+                decl.specifier, decl.identifier
+            )));
+        }
+    }
+    Ok(())
+}
 
 /// Type-check a program. Returns `Ok(CheckedProgram)` if well-typed, `Err(TypeError)` on first error.
 /// Requires a `main` function with signature `void main()`.
 pub fn type_check(program: &UncheckedProgram) -> Result<CheckedProgram, TypeError> {
-    let tagged_table = build_tagged_type_table(&program.tagged_types)?;
+    check_type_decls_unique(&program.type_declarations)?;
+    let type_map = build_type_decl_map(&program.type_declarations);
 
     let main_fn = program.functions.iter().find(|f| f.name == "main");
     match main_fn {
@@ -96,7 +109,7 @@ pub fn type_check(program: &UncheckedProgram) -> Result<CheckedProgram, TypeErro
         }
     }
 
-    let mut env = Environment::<Type>::new();
+    let mut env = Environment::with_type_decls(type_map);
 
     // Register native stdlib functions as Type::Function bindings.
     let registry = NativeRegistry::default();
@@ -127,11 +140,11 @@ pub fn type_check(program: &UncheckedProgram) -> Result<CheckedProgram, TypeErro
 
     let mut functions = Vec::new();
     for f in &program.functions {
-        let checked = type_check_fun_decl(f, &mut env, &fn_snapshot, &tagged_table)?;
+        let checked = type_check_fun_decl(f, &mut env, &fn_snapshot)?;
         functions.push(checked);
     }
     Ok(Program {
-        tagged_types: program.tagged_types.clone(),
+        type_declarations: program.type_declarations.clone(),
         functions,
     })
 }
@@ -140,14 +153,13 @@ fn type_check_fun_decl(
     f: &UncheckedFunDecl,
     env: &mut Environment<Type>,
     fn_snapshot: &HashMap<String, Type>,
-    tagged_table: &TaggedTypeTable,
 ) -> Result<CheckedFunDecl, TypeError> {
     // Restore to clean function-only state, then add parameters.
     env.restore(fn_snapshot.clone());
     for param in &f.params {
         env.declare(param.name.clone(), param.ty.clone());
     }
-    let body = type_check_stmt(&f.body, env, &f.return_type, tagged_table)?;
+    let body = type_check_stmt(&f.body, env, &f.return_type)?;
     Ok(FunDecl {
         name: f.name.clone(),
         params: f.params.clone(),
@@ -160,18 +172,21 @@ fn type_check_stmt(
     s: &UncheckedStmt,
     env: &mut Environment<Type>,
     expected_return: &Type,
-    tagged_table: &TaggedTypeTable,
 ) -> Result<CheckedStmt, TypeError> {
     let stmt = match &s.stmt {
         Statement::Decl { name, ty, init } => {
             if ty == &Type::Unit {
                 return Err(TypeError::new("cannot declare variable of type void"));
             }
-            if let Type::Tagged { tag_type, tag_name } = ty {
-                if !tagged_table.contains_key(&(tag_type.clone(), tag_name.clone())) {
+            if let Type::Aggregate {
+                specifier,
+                identifier,
+            } = ty
+            {
+                if !env.has_aggregate_type(specifier, identifier) {
                     return Err(TypeError::new(format!(
-                        "unknown tagged type: {:?} {}",
-                        tag_type, tag_name
+                        "unknown aggregate type: {:?} {}",
+                        specifier, identifier
                     )));
                 }
             }
@@ -181,11 +196,11 @@ fn type_check_stmt(
                     name
                 )));
             }
-            let init_checked = type_check_expr_to_typed(init, env, tagged_table)?;
-            if matches!(ty, Type::Tagged { .. }) {
+            let init_checked = type_check_expr_to_typed(init, env)?;
+            if matches!(ty, Type::Aggregate { .. }) {
                 if init_checked.ty != Type::Int {
                     return Err(TypeError::new(
-                        "tagged-typed variable declarations currently require integer placeholder initializer",
+                        "aggregate-typed variable declarations currently require integer placeholder initializer",
                     ));
                 }
             } else if !types_compatible(&init_checked.ty, ty) {
@@ -202,10 +217,10 @@ fn type_check_stmt(
             }
         }
         Statement::Assign { target, value } => {
-            let value_checked = type_check_expr_to_typed(value, env, tagged_table)?;
-            type_check_assign_target(&target.exp, &value_checked.ty, env, tagged_table)?;
+            let value_checked = type_check_expr_to_typed(value, env)?;
+            type_check_assign_target(&target.exp, &value_checked.ty, env)?;
             Statement::Assign {
-                target: Box::new(type_check_expr_to_typed(target, env, tagged_table)?),
+                target: Box::new(type_check_expr_to_typed(target, env)?),
                 value: Box::new(value_checked),
             }
         }
@@ -213,7 +228,7 @@ fn type_check_stmt(
             let snapshot = env.snapshot();
             let mut checked = Vec::new();
             for st in seq {
-                checked.push(type_check_stmt(st, env, expected_return, tagged_table)?);
+                checked.push(type_check_stmt(st, env, expected_return)?);
             }
             env.restore(snapshot);
             Statement::Block { seq: checked }
@@ -221,7 +236,7 @@ fn type_check_stmt(
         Statement::Call { name, args } => {
             let args_checked: Result<Vec<_>, _> = args
                 .iter()
-                .map(|a| type_check_expr_to_typed(a, env, tagged_table))
+                .map(|a| type_check_expr_to_typed(a, env))
                 .collect();
             let args_checked = args_checked?;
             check_call(name, &args_checked, env)?;
@@ -235,17 +250,17 @@ fn type_check_stmt(
             then_branch,
             else_branch,
         } => {
-            let cond_checked = type_check_expr_to_typed(cond, env, tagged_table)?;
+            let cond_checked = type_check_expr_to_typed(cond, env)?;
             if cond_checked.ty != Type::Bool {
                 return Err(TypeError::new(format!(
                     "if condition must be Bool, got {:?}",
                     cond_checked.ty
                 )));
             }
-            let then_checked = type_check_stmt(then_branch, env, expected_return, tagged_table)?;
+            let then_checked = type_check_stmt(then_branch, env, expected_return)?;
             let else_checked = else_branch
                 .as_ref()
-                .map(|e| type_check_stmt(e, env, expected_return, tagged_table))
+                .map(|e| type_check_stmt(e, env, expected_return))
                 .transpose()?;
             Statement::If {
                 cond: Box::new(cond_checked),
@@ -254,14 +269,14 @@ fn type_check_stmt(
             }
         }
         Statement::While { cond, body } => {
-            let cond_checked = type_check_expr_to_typed(cond, env, tagged_table)?;
+            let cond_checked = type_check_expr_to_typed(cond, env)?;
             if cond_checked.ty != Type::Bool {
                 return Err(TypeError::new(format!(
                     "while condition must be Bool, got {:?}",
                     cond_checked.ty
                 )));
             }
-            let body_checked = type_check_stmt(body, env, expected_return, tagged_table)?;
+            let body_checked = type_check_stmt(body, env, expected_return)?;
             Statement::While {
                 cond: Box::new(cond_checked),
                 body: Box::new(body_checked),
@@ -281,7 +296,7 @@ fn type_check_stmt(
                 if *expected_return == Type::Unit {
                     return Err(TypeError::new("void function must not return a value"));
                 }
-                let checked = type_check_expr_to_typed(e, env, tagged_table)?;
+                let checked = type_check_expr_to_typed(e, env)?;
                 if !types_compatible(&checked.ty, expected_return) {
                     return Err(TypeError::new(format!(
                         "return type mismatch: expected {:?}, got {:?}",
@@ -333,7 +348,6 @@ fn type_check_assign_target(
     target: &Expr<()>,
     value_ty: &Type,
     env: &Environment<Type>,
-    tagged_table: &TaggedTypeTable,
 ) -> Result<(), TypeError> {
     match target {
         Expr::Ident(name) => {
@@ -349,11 +363,11 @@ fn type_check_assign_target(
             Ok(())
         }
         Expr::Index { base, index } => {
-            let index_ty = type_check_expr(index, env, tagged_table)?;
+            let index_ty = type_check_expr(index, env)?;
             if index_ty != Type::Int {
                 return Err(TypeError::new("array index must be Int"));
             }
-            let base_ty = type_check_expr(base, env, tagged_table)?;
+            let base_ty = type_check_expr(base, env)?;
             if let Type::Array(elem) = &base_ty {
                 if **elem != *value_ty {
                     return Err(TypeError::new("assignment type mismatch"));
@@ -364,25 +378,26 @@ fn type_check_assign_target(
             Ok(())
         }
         Expr::Member { base, member } => {
-            let base_ty = type_check_expr(base, env, tagged_table)?;
+            let base_ty = type_check_expr(base, env)?;
             match base_ty {
-                Type::Tagged { tag_type, tag_name } => {
-                    let decl = tagged_table
-                        .get(&(tag_type.clone(), tag_name.clone()))
-                        .ok_or_else(|| {
-                            TypeError::new(format!(
-                                "unknown tagged type in member assignment: {:?} {}",
-                                tag_type, tag_name
-                            ))
-                        })?;
+                Type::Aggregate {
+                    specifier,
+                    identifier,
+                } => {
+                    let decl = env.aggregate_type(&specifier, &identifier).ok_or_else(|| {
+                        TypeError::new(format!(
+                            "unknown aggregate type in member assignment: {:?} {}",
+                            specifier, identifier
+                        ))
+                    })?;
 
-                    match tag_type {
-                        TagType::Struct | TagType::Union => {
+                    match specifier {
+                        AgtTypeSpecifier::Struct | AgtTypeSpecifier::Union => {
                             let field_ty = decl
                                 .members
                                 .iter()
                                 .find_map(|m| match m {
-                                    Member::Field(decl) if decl.name == *member => {
+                                    AgtTypeMember::Field(decl) if decl.name == *member => {
                                         Some(decl.ty.clone())
                                     }
                                     _ => None,
@@ -390,23 +405,25 @@ fn type_check_assign_target(
                                 .ok_or_else(|| {
                                     TypeError::new(format!(
                                         "unknown member '{}' on {:?} {}",
-                                        member, tag_type, tag_name
+                                        member, specifier, identifier
                                     ))
                                 })?;
 
                             if !types_compatible(value_ty, &field_ty) {
                                 return Err(TypeError::new(format!(
                                     "assignment to {}.{}: expected {:?}, got {:?}",
-                                    tag_name, member, field_ty, value_ty
+                                    identifier, member, field_ty, value_ty
                                 )));
                             }
                             Ok(())
                         }
-                        TagType::Enum => Err(TypeError::new("cannot assign to enum members")),
+                        AgtTypeSpecifier::Enum => {
+                            Err(TypeError::new("cannot assign to enum members"))
+                        }
                     }
                 }
                 other => Err(TypeError::new(format!(
-                    "member assignment requires tagged base type, got {:?}",
+                    "member assignment requires aggregate base type, got {:?}",
                     other
                 ))),
             }
@@ -418,83 +435,70 @@ fn type_check_assign_target(
 fn type_check_expr_to_typed(
     e: &UncheckedExpr,
     env: &Environment<Type>,
-    tagged_table: &TaggedTypeTable,
 ) -> Result<CheckedExpr, TypeError> {
-    let ty = type_check_expr(e, env, tagged_table)?;
-    let exp = type_check_expr_inner(&e.exp, env, tagged_table)?;
+    let ty = type_check_expr(e, env)?;
+    let exp = type_check_expr_inner(&e.exp, env)?;
     Ok(ExprD { exp, ty })
 }
 
-fn type_check_expr_inner(
-    e: &Expr<()>,
-    env: &Environment<Type>,
-    tagged_table: &TaggedTypeTable,
-) -> Result<Expr<Type>, TypeError> {
+fn type_check_expr_inner(e: &Expr<()>, env: &Environment<Type>) -> Result<Expr<Type>, TypeError> {
     match e {
         Expr::Literal(l) => Ok(Expr::Literal(l.clone())),
         Expr::Ident(name) => Ok(Expr::Ident(name.clone())),
-        Expr::Neg(inner) => Ok(Expr::Neg(Box::new(type_check_expr_to_typed(
-            inner,
-            env,
-            tagged_table,
-        )?))),
+        Expr::Neg(inner) => Ok(Expr::Neg(Box::new(type_check_expr_to_typed(inner, env)?))),
         Expr::Add(l, r) => Ok(Expr::Add(
-            Box::new(type_check_expr_to_typed(l, env, tagged_table)?),
-            Box::new(type_check_expr_to_typed(r, env, tagged_table)?),
+            Box::new(type_check_expr_to_typed(l, env)?),
+            Box::new(type_check_expr_to_typed(r, env)?),
         )),
         Expr::Sub(l, r) => Ok(Expr::Sub(
-            Box::new(type_check_expr_to_typed(l, env, tagged_table)?),
-            Box::new(type_check_expr_to_typed(r, env, tagged_table)?),
+            Box::new(type_check_expr_to_typed(l, env)?),
+            Box::new(type_check_expr_to_typed(r, env)?),
         )),
         Expr::Mul(l, r) => Ok(Expr::Mul(
-            Box::new(type_check_expr_to_typed(l, env, tagged_table)?),
-            Box::new(type_check_expr_to_typed(r, env, tagged_table)?),
+            Box::new(type_check_expr_to_typed(l, env)?),
+            Box::new(type_check_expr_to_typed(r, env)?),
         )),
         Expr::Div(l, r) => Ok(Expr::Div(
-            Box::new(type_check_expr_to_typed(l, env, tagged_table)?),
-            Box::new(type_check_expr_to_typed(r, env, tagged_table)?),
+            Box::new(type_check_expr_to_typed(l, env)?),
+            Box::new(type_check_expr_to_typed(r, env)?),
         )),
         Expr::Eq(l, r) => Ok(Expr::Eq(
-            Box::new(type_check_expr_to_typed(l, env, tagged_table)?),
-            Box::new(type_check_expr_to_typed(r, env, tagged_table)?),
+            Box::new(type_check_expr_to_typed(l, env)?),
+            Box::new(type_check_expr_to_typed(r, env)?),
         )),
         Expr::Ne(l, r) => Ok(Expr::Ne(
-            Box::new(type_check_expr_to_typed(l, env, tagged_table)?),
-            Box::new(type_check_expr_to_typed(r, env, tagged_table)?),
+            Box::new(type_check_expr_to_typed(l, env)?),
+            Box::new(type_check_expr_to_typed(r, env)?),
         )),
         Expr::Lt(l, r) => Ok(Expr::Lt(
-            Box::new(type_check_expr_to_typed(l, env, tagged_table)?),
-            Box::new(type_check_expr_to_typed(r, env, tagged_table)?),
+            Box::new(type_check_expr_to_typed(l, env)?),
+            Box::new(type_check_expr_to_typed(r, env)?),
         )),
         Expr::Le(l, r) => Ok(Expr::Le(
-            Box::new(type_check_expr_to_typed(l, env, tagged_table)?),
-            Box::new(type_check_expr_to_typed(r, env, tagged_table)?),
+            Box::new(type_check_expr_to_typed(l, env)?),
+            Box::new(type_check_expr_to_typed(r, env)?),
         )),
         Expr::Gt(l, r) => Ok(Expr::Gt(
-            Box::new(type_check_expr_to_typed(l, env, tagged_table)?),
-            Box::new(type_check_expr_to_typed(r, env, tagged_table)?),
+            Box::new(type_check_expr_to_typed(l, env)?),
+            Box::new(type_check_expr_to_typed(r, env)?),
         )),
         Expr::Ge(l, r) => Ok(Expr::Ge(
-            Box::new(type_check_expr_to_typed(l, env, tagged_table)?),
-            Box::new(type_check_expr_to_typed(r, env, tagged_table)?),
+            Box::new(type_check_expr_to_typed(l, env)?),
+            Box::new(type_check_expr_to_typed(r, env)?),
         )),
-        Expr::Not(inner) => Ok(Expr::Not(Box::new(type_check_expr_to_typed(
-            inner,
-            env,
-            tagged_table,
-        )?))),
+        Expr::Not(inner) => Ok(Expr::Not(Box::new(type_check_expr_to_typed(inner, env)?))),
         Expr::And(l, r) => Ok(Expr::And(
-            Box::new(type_check_expr_to_typed(l, env, tagged_table)?),
-            Box::new(type_check_expr_to_typed(r, env, tagged_table)?),
+            Box::new(type_check_expr_to_typed(l, env)?),
+            Box::new(type_check_expr_to_typed(r, env)?),
         )),
         Expr::Or(l, r) => Ok(Expr::Or(
-            Box::new(type_check_expr_to_typed(l, env, tagged_table)?),
-            Box::new(type_check_expr_to_typed(r, env, tagged_table)?),
+            Box::new(type_check_expr_to_typed(l, env)?),
+            Box::new(type_check_expr_to_typed(r, env)?),
         )),
         Expr::Call { name, args } => {
             let args_checked: Result<Vec<_>, _> = args
                 .iter()
-                .map(|a| type_check_expr_to_typed(a, env, tagged_table))
+                .map(|a| type_check_expr_to_typed(a, env))
                 .collect();
             Ok(Expr::Call {
                 name: name.clone(),
@@ -504,26 +508,22 @@ fn type_check_expr_inner(
         Expr::ArrayLit(elems) => {
             let elems_checked: Result<Vec<_>, _> = elems
                 .iter()
-                .map(|e| type_check_expr_to_typed(e, env, tagged_table))
+                .map(|e| type_check_expr_to_typed(e, env))
                 .collect();
             Ok(Expr::ArrayLit(elems_checked?))
         }
         Expr::Index { base, index } => Ok(Expr::Index {
-            base: Box::new(type_check_expr_to_typed(base, env, tagged_table)?),
-            index: Box::new(type_check_expr_to_typed(index, env, tagged_table)?),
+            base: Box::new(type_check_expr_to_typed(base, env)?),
+            index: Box::new(type_check_expr_to_typed(index, env)?),
         }),
         Expr::Member { base, member } => Ok(Expr::Member {
-            base: Box::new(type_check_expr_to_typed(base, env, tagged_table)?),
+            base: Box::new(type_check_expr_to_typed(base, env)?),
             member: member.clone(),
         }),
     }
 }
 
-fn type_check_expr(
-    e: &UncheckedExpr,
-    env: &Environment<Type>,
-    tagged_table: &TaggedTypeTable,
-) -> Result<Type, TypeError> {
+fn type_check_expr(e: &UncheckedExpr, env: &Environment<Type>) -> Result<Type, TypeError> {
     match &e.exp {
         Expr::Literal(l) => Ok(literal_type(l)),
         Expr::Ident(name) => match env.get(name) {
@@ -535,7 +535,7 @@ fn type_check_expr(
             None => Err(TypeError::new(format!("undeclared variable: {}", name))),
         },
         Expr::Neg(inner) => {
-            let ty = type_check_expr(inner, env, tagged_table)?;
+            let ty = type_check_expr(inner, env)?;
             if matches!(ty, Type::Int | Type::Float) {
                 Ok(ty)
             } else {
@@ -543,13 +543,13 @@ fn type_check_expr(
             }
         }
         Expr::Add(l, r) | Expr::Sub(l, r) | Expr::Mul(l, r) | Expr::Div(l, r) => {
-            let lt = type_check_expr(l, env, tagged_table)?;
-            let rt = type_check_expr(r, env, tagged_table)?;
+            let lt = type_check_expr(l, env)?;
+            let rt = type_check_expr(r, env)?;
             numeric_binop_result(&lt, &rt)
         }
         Expr::Eq(l, r) | Expr::Ne(l, r) => {
-            let lt = type_check_expr(l, env, tagged_table)?;
-            let rt = type_check_expr(r, env, tagged_table)?;
+            let lt = type_check_expr(l, env)?;
+            let rt = type_check_expr(r, env)?;
             if !types_compatible(&lt, &rt) {
                 return Err(TypeError::new(format!(
                     "equality operands must have compatible types, got {:?} and {:?}",
@@ -559,8 +559,8 @@ fn type_check_expr(
             Ok(Type::Bool)
         }
         Expr::Lt(l, r) | Expr::Le(l, r) | Expr::Gt(l, r) | Expr::Ge(l, r) => {
-            let lt = type_check_expr(l, env, tagged_table)?;
-            let rt = type_check_expr(r, env, tagged_table)?;
+            let lt = type_check_expr(l, env)?;
+            let rt = type_check_expr(r, env)?;
             if !is_numeric(&lt) || !is_numeric(&rt) {
                 return Err(TypeError::new(format!(
                     "ordering comparison requires numeric operands, got {:?} and {:?}",
@@ -570,7 +570,7 @@ fn type_check_expr(
             Ok(Type::Bool)
         }
         Expr::Not(inner) => {
-            let ty = type_check_expr(inner, env, tagged_table)?;
+            let ty = type_check_expr(inner, env)?;
             if ty == Type::Bool {
                 Ok(Type::Bool)
             } else {
@@ -578,8 +578,8 @@ fn type_check_expr(
             }
         }
         Expr::And(l, r) | Expr::Or(l, r) => {
-            let lt = type_check_expr(l, env, tagged_table)?;
-            let rt = type_check_expr(r, env, tagged_table)?;
+            let lt = type_check_expr(l, env)?;
+            let rt = type_check_expr(r, env)?;
             if lt == Type::Bool && rt == Type::Bool {
                 Ok(Type::Bool)
             } else {
@@ -589,7 +589,7 @@ fn type_check_expr(
         Expr::Call { name, args } => {
             let args_checked: Result<Vec<_>, _> = args
                 .iter()
-                .map(|a| type_check_expr_to_typed(a, env, tagged_table))
+                .map(|a| type_check_expr_to_typed(a, env))
                 .collect();
             let args_checked = args_checked?;
             match env.get(name) {
@@ -628,9 +628,9 @@ fn type_check_expr(
             if elems.is_empty() {
                 return Err(TypeError::new("empty array literal needs type annotation"));
             }
-            let first = type_check_expr(&elems[0], env, tagged_table)?;
+            let first = type_check_expr(&elems[0], env)?;
             for e in elems.iter().skip(1) {
-                let ty = type_check_expr(e, env, tagged_table)?;
+                let ty = type_check_expr(e, env)?;
                 if !types_compatible(&first, &ty) {
                     return Err(TypeError::new("array elements must have same type"));
                 }
@@ -638,11 +638,11 @@ fn type_check_expr(
             Ok(Type::Array(Box::new(first)))
         }
         Expr::Index { base, index } => {
-            let index_ty = type_check_expr(index, env, tagged_table)?;
+            let index_ty = type_check_expr(index, env)?;
             if index_ty != Type::Int {
                 return Err(TypeError::new("array index must be Int"));
             }
-            let base_ty = type_check_expr(base, env, tagged_table)?;
+            let base_ty = type_check_expr(base, env)?;
             if let Type::Array(elem) = base_ty {
                 Ok(*elem)
             } else {
@@ -650,24 +650,25 @@ fn type_check_expr(
             }
         }
         Expr::Member { base, member } => {
-            let base_ty = type_check_expr(base, env, tagged_table)?;
+            let base_ty = type_check_expr(base, env)?;
             match base_ty {
-                Type::Tagged { tag_type, tag_name } => {
-                    let decl = tagged_table
-                        .get(&(tag_type.clone(), tag_name.clone()))
-                        .ok_or_else(|| {
-                            TypeError::new(format!(
-                                "unknown tagged type in member access: {:?} {}",
-                                tag_type, tag_name
-                            ))
-                        })?;
+                Type::Aggregate {
+                    specifier,
+                    identifier,
+                } => {
+                    let decl = env.aggregate_type(&specifier, &identifier).ok_or_else(|| {
+                        TypeError::new(format!(
+                            "unknown aggregate type in member access: {:?} {}",
+                            specifier, identifier
+                        ))
+                    })?;
 
-                    match tag_type {
-                        TagType::Struct | TagType::Union => decl
+                    match specifier {
+                        AgtTypeSpecifier::Struct | AgtTypeSpecifier::Union => decl
                             .members
                             .iter()
                             .find_map(|m| match m {
-                                Member::Field(decl) if decl.name == *member => {
+                                AgtTypeMember::Field(decl) if decl.name == *member => {
                                     Some(decl.ty.clone())
                                 }
                                 _ => None,
@@ -675,12 +676,12 @@ fn type_check_expr(
                             .ok_or_else(|| {
                                 TypeError::new(format!(
                                     "unknown member '{}' on {:?} {}",
-                                    member, tag_type, tag_name
+                                    member, specifier, identifier
                                 ))
                             }),
-                        TagType::Enum => {
+                        AgtTypeSpecifier::Enum => {
                             let exists = decl.members.iter().any(|m| match m {
-                                Member::Enumerator { name, .. } => name == member,
+                                AgtTypeMember::Enumerator { name, .. } => name == member,
                                 _ => false,
                             });
                             if exists {
@@ -688,14 +689,14 @@ fn type_check_expr(
                             } else {
                                 Err(TypeError::new(format!(
                                     "unknown enumerator '{}' on enum {}",
-                                    member, tag_name
+                                    member, identifier
                                 )))
                             }
                         }
                     }
                 }
                 other => Err(TypeError::new(format!(
-                    "member access requires tagged base type, got {:?}",
+                    "member access requires aggregate base type, got {:?}",
                     other
                 ))),
             }
@@ -738,42 +739,15 @@ fn types_compatible(a: &Type, b: &Type) -> bool {
         (Type::Int, Type::Float) | (Type::Float, Type::Int) => true,
         (Type::Array(a), Type::Array(b)) => types_compatible(a, b),
         (
-            Type::Tagged {
-                tag_type: a_kind,
-                tag_name: a_name,
+            Type::Aggregate {
+                specifier: a_kind,
+                identifier: a_name,
             },
-            Type::Tagged {
-                tag_type: b_kind,
-                tag_name: b_name,
+            Type::Aggregate {
+                specifier: b_kind,
+                identifier: b_name,
             },
         ) => a_kind == b_kind && a_name == b_name,
         _ => false,
     }
-}
-
-fn build_tagged_type_table(tagged_types: &[TaggedTypeDecl]) -> Result<TaggedTypeTable, TypeError> {
-    let mut seen = std::collections::HashSet::<(TagType, String)>::new();
-    let mut table = TaggedTypeTable::new();
-
-    for decl in tagged_types {
-        let key = (decl.tag_type.clone(), decl.tag_name.clone());
-
-        if !seen.insert(key.clone()) {
-            return Err(TypeError::new(format!(
-                "duplicate tagged type declaration: {:?} {}",
-                decl.tag_type, decl.tag_name
-            )));
-        }
-
-        if decl.members.is_empty() {
-            return Err(TypeError::new(format!(
-                "tagged type declaration '{}' must declare at least one member",
-                decl.tag_name
-            )));
-        }
-
-        table.insert(key, decl.clone());
-    }
-
-    Ok(table)
 }

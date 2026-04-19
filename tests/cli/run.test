@@ -19,6 +19,12 @@ $ ./target/debug/mini_c --run tests/fixtures/interpreter_array.minic
 30
 >=0
 
+# --run executes aggregate type fixture and prints bool/enum values
+$ ./target/debug/mini_c --run tests/fixtures/aggregate_types.minic
+true
+2
+>=0
+
 # --run on a type-error program fails before interpretation
 $ ./target/debug/mini_c --run tests/fixtures/cli_type_mismatch.minic
 >2 /Type error/

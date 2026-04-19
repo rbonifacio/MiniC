@@ -102,13 +102,13 @@ fn test_parse_top_level_statements_fail() {
 }
 
 #[test]
-fn test_parse_program_with_tagged_declarations() {
-    let prog = parse_program_file("tagged_types.minic")
-        .expect("program with tagged type declarations should parse");
-    assert_eq!(prog.tagged_types.len(), 3);
-    assert_eq!(prog.tagged_types[0].tag_name, "Point");
-    assert_eq!(prog.tagged_types[1].tag_name, "Payload");
-    assert_eq!(prog.tagged_types[2].tag_name, "Kind");
+fn test_parse_program_with_aggregate_declarations() {
+    let prog = parse_program_file("aggregate_types.minic")
+        .expect("program with aggregate type declarations should parse");
+    assert_eq!(prog.type_declarations.len(), 3);
+    assert_eq!(prog.type_declarations[0].identifier, "Point");
+    assert_eq!(prog.type_declarations[1].identifier, "Payload");
+    assert_eq!(prog.type_declarations[2].identifier, "Kind");
     assert_eq!(prog.functions.len(), 1);
     assert_eq!(prog.functions[0].name, "main");
 }

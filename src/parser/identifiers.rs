@@ -47,7 +47,7 @@ pub fn identifier(input: &str) -> IResult<&str, &str> {
 }
 
 /// Parse an identifier declaration: `Type name`.
-/// Must only be called for parameters and tagged union members
+/// Must only be called for parameters and struct/union members
 pub fn identifier_decl(input: &str) -> IResult<&str, IdentifierDecl> {
     map(
         tuple((type_definition, preceded(multispace1, identifier))),

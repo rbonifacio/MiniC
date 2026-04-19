@@ -1,6 +1,8 @@
 //! Integration tests for the MiniC parser.
 
-use mini_c::ir::ast::{Expr, ExprD, IdentifierDecl, Literal, Member, Statement, TagType, Type};
+use mini_c::ir::ast::{
+    AgtTypeMember, AgtTypeSpecifier, Expr, ExprD, IdentifierDecl, Literal, Statement, Type,
+};
 use mini_c::parser::{
     assignment, expression, fun_decl, identifier,
     identifiers::identifier_decl,
@@ -9,7 +11,7 @@ use mini_c::parser::{
         boolean_literal, float_literal, integer_literal, string_literal, Literal as ParserLiteral,
     },
     statement,
-    types::{tagged_type_decl, type_definition},
+    types::{aggregate_type_decl, type_definition},
 };
 use nom::combinator::all_consuming;
 
@@ -121,14 +123,14 @@ fn test_identifier_accept_true_prefix() {
 // --- Types ---
 
 #[test]
-fn test_tagged_type_definition() {
+fn test_aggregate_type_definition() {
     assert_eq!(
         type_definition("struct Point"),
         Ok((
             "",
-            Type::Tagged {
-                tag_type: TagType::Struct,
-                tag_name: "Point".to_string(),
+            Type::Aggregate {
+                specifier: AgtTypeSpecifier::Struct,
+                identifier: "Point".to_string(),
             },
         ))
     );
@@ -137,9 +139,9 @@ fn test_tagged_type_definition() {
         type_definition("union Value"),
         Ok((
             "",
-            Type::Tagged {
-                tag_type: TagType::Union,
-                tag_name: "Value".to_string(),
+            Type::Aggregate {
+                specifier: AgtTypeSpecifier::Union,
+                identifier: "Value".to_string(),
             },
         ))
     );
@@ -148,39 +150,39 @@ fn test_tagged_type_definition() {
         type_definition("enum Kind"),
         Ok((
             "",
-            Type::Tagged {
-                tag_type: TagType::Enum,
-                tag_name: "Kind".to_string(),
+            Type::Aggregate {
+                specifier: AgtTypeSpecifier::Enum,
+                identifier: "Kind".to_string(),
             },
         ))
     );
 }
 
 #[test]
-fn test_tagged_type_definition_array() {
+fn test_aggregate_type_definition_array() {
     assert_eq!(
         type_definition("struct S[]"),
         Ok((
             "",
-            Type::Array(Box::new(Type::Tagged {
-                tag_type: TagType::Struct,
-                tag_name: "S".to_string(),
+            Type::Array(Box::new(Type::Aggregate {
+                specifier: AgtTypeSpecifier::Struct,
+                identifier: "S".to_string(),
             }))
         ))
     );
 }
 
 #[test]
-fn test_tagged_type_identifier_decl() {
+fn test_aggregate_type_identifier_decl() {
     assert_eq!(
         identifier_decl("struct Point p"),
         Ok((
             "",
             IdentifierDecl {
                 name: "p".to_string(),
-                ty: Type::Tagged {
-                    tag_type: TagType::Struct,
-                    tag_name: "Point".to_string(),
+                ty: Type::Aggregate {
+                    specifier: AgtTypeSpecifier::Struct,
+                    identifier: "Point".to_string(),
                 },
             }
         ))
@@ -192,9 +194,9 @@ fn test_tagged_type_identifier_decl() {
             "",
             IdentifierDecl {
                 name: "v".to_string(),
-                ty: Type::Tagged {
-                    tag_type: TagType::Union,
-                    tag_name: "Value".to_string(),
+                ty: Type::Aggregate {
+                    specifier: AgtTypeSpecifier::Union,
+                    identifier: "Value".to_string(),
                 },
             }
         ))
@@ -206,9 +208,9 @@ fn test_tagged_type_identifier_decl() {
             "",
             IdentifierDecl {
                 name: "k".to_string(),
-                ty: Type::Tagged {
-                    tag_type: TagType::Enum,
-                    tag_name: "Kind".to_string(),
+                ty: Type::Aggregate {
+                    specifier: AgtTypeSpecifier::Enum,
+                    identifier: "Kind".to_string(),
                 },
             }
         ))
@@ -217,22 +219,22 @@ fn test_tagged_type_identifier_decl() {
 
 #[test]
 fn test_struct_decl() {
-    let result = tagged_type_decl("struct Point { int x; float y; }")
+    let result = all_consuming(aggregate_type_decl)("struct Point { int x; float y; }")
         .unwrap()
         .1;
-    assert_eq!(result.tag_type, TagType::Struct);
-    assert_eq!(result.tag_name, "Point");
+    assert_eq!(result.specifier, AgtTypeSpecifier::Struct);
+    assert_eq!(result.identifier, "Point");
     assert_eq!(result.members.len(), 2);
     assert_eq!(
         result.members[0],
-        Member::Field(IdentifierDecl {
+        AgtTypeMember::Field(IdentifierDecl {
             name: "x".into(),
             ty: Type::Int,
         })
     );
     assert_eq!(
         result.members[1],
-        Member::Field(IdentifierDecl {
+        AgtTypeMember::Field(IdentifierDecl {
             name: "y".into(),
             ty: Type::Float,
         })
@@ -241,22 +243,22 @@ fn test_struct_decl() {
 
 #[test]
 fn test_union_decl() {
-    let result = tagged_type_decl("union Value { int i; float f; }")
+    let result = all_consuming(aggregate_type_decl)("union Value { int i; float f; }")
         .unwrap()
         .1;
-    assert_eq!(result.tag_type, TagType::Union);
-    assert_eq!(result.tag_name, "Value");
+    assert_eq!(result.specifier, AgtTypeSpecifier::Union);
+    assert_eq!(result.identifier, "Value");
     assert_eq!(result.members.len(), 2);
     assert_eq!(
         result.members[0],
-        Member::Field(IdentifierDecl {
+        AgtTypeMember::Field(IdentifierDecl {
             name: "i".into(),
             ty: Type::Int,
         })
     );
     assert_eq!(
         result.members[1],
-        Member::Field(IdentifierDecl {
+        AgtTypeMember::Field(IdentifierDecl {
             name: "f".into(),
             ty: Type::Float,
         })
@@ -265,20 +267,22 @@ fn test_union_decl() {
 
 #[test]
 fn test_enum_decl() {
-    let result = tagged_type_decl("enum Kind { OK; Err = -1; }").unwrap().1;
-    assert_eq!(result.tag_type, TagType::Enum);
-    assert_eq!(result.tag_name, "Kind");
+    let result = all_consuming(aggregate_type_decl)("enum Kind { OK; Err = -1; }")
+        .unwrap()
+        .1;
+    assert_eq!(result.specifier, AgtTypeSpecifier::Enum);
+    assert_eq!(result.identifier, "Kind");
     assert_eq!(result.members.len(), 2);
     assert_eq!(
         result.members[0],
-        Member::Enumerator {
+        AgtTypeMember::Enumerator {
             name: "OK".into(),
             value: None,
         }
     );
     assert_eq!(
         result.members[1],
-        Member::Enumerator {
+        AgtTypeMember::Enumerator {
             name: "Err".into(),
             value: Some(-1),
         }
@@ -286,24 +290,24 @@ fn test_enum_decl() {
 }
 
 #[test]
-fn test_tagged_type_decl_reject_empty_members() {
-    assert!(tagged_type_decl("struct S { }").is_err());
-    assert!(tagged_type_decl("union U { }").is_err());
-    assert!(tagged_type_decl("enum E { }").is_err());
+fn test_aggregate_type_decl_reject_empty_members() {
+    assert!(all_consuming(aggregate_type_decl)("struct S { }").is_err());
+    assert!(all_consuming(aggregate_type_decl)("union U { }").is_err());
+    assert!(all_consuming(aggregate_type_decl)("enum E { }").is_err());
 }
 
 #[test]
-fn test_tagged_type_decl_reject_missing_member_semicolon() {
-    assert!(tagged_type_decl("struct S { int x }").is_err());
-    assert!(tagged_type_decl("union U { int x }").is_err());
-    assert!(tagged_type_decl("enum E { A = 1 }").is_err());
+fn test_aggregate_type_decl_reject_missing_member_semicolon() {
+    assert!(all_consuming(aggregate_type_decl)("struct S { int x }").is_err());
+    assert!(all_consuming(aggregate_type_decl)("union U { int x }").is_err());
+    assert!(all_consuming(aggregate_type_decl)("enum E { A = 1 }").is_err());
 }
 
 #[test]
-fn test_tagged_type_decl_reject_reserved_tag_name() {
-    assert!(tagged_type_decl("struct return { int x; }").is_err());
-    assert!(tagged_type_decl("union return { int x; }").is_err());
-    assert!(tagged_type_decl("enum return { A; }").is_err());
+fn test_aggregate_type_decl_reject_reserved_identifier_name() {
+    assert!(all_consuming(aggregate_type_decl)("struct return { int x; }").is_err());
+    assert!(all_consuming(aggregate_type_decl)("union return { int x; }").is_err());
+    assert!(all_consuming(aggregate_type_decl)("enum return { A; }").is_err());
 }
 
 // --- Expressions ---
@@ -954,7 +958,9 @@ fn test_chained_member_access_expression() {
 #[test]
 fn test_member_access_with_index_expression() {
     let result = expression("items.head[0]").unwrap().1;
-    assert!(matches!(result.exp, Expr::Index { ref base, .. } if matches!(base.exp, Expr::Member { ref member, .. } if member == "head")));
+    assert!(
+        matches!(result.exp, Expr::Index { ref base, .. } if matches!(base.exp, Expr::Member { ref member, .. } if member == "head"))
+    );
 }
 
 #[test]

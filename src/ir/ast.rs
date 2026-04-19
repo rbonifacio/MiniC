@@ -48,9 +48,9 @@
 //! compatibility check (`types_compatible`) treats `Any` as matching
 //! everything, keeping the special case local to one function.
 
-/// Tagged types: struct, union, enum
+/// Aggregate types: struct, union, enum
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum TagType {
+pub enum AgtTypeSpecifier {
     Struct,
     Union,
     Enum,
@@ -65,9 +65,9 @@ pub enum Type {
     Bool,
     Str,
     Array(Box<Type>),
-    Tagged {
-        tag_type: TagType,
-        tag_name: String,
+    Aggregate {
+        specifier: AgtTypeSpecifier,
+        identifier: String,
     },
     Function {
         params: Vec<Type>,
@@ -180,19 +180,19 @@ pub struct IdentifierDecl {
     pub ty: Type,
 }
 
-/// A field or enumerator inside a tagged type declaration.
+/// A field or enumerator inside an aggregate type declaration.
 #[derive(Debug, Clone, PartialEq)]
-pub enum Member {
+pub enum AgtTypeMember {
     Field(IdentifierDecl),
     Enumerator { name: String, value: Option<i64> },
 }
 
-/// A tagged type declaration: struct, union, or enum.
+/// An aggregate type declaration: struct, union, or enum.
 #[derive(Debug, Clone, PartialEq)]
-pub struct TaggedTypeDecl {
-    pub tag_type: TagType,
-    pub tag_name: String,
-    pub members: Vec<Member>,
+pub struct AggregateTypeDecl {
+    pub specifier: AgtTypeSpecifier,
+    pub identifier: String,
+    pub members: Vec<AgtTypeMember>,
 }
 
 /// A function declaration.
@@ -207,7 +207,7 @@ pub struct FunDecl<Ty> {
 /// A complete MiniC program: top-level type declarations and function declarations.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Program<Ty> {
-    pub tagged_types: Vec<TaggedTypeDecl>,
+    pub type_declarations: Vec<AggregateTypeDecl>,
     pub functions: Vec<FunDecl<Ty>>,
 }
 

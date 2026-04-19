@@ -35,33 +35,28 @@
 
 use crate::environment::Environment;
 use crate::ir::ast::{
-    CheckedExpr, CheckedStmt, Expr, Member, Statement, TagType, TaggedTypeDecl, Type,
+    AgtTypeMember, AgtTypeSpecifier, CheckedExpr, CheckedStmt, Expr, Statement, Type,
 };
-
-use std::collections::HashMap;
 
 use super::eval_expr::{eval_call, eval_expr};
 use super::value::{RuntimeError, Value};
 
-type TaggedRuntimeTable = HashMap<(TagType, String), TaggedTypeDecl>;
+use std::collections::HashMap;
 
 /// `None` = normal fall-through; `Some(v)` = early return with value.
 pub type ExecResult = Result<Option<Value>, RuntimeError>;
 
 /// Execute a checked statement. Returns `Some(v)` if a `return` was hit.
-pub fn exec_stmt(
-    stmt: &CheckedStmt,
-    env: &mut Environment<Value>,
-    tagged_table: &TaggedRuntimeTable,
-) -> ExecResult {
+pub fn exec_stmt(stmt: &CheckedStmt, env: &mut Environment<Value>) -> ExecResult {
     match &stmt.stmt {
         // --- Variable declaration ---
         Statement::Decl { name, ty, init } => {
-            let init_val = eval_expr(init, env, tagged_table)?;
+            let init_val = eval_expr(init, env)?;
             let stored = match ty {
-                Type::Tagged { tag_type, tag_name } => {
-                    build_tagged_value(tag_type, tag_name, init_val, tagged_table)?
-                }
+                Type::Aggregate {
+                    specifier,
+                    identifier,
+                } => build_aggregate_value(specifier, identifier, init_val, env)?,
                 _ => init_val,
             };
             env.declare(name.clone(), stored);
@@ -70,8 +65,8 @@ pub fn exec_stmt(
 
         // --- Assignment ---
         Statement::Assign { target, value } => {
-            let val = eval_expr(value, env, tagged_table)?;
-            assign_lvalue(target, val, env, tagged_table)?;
+            let val = eval_expr(value, env)?;
+            assign_lvalue(target, val, env)?;
             Ok(None)
         }
 
@@ -81,7 +76,7 @@ pub fn exec_stmt(
         Statement::Block { seq } => {
             let outer_keys = env.names();
             for s in seq {
-                if let Some(ret) = exec_stmt(s, env, tagged_table)? {
+                if let Some(ret) = exec_stmt(s, env)? {
                     env.remove_new(&outer_keys);
                     return Ok(Some(ret));
                 }
@@ -95,11 +90,11 @@ pub fn exec_stmt(
             cond,
             then_branch,
             else_branch,
-        } => match eval_expr(cond, env, tagged_table)? {
-            Value::Bool(true) => exec_stmt(then_branch, env, tagged_table),
+        } => match eval_expr(cond, env)? {
+            Value::Bool(true) => exec_stmt(then_branch, env),
             Value::Bool(false) => {
                 if let Some(eb) = else_branch {
-                    exec_stmt(eb, env, tagged_table)
+                    exec_stmt(eb, env)
                 } else {
                     Ok(None)
                 }
@@ -112,9 +107,9 @@ pub fn exec_stmt(
 
         // --- While ---
         Statement::While { cond, body } => loop {
-            match eval_expr(cond, env, tagged_table)? {
+            match eval_expr(cond, env)? {
                 Value::Bool(true) => {
-                    if let Some(ret) = exec_stmt(body, env, tagged_table)? {
+                    if let Some(ret) = exec_stmt(body, env)? {
                         return Ok(Some(ret));
                     }
                 }
@@ -130,18 +125,16 @@ pub fn exec_stmt(
 
         // --- Return ---
         Statement::Return(Some(expr)) => {
-            let val = eval_expr(expr, env, tagged_table)?;
+            let val = eval_expr(expr, env)?;
             Ok(Some(val))
         }
         Statement::Return(None) => Ok(Some(Value::Void)),
 
         // --- Statement-level function call ---
         Statement::Call { name, args } => {
-            let arg_vals: Result<Vec<Value>, RuntimeError> = args
-                .iter()
-                .map(|a| eval_expr(a, env, tagged_table))
-                .collect();
-            eval_call(name, arg_vals?, env, tagged_table)?;
+            let arg_vals: Result<Vec<Value>, RuntimeError> =
+                args.iter().map(|a| eval_expr(a, env)).collect();
+            eval_call(name, arg_vals?, env)?;
             Ok(None)
         }
     }
@@ -152,7 +145,6 @@ fn assign_lvalue(
     target: &CheckedExpr,
     val: Value,
     env: &mut Environment<Value>,
-    tagged_table: &TaggedRuntimeTable,
 ) -> Result<(), RuntimeError> {
     match &target.exp {
         Expr::Ident(name) => {
@@ -166,7 +158,7 @@ fn assign_lvalue(
             }
         }
         Expr::Index { base, index } => {
-            let idx = match eval_expr(index, &mut *env, tagged_table)? {
+            let idx = match eval_expr(index, &mut *env)? {
                 Value::Int(i) => i as usize,
                 v => {
                     return Err(RuntimeError::new(format!(
@@ -175,9 +167,9 @@ fn assign_lvalue(
                     )))
                 }
             };
-            assign_index(base, idx, val, env, tagged_table)
+            assign_index(base, idx, val, env)
         }
-        Expr::Member { base, member } => assign_member(base, member, val, env, tagged_table),
+        Expr::Member { base, member } => assign_member(base, member, val, env),
         _ => Err(RuntimeError::new("invalid assignment target".to_string())),
     }
 }
@@ -188,7 +180,6 @@ fn assign_index(
     idx: usize,
     val: Value,
     env: &mut Environment<Value>,
-    tagged_table: &TaggedRuntimeTable,
 ) -> Result<(), RuntimeError> {
     match &base.exp {
         Expr::Ident(name) => {
@@ -219,7 +210,7 @@ fn assign_index(
             base: inner_base,
             index: inner_index,
         } => {
-            let inner_idx = match eval_expr(inner_index, env, tagged_table)? {
+            let inner_idx = match eval_expr(inner_index, env)? {
                 Value::Int(i) => i as usize,
                 v => {
                     return Err(RuntimeError::new(format!(
@@ -278,7 +269,6 @@ fn assign_member(
     member: &str,
     val: Value,
     env: &mut Environment<Value>,
-    _tagged_table: &TaggedRuntimeTable,
 ) -> Result<(), RuntimeError> {
     match &base.exp {
         Expr::Ident(name) => {
@@ -288,20 +278,20 @@ fn assign_member(
                 .ok_or_else(|| RuntimeError::new(format!("undefined variable '{}'", name)))?;
             let updated = match current {
                 Value::Struct {
-                    tag_name,
+                    identifier,
                     mut fields,
                 } => {
                     fields.insert(member.to_string(), val);
-                    Value::Struct { tag_name, fields }
+                    Value::Struct { identifier, fields }
                 }
-                Value::Union { tag_name, .. } => Value::Union {
-                    tag_name,
+                Value::Union { identifier, .. } => Value::Union {
+                    identifier,
                     active_field: member.to_string(),
                     value: Box::new(val),
                 },
                 other => {
                     return Err(RuntimeError::new(format!(
-                        "cannot assign member on non-tagged value: {}",
+                        "cannot assign member on non-aggregate value: {}",
                         other
                     )))
                 }
@@ -315,57 +305,52 @@ fn assign_member(
     }
 }
 
-fn build_tagged_value(
-    tag_type: &TagType,
-    tag_name: &str,
+fn build_aggregate_value(
+    specifier: &AgtTypeSpecifier,
+    identifier: &str,
     init_val: Value,
-    tagged_table: &TaggedRuntimeTable,
+    env: &Environment<Value>,
 ) -> Result<Value, RuntimeError> {
-    let decl = tagged_table
-        .get(&(tag_type.clone(), tag_name.to_string()))
-        .ok_or_else(|| {
-            RuntimeError::new(format!(
-                "unknown tagged type at runtime: {:?} {}",
-                tag_type, tag_name
-            ))
-        })?;
+    let decl = env.aggregate_type(specifier, identifier).ok_or_else(|| {
+        RuntimeError::new(format!(
+            "unknown aggregate type at runtime: {:?} {}",
+            specifier, identifier
+        ))
+    })?;
 
-    match tag_type {
-        TagType::Struct => {
+    match specifier {
+        AgtTypeSpecifier::Struct => {
             let mut fields = HashMap::new();
             for member in &decl.members {
-                if let Member::Field(field) = member {
-                    fields.insert(
-                        field.name.clone(),
-                        default_value_for_type(&field.ty, tagged_table)?,
-                    );
+                if let AgtTypeMember::Field(field) = member {
+                    fields.insert(field.name.clone(), default_value_for_type(&field.ty, env)?);
                 }
             }
             Ok(Value::Struct {
-                tag_name: tag_name.to_string(),
+                identifier: identifier.to_string(),
                 fields,
             })
         }
-        TagType::Union => {
+        AgtTypeSpecifier::Union => {
             let first_field = decl
                 .members
                 .iter()
                 .find_map(|member| match member {
-                    Member::Field(field) => Some(field),
+                    AgtTypeMember::Field(field) => Some(field),
                     _ => None,
                 })
                 .ok_or_else(|| {
-                    RuntimeError::new(format!("union {} has no fields at runtime", tag_name))
+                    RuntimeError::new(format!("union {} has no fields at runtime", identifier))
                 })?;
 
             let coerced = coerce_value_to_type(init_val, &first_field.ty)?;
             Ok(Value::Union {
-                tag_name: tag_name.to_string(),
+                identifier: identifier.to_string(),
                 active_field: first_field.name.clone(),
                 value: Box::new(coerced),
             })
         }
-        TagType::Enum => {
+        AgtTypeSpecifier::Enum => {
             let numeric = match init_val {
                 Value::Int(n) => n,
                 other => {
@@ -377,17 +362,14 @@ fn build_tagged_value(
             };
 
             Ok(Value::Enum {
-                tag_name: tag_name.to_string(),
+                identifier: identifier.to_string(),
                 value: numeric,
             })
         }
     }
 }
 
-fn default_value_for_type(
-    ty: &Type,
-    tagged_table: &TaggedRuntimeTable,
-) -> Result<Value, RuntimeError> {
+fn default_value_for_type(ty: &Type, env: &Environment<Value>) -> Result<Value, RuntimeError> {
     match ty {
         Type::Unit => Ok(Value::Void),
         Type::Int => Ok(Value::Int(0)),
@@ -395,9 +377,10 @@ fn default_value_for_type(
         Type::Bool => Ok(Value::Bool(false)),
         Type::Str => Ok(Value::Str(String::new())),
         Type::Array(_) => Ok(Value::Array(vec![])),
-        Type::Tagged { tag_type, tag_name } => {
-            build_tagged_value(tag_type, tag_name, Value::Int(0), tagged_table)
-        }
+        Type::Aggregate {
+            specifier,
+            identifier,
+        } => build_aggregate_value(specifier, identifier, Value::Int(0), env),
         Type::Function { .. } | Type::Any => Err(RuntimeError::new(
             "cannot create default runtime value for this type",
         )),

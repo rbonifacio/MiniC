@@ -205,7 +205,7 @@ fn test_type_check_print_wrong_arity() {
 }
 
 // ---------------------------------------------------------------------------
-// Tagged Types
+// Aggregate Types
 // ---------------------------------------------------------------------------
 
 #[test]
@@ -254,10 +254,13 @@ fn test_type_check_rejects_enum_member_assignment() {
 }
 
 #[test]
-fn test_type_check_rejects_unknown_tagged_type_declaration_use() {
+fn test_type_check_rejects_unknown_aggregate_type_declaration_use() {
     let result = parse_and_type_check("void main() { struct Missing x = 0; }");
     assert!(result.is_err());
-    assert!(result.unwrap_err().message.contains("unknown tagged type"));
+    assert!(result
+        .unwrap_err()
+        .message
+        .contains("unknown aggregate type"));
 }
 
 #[test]
@@ -279,17 +282,17 @@ fn test_type_check_rejects_unknown_enum_member_access() {
 }
 
 #[test]
-fn test_type_check_rejects_member_access_on_non_tagged_value() {
+fn test_type_check_rejects_member_access_on_non_aggregate_value() {
     let result = parse_and_type_check("void main() { int x = 0; int y = x.foo; }");
     assert!(result.is_err());
     assert!(result
         .unwrap_err()
         .message
-        .contains("member access requires tagged base type"));
+        .contains("member access requires aggregate base type"));
 }
 
 #[test]
-fn test_type_check_rejects_duplicate_tagged_declarations() {
+fn test_type_check_rejects_duplicate_aggregate_declarations() {
     let result = parse_and_type_check(
         "struct Point { int x; }\nstruct Point { int y; }\nvoid main() { int z = 0; }",
     );
@@ -297,5 +300,5 @@ fn test_type_check_rejects_duplicate_tagged_declarations() {
     assert!(result
         .unwrap_err()
         .message
-        .contains("duplicate tagged type declaration"));
+        .contains("duplicate type declaration"));
 }
