@@ -272,35 +272,37 @@ fn run_full(src: &str) -> Result<(), String> {
     Ok(())
 }
 
-// #[test]
-// fn test_exec_lambda_simple_math() {
-//     let src = r#"
-//         void main() {
-//             fn(int) -> int dobrar = fn(int n) -> int { return n * 2; };
-//             print(dobrar(10));
-//         }
-//     "#;
-//     assert!(run_full(src).is_ok(), "Falha na execução da lambda básica.");
-// }
+#[test]
+fn test_exec_lambda_simple_math() {
+    let src = r#"
+        void main() {
+            fn(int) -> int dobrar = fn(int n) -> int { return n * 2; };
+            print(dobrar(10));
+        }
+    "#;
 
-// #[test]
-// fn test_exec_closure_capture_success() {
-//     // Este teste valida se o seu interpretador injeta o HashMap 'captured' no ambiente
-//     let src = r#"
-//         void main() {
-//             int base = 100;
-//             fn(int) -> int somar = fn(int n) -> int { return n + base; };
-//             print(somar(50)); 
-//         }
-//     "#;
+    let result = run_full(src);
+    assert!(result.is_ok(), "Falha na execução da lambda básica. Erro: {:?}", result.err());
+}
+
+#[test]
+fn test_exec_closure_capture_success() {
+    // Este teste valida se o seu interpretador injeta o HashMap 'captured' no ambiente
+    let src = r#"
+        void main() {
+            int base = 100;
+            fn(int) -> int somar = fn(int n) -> int { return n + base; };
+            print(somar(50)); 
+        }
+    "#;
     
-//     let result = run_full(src);
-//     assert!(
-//         result.is_ok(), 
-//         "A Closure falhou! Provavelmente a variável 'base' não foi injetada no ambiente da lambda. Erro: {:?}", 
-//         result.err()
-//     );
-// }
+    let result = run_full(src);
+    assert!(
+        result.is_ok(), 
+        "A Closure falhou! Provavelmente a variável 'base' não foi injetada no ambiente da lambda. Erro: {:?}", 
+        result.err()
+    );
+}
 
 #[test]
 fn test_exec_immediate_lambda_call() {
