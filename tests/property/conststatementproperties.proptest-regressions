@@ -1,0 +1,7 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc 4f37b0bc45c67577c8c1208ce52295b11d59c2793b5685f3c8012100342ba107 # shrinks to assign = ConstAssignment { _const: "const", _type: "int", _identifier: "_", _rvalue: "+~(A_9vOVSb2_XsCOEav_6_H_ix_u_6bG - \" ! ezVLA A0D! C3vpd \")" }
