@@ -26,6 +26,7 @@
 // sub-values. Proptest's state machine tracks the current best failure and systematically tries
 // all shrinking strategies defined by the Shrink implementations.
 use proptest::prelude::*;
+use std::ops::RangeInclusive;
 use proptest::string as pstring;
 use proptest::sample as psample;
 use proptest::strategy::BoxedStrategy;
@@ -68,6 +69,44 @@ pub enum ExprTypes {
     BinaryExpr,
     TernaryExpr,
     FuncallExpr,
+}
+
+/// Parameters for configuring ConstAssignment generation.
+///
+/// These parameters control the complexity and shape of generated const declarations:
+/// - `param_complexity`: How many expressions are combined with operators (1 = single expression,
+///   2+ = expressions composed with operators like +, -, &&, etc.)
+/// - `nesting_complexity`: How deep expressions can nest (0 = primitives only, 3 = heavily nested)
+/// - `modifier_kw`: Optional type modifier keyword (e.g., "const", "static"). If None, no keyword.
+/// - `identifier`: Optional identifier name. If None, a random identifier is generated.
+///
+/// # Example
+/// ```
+/// // Generate simple declarations (no operators, no nesting)
+/// let params = ConstAssignmentParams {
+///     param_complexity: 1..=1,
+///     nesting_complexity: 0..=0,
+///     modifier_kw: Some("const".to_string()),
+///     identifier: None,
+/// };
+/// ```
+#[derive(Debug, Clone)]
+pub struct ConstAssignmentParams {
+    pub param_complexity: RangeInclusive<usize>,
+    pub nesting_complexity: RangeInclusive<usize>,
+    pub modifier_kw: Option<String>,
+    pub identifier: BoxedStrategy<String>,
+}
+
+impl Default for ConstAssignmentParams {
+    fn default() -> Self {
+        Self {
+            modifier_kw: Some("const".to_string()),
+            param_complexity: 1..=5,
+            nesting_complexity: 0..=3,
+            identifier: gen_identifier_strategy().boxed(),
+        }
+    }
 }
 
 /// Composes arguments with operators based on arity.
@@ -317,9 +356,10 @@ fn gen_unary_expr(depth: u32,) -> BoxedStrategy<String> {
     }).boxed()
 }
 
-fn gen_expression_by_type(expr_type: ExprTypes, ) -> BoxedStrategy<String> {
+fn gen_expression_by_type(expr_type: ExprTypes,nesting_complexity: RangeInclusive<usize>) -> BoxedStrategy<String> {
     // Use 1..=3u32 to avoid type mismatch
-    (1..=3u32).prop_flat_map(move |depth| {
+    (nesting_complexity).prop_flat_map(move |depth| {
+        let depth = depth as u32;
         match expr_type {
             ExprTypes::UnaryExpr => gen_unary_expr(depth),
             ExprTypes::BinaryExpr => gen_binary_expr(depth),
@@ -329,7 +369,7 @@ fn gen_expression_by_type(expr_type: ExprTypes, ) -> BoxedStrategy<String> {
     }).boxed()
 }
 
-fn gen_expression_cexpr() -> BoxedStrategy<String> {
+fn gen_expression_cexpr(nesting_complexity: RangeInclusive<usize>) -> BoxedStrategy<String> {
     let expr_types = vec![
         ExprTypes::UnaryExpr,
         ExprTypes::BinaryExpr,
@@ -338,7 +378,7 @@ fn gen_expression_cexpr() -> BoxedStrategy<String> {
     ];
 
     psample::select(expr_types)
-        .prop_flat_map(move |expr_type| gen_expression_by_type(expr_type))
+        .prop_flat_map(move |expr_type| gen_expression_by_type(expr_type,nesting_complexity.clone()))
         .boxed()
 }
 
@@ -367,10 +407,10 @@ fn gen_expression_cexpr() -> BoxedStrategy<String> {
 /// 2. Simplifying operators (e.g., `&&` → `&` → `+` → etc.)
 /// 3. Replacing complex sub-expressions with simpler primitives
 /// 4. Eventually reaching a single primitive value
-fn gen_any_expression() -> BoxedStrategy<String> {
+fn gen_any_expression(param_complexity: RangeInclusive<usize>,nesting_complexity: RangeInclusive<usize>) -> BoxedStrategy<String> {
     let exprs = proptest::collection::vec(
-        gen_expression_cexpr(),
-        1..=5,
+        gen_expression_cexpr(nesting_complexity),
+        param_complexity,
     );
 
     exprs.prop_flat_map(|exprs: Vec<String>| {
@@ -396,11 +436,14 @@ fn gen_any_expression() -> BoxedStrategy<String> {
 }
 
 impl Arbitrary for ConstAssignment {
-    type Parameters = ();
+    type Parameters = ConstAssignmentParams;
     type Strategy = BoxedStrategy<Self>;
 
-    fn arbitrary_with((): ()) -> Self::Strategy {
-        let const_kw = Just("const".to_string());
+    fn arbitrary_with(args: Self::Parameters) -> Self::Strategy {
+        let const_kw = match &args.modifier_kw {
+            Some(kw) => Just(kw.clone()).boxed(),
+            None => Just("".to_string()).boxed(),
+        };
          let type_kw = proptest::sample::select(vec![
             "int",
             "char", 
@@ -420,9 +463,12 @@ impl Arbitrary for ConstAssignment {
             "signed short",
             "signed long",
             "signed long long",
-        ]).prop_map(|s| s.to_string());
-        let identifier = gen_identifier_strategy();
-        let rvalue_exp = gen_any_expression();
+         ]).prop_map(|s| s.to_string());
+         let identifier = args.identifier;
+         let rvalue_exp = gen_any_expression(
+             args.param_complexity,
+             args.nesting_complexity,
+         );
         
         (const_kw, type_kw, identifier, rvalue_exp)
             .prop_map(|(_const, _type, _identifier, _rvalue)| ConstAssignment {
