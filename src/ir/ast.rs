@@ -128,6 +128,12 @@ pub enum Statement<Ty> {
         ty: Type,
         init: Box<ExprD<Ty>>,
     },
+    /// Constant declaration with initialization: `const int x = expr`.
+    ConstDecl {
+        name: String,
+        ty: Type,
+        init: Box<ExprD<Ty>>,
+    },
     Assign {
         target: Box<ExprD<Ty>>,
         value: Box<ExprD<Ty>>,

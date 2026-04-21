@@ -7,8 +7,8 @@
 //! * [`statement`] — the top-level entry point; tries each statement form in
 //!   order: `return`, `if`, `while`, call-statement, block, `const` declaration,
 //!   declaration, assignment.
-//! * [`const_statement`] — `const T name = expr ;` (syntax sugar; same AST as
-//!   [`Statement::Decl`] — see [`const_statement`] implementation).
+//! * [`const_statement`] — `const T name = expr ;`, producing
+//!   [`Statement::ConstDecl`].
 //! * [`assignment`] — parses `lvalue = expression ;`; exported separately
 //!   because the test suite uses it directly.
 //!
@@ -87,8 +87,8 @@ fn return_statement(input: &str) -> IResult<&str, UncheckedStmt> {
 
 /// Parse `const T name = expr ;`.
 ///
-/// Lowered to [`Statement::Decl`] so later phases stay unchanged; immutability
-/// would be enforced by a dedicated pass if added.
+/// Produces [`Statement::ConstDecl`] so later phases can preserve immutability
+/// information.
 pub fn const_statement(input: &str) -> IResult<&str, UncheckedStmt> {
     map(
         tuple((
@@ -100,7 +100,7 @@ pub fn const_statement(input: &str) -> IResult<&str, UncheckedStmt> {
             preceded(multispace0, char(';')),
         )),
         |(_, ty, name, _, init, _)| {
-            wrap(Statement::Decl {
+            wrap(Statement::ConstDecl {
                 name: name.to_string(),
                 ty,
                 init: Box::new(init),
@@ -233,4 +233,57 @@ pub fn assignment(input: &str) -> IResult<&str, UncheckedStmt> {
             })
         },
     )(input)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::statement;
+    use crate::ir::ast::{Expr, Literal, Statement, Type};
+    use nom::combinator::all_consuming;
+
+    #[test]
+    fn parses_const_declaration_as_const_decl() {
+        let (_, stmt) = all_consuming(statement)("const int MAX_SIZE = 100;").expect("should parse");
+
+        match stmt.stmt {
+            Statement::ConstDecl { name, ty, init } => {
+                assert_eq!(name, "MAX_SIZE");
+                assert_eq!(ty, Type::Int);
+                assert_eq!(init.exp, Expr::Literal(Literal::Int(100)));
+            }
+            other => panic!("expected ConstDecl, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn parses_const_expression_initializer() {
+        let (_, stmt) = all_consuming(statement)("const int DOUBLE = 2 * 21;").expect("should parse");
+
+        match stmt.stmt {
+            Statement::ConstDecl { name, ty, .. } => {
+                assert_eq!(name, "DOUBLE");
+                assert_eq!(ty, Type::Int);
+            }
+            other => panic!("expected ConstDecl, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn keeps_mutable_declaration_as_decl() {
+        let (_, stmt) = all_consuming(statement)("int x = 5;").expect("should parse");
+
+        match stmt.stmt {
+            Statement::Decl { .. } => {}
+            Statement::ConstDecl { .. } => panic!("plain Decl must not produce ConstDecl"),
+            other => panic!("unexpected statement: {:?}", other),
+        }
+    }
+
+    #[test]
+    fn rejects_const_without_initializer() {
+        assert!(
+            all_consuming(statement)("const int X;").is_err(),
+            "const without initializer should fail to parse"
+        );
+    }
 }
