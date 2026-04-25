@@ -54,6 +54,21 @@ use crate::ir::ast::{
 };
 use crate::stdlib::NativeRegistry;
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Mutability {
+    Mutable,
+    Const,
+}
+
+#[derive(Debug, Clone)]
+struct BindingInfo {
+    ty: Type,
+    mutability: Mutability,
+}
+
+/// Specific environment of the type checker: type storage + mutability.
+type TypeEnv = Environment<BindingInfo>;
+
 /// A type error reported by the type checker.
 #[derive(Debug, Clone, PartialEq)]
 pub struct TypeError {
@@ -92,22 +107,32 @@ pub fn type_check(program: &UncheckedProgram) -> Result<CheckedProgram, TypeErro
         }
     }
 
-    let mut env = Environment::<Type>::new();
+    let mut env = TypeEnv::new();
 
     // Register native stdlib functions as Type::Fun bindings.
     let registry = NativeRegistry::default();
     for (name, entry) in registry.iter() {
-        env.declare(
-            name.clone(),
-            Type::Fun(entry.params.clone(), Box::new(entry.return_type.clone())),
-        );
-    }
+    let fun_ty = Type::Fun(entry.params.clone(), Box::new(entry.return_type.clone()));
+    env.declare(
+        name.clone(),
+        BindingInfo {
+            ty: fun_ty,
+            mutability: Mutability::Const, // funções não podem ser “re-atribuídas”
+        },
+    );
+}
 
-    // Register user-defined function signatures as Type::Fun bindings.
     for f in &program.functions {
-        let param_tys = f.params.iter().map(|(_, ty)| ty.clone()).collect();
-        env.declare(f.name.clone(), Type::Fun(param_tys, Box::new(f.return_type.clone())));
-    }
+    let param_tys = f.params.iter().map(|(_, ty)| ty.clone()).collect();
+    let fun_ty = Type::Fun(param_tys, Box::new(f.return_type.clone()));
+    env.declare(
+        f.name.clone(),
+        BindingInfo {
+            ty: fun_ty,
+            mutability: Mutability::Const, // assinatura de função também é “const”
+        },
+    );
+}
 
     // Clean snapshot: only function bindings, no variable bindings.
     let fn_snapshot = env.snapshot();
@@ -122,13 +147,19 @@ pub fn type_check(program: &UncheckedProgram) -> Result<CheckedProgram, TypeErro
 
 fn type_check_fun_decl(
     f: &UncheckedFunDecl,
-    env: &mut Environment<Type>,
-    fn_snapshot: &HashMap<String, Type>,
+    env: &mut TypeEnv,
+    fn_snapshot: &HashMap<String, BindingInfo>,
 ) -> Result<CheckedFunDecl, TypeError> {
     // Restore to clean function-only state, then add parameters.
     env.restore(fn_snapshot.clone());
     for (name, ty) in &f.params {
-        env.declare(name.clone(), ty.clone());
+        env.declare(
+        name.clone(),
+        BindingInfo {
+            ty: ty.clone(),
+            mutability: Mutability::Mutable, // parâmetros são variáveis normais
+        },
+    );
     }
     let body = type_check_stmt(&f.body, env, &f.return_type)?;
     Ok(FunDecl {
@@ -141,52 +172,64 @@ fn type_check_fun_decl(
 
 fn type_check_stmt(
     s: &UncheckedStmt,
-    env: &mut Environment<Type>,
+    env: &mut TypeEnv,
     expected_return: &Type,
 ) -> Result<CheckedStmt, TypeError> {
     let stmt = match &s.stmt {
         Statement::Decl { name, ty, init } => {
-            if ty == &Type::Unit {
-                return Err(TypeError::new("cannot declare variable of type void"));
-            }
-            if env.get(name).is_some() {
-                return Err(TypeError::new(format!("redeclaration of variable: {}", name)));
-            }
-            let init_checked = type_check_expr_to_typed(init, env)?;
-            if !types_compatible(&init_checked.ty, ty) {
-                return Err(TypeError::new(format!(
-                    "declaration of {}: expected {:?}, got {:?}",
-                    name, ty, init_checked.ty
-                )));
-            }
-            env.declare(name.clone(), ty.clone());
-            Statement::Decl {
-                name: name.clone(),
-                ty: ty.clone(),
-                init: Box::new(init_checked),
-            }
-        }
+    if ty == &Type::Unit {
+        return Err(TypeError::new("cannot declare variable of type void"));
+    }
+    if env.get(name).is_some() {
+        return Err(TypeError::new(format!("redeclaration of variable: {}", name)));
+    }
+    let init_checked = type_check_expr_to_typed(init, env)?;
+    if !types_compatible(&init_checked.ty, ty) {
+        return Err(TypeError::new(format!(
+            "declaration of {}: expected {:?}, got {:?}",
+            name, ty, init_checked.ty
+        )));
+    }
+    env.declare(
+        name.clone(),
+        BindingInfo {
+            ty: ty.clone(),
+            mutability: Mutability::Mutable,
+        },
+    );
+    Statement::Decl {
+        name: name.clone(),
+        ty: ty.clone(),
+        init: Box::new(init_checked),
+    }
+}
         Statement::ConstDecl { name, ty, init } => {
-            if ty == &Type::Unit {
-                return Err(TypeError::new("cannot declare variable of type void"));
-            }
-            if env.get(name).is_some() {
-                return Err(TypeError::new(format!("redeclaration of variable: {}", name)));
-            }
-            let init_checked = type_check_expr_to_typed(init, env)?;
-            if !types_compatible(&init_checked.ty, ty) {
-                return Err(TypeError::new(format!(
-                    "declaration of {}: expected {:?}, got {:?}",
-                    name, ty, init_checked.ty
-                )));
-            }
-            env.declare(name.clone(), ty.clone());
-            Statement::ConstDecl {
-                name: name.clone(),
-                ty: ty.clone(),
-                init: Box::new(init_checked),
-            }
-        }
+    if ty == &Type::Unit {
+        return Err(TypeError::new("cannot declare variable of type void"));
+    }
+    if env.get(name).is_some() {
+        return Err(TypeError::new(format!("redeclaration of variable: {}", name)));
+    }
+    let init_checked = type_check_expr_to_typed(init, env)?;
+    if !types_compatible(&init_checked.ty, ty) {
+        return Err(TypeError::new(format!(
+            "declaration of {}: expected {:?}, got {:?}",
+            name, ty, init_checked.ty
+        )));
+    }
+    env.declare(
+        name.clone(),
+        BindingInfo {
+            ty: ty.clone(),
+            mutability: Mutability::Const,
+        },
+    );
+    Statement::ConstDecl {
+        name: name.clone(),
+        ty: ty.clone(),
+        init: Box::new(init_checked),
+    }
+}
         Statement::Assign { target, value } => {
             let value_checked = type_check_expr_to_typed(value, env)?;
             type_check_assign_target(&target.exp, &value_checked.ty, env)?;
@@ -287,7 +330,7 @@ fn type_check_stmt(
 fn check_call(
     name: &str,
     args: &[CheckedExpr],
-    env: &Environment<Type>,
+    env: &TypeEnv,
 ) -> Result<(), TypeError> {
     match env.get(name) {
         Some(Type::Fun(param_tys, _)) => {
@@ -320,20 +363,28 @@ fn check_call(
 fn type_check_assign_target(
     target: &Expr<()>,
     value_ty: &Type,
-    env: &Environment<Type>,
+    env: &TypeEnv,
 ) -> Result<(), TypeError> {
     match target {
         Expr::Ident(name) => {
-            let declared_ty = env
-                .get(name)
-                .ok_or_else(|| TypeError::new(format!("undeclared variable: {}", name)))?;
-            if !types_compatible(value_ty, declared_ty) {
-                return Err(TypeError::new(format!(
-                    "assignment to {}: expected {:?}, got {:?}",
-                    name, declared_ty, value_ty
-                )));
-            }
-            Ok(())
+            let binding = env
+        .get(name)
+        .ok_or_else(|| TypeError::new(format!("undeclared variable: {}", name)))?;
+
+    if binding.mutability == Mutability::Const {
+        return Err(TypeError::new(format!(
+            "cannot assign to constant '{}'",
+            name
+        )));
+    }
+
+    if !types_compatible(value_ty, &binding.ty) {
+        return Err(TypeError::new(format!(
+            "assignment to {}: expected {:?}, got {:?}",
+            name, binding.ty, value_ty
+        )));
+    }
+    Ok(())
         }
         Expr::Index { base, index } => {
             let index_ty = type_check_expr(index, env)?;
@@ -356,7 +407,7 @@ fn type_check_assign_target(
 
 fn type_check_expr_to_typed(
     e: &UncheckedExpr,
-    env: &Environment<Type>,
+    env: &TypeEnv,
 ) -> Result<CheckedExpr, TypeError> {
     let ty = type_check_expr(e, env)?;
     let exp = type_check_expr_inner(&e.exp, env)?;
@@ -365,7 +416,7 @@ fn type_check_expr_to_typed(
 
 fn type_check_expr_inner(
     e: &Expr<()>,
-    env: &Environment<Type>,
+    env: &TypeEnv,
 ) -> Result<Expr<Type>, TypeError> {
     match e {
         Expr::Literal(l) => Ok(Expr::Literal(l.clone())),
@@ -442,17 +493,21 @@ fn type_check_expr_inner(
 
 fn type_check_expr(
     e: &UncheckedExpr,
-    env: &Environment<Type>,
+    env: &TypeEnv,
 ) -> Result<Type, TypeError> {
     match &e.exp {
         Expr::Literal(l) => Ok(literal_type(l)),
         Expr::Ident(name) => match env.get(name) {
-            Some(Type::Fun(_, _)) => Err(TypeError::new(format!(
+            Some(binding) => {
+        match &binding.ty {
+            Type::Fun(_, _) => Err(TypeError::new(format!(
                 "cannot use function '{}' as a value",
                 name
             ))),
-            Some(ty) => Ok(ty.clone()),
-            None => Err(TypeError::new(format!("undeclared variable: {}", name))),
+            ty => Ok(ty.clone()),
+        }
+    }
+    None => Err(TypeError::new(format!("undeclared variable: {}", name))),
         },
         Expr::Neg(inner) => {
             let ty = type_check_expr(inner, env)?;
