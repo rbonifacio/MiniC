@@ -810,3 +810,133 @@ fn test_global_const_none() {
     let (_, prog) = all_consuming(program)("void main() {}").expect("should parse");
     assert_eq!(prog.constants.len(), 0);
 }
+// =============================================================================
+// PATCH 2 — tests/type_checker.rs
+// Milestone 2: Type Checker
+// ---------------------------------------------------------------------------
+// Const declarations — valid programs
+// ---------------------------------------------------------------------------
+
+/// A local `const int` inside `main` is well-typed.
+#[test]
+fn test_const_local_int_ok() {
+    assert!(parse_and_type_check("void main() { const int N = 42; }").is_ok());
+}
+
+/// A local `const float` inside a function is well-typed.
+#[test]
+fn test_const_local_float_ok() {
+    assert!(parse_and_type_check("void main() { const float PI = 3.14159; }").is_ok());
+}
+
+/// A const can be read in an expression inside the same scope.
+#[test]
+fn test_const_used_in_expression() {
+    assert!(parse_and_type_check(
+        "void main() { const int N = 10; int doubled = N * 2; }"
+    ).is_ok());
+}
+
+/// A const can be passed as a function argument.
+#[test]
+fn test_const_passed_as_argument() {
+    assert!(parse_and_type_check(r#"
+        int double(int x) { return x * 2; }
+        void main() { const int N = 5; int r = double(N); }
+    "#).is_ok());
+}
+
+/// Int/float coercion applies to const initialisers.
+#[test]
+fn test_const_float_from_int_expr_coercion() {
+    assert!(parse_and_type_check(
+        "void main() { const float half = 1 + 0.5; }"
+    ).is_ok());
+}
+
+/// A global `const int` is visible inside `main`.
+#[test]
+fn test_const_global_visible_in_main() {
+    assert!(parse_and_type_check(
+        "const int MAX = 100;\nvoid main() { int x = MAX; }"
+    ).is_ok());
+}
+
+/// A global const is visible in every user-defined function, not just `main`.
+#[test]
+fn test_const_global_visible_in_all_functions() {
+    assert!(parse_and_type_check(r#"
+        const int LIMIT = 50;
+        int capped(int x) {
+            if x > LIMIT { return LIMIT; }
+            return x;
+        }
+        void main() { int r = capped(200); }
+    "#).is_ok());
+}
+
+// ---------------------------------------------------------------------------
+// Const declarations — type errors
+// ---------------------------------------------------------------------------
+
+/// Assigning to a local const is a type error.
+#[test]
+fn test_const_local_assign_rejected() {
+    assert!(
+        parse_and_type_check("void main() { const int N = 10; N = 20; }").is_err(),
+        "assignment to a local const must be rejected"
+    );
+}
+
+/// The error message for assigning to a const mentions immutability.
+#[test]
+fn test_const_assign_error_message_mentions_const() {
+    let err = parse_and_type_check("void main() { const int N = 10; N = 20; }")
+        .unwrap_err();
+    let msg = err.message.to_lowercase();
+    assert!(
+        msg.contains("const") || msg.contains("constant") || msg.contains("immutable"),
+        "error '{}' should mention const/constant/immutable",
+        err.message
+    );
+}
+
+/// Assigning to a global const inside `main` is a type error.
+#[test]
+fn test_const_global_assign_rejected_in_main() {
+    assert!(
+        parse_and_type_check("const int MAX = 100;\nvoid main() { MAX = 200; }").is_err(),
+        "assignment to global const must be rejected"
+    );
+}
+
+/// Assigning to a global const inside a non-main function is also a type error.
+#[test]
+fn test_const_global_assign_rejected_in_other_function() {
+    assert!(
+        parse_and_type_check(r#"
+            const int LIMIT = 10;
+            void reset() { LIMIT = 0; }
+            void main() {}
+        "#).is_err(),
+        "assignment to global const in any function must be rejected"
+    );
+}
+
+/// A type mismatch in a const initialiser is a type error (`const int x = true`).
+#[test]
+fn test_const_init_type_mismatch() {
+    assert!(
+        parse_and_type_check("void main() { const int X = true; }").is_err(),
+        "bool initialiser for const int must be a type error"
+    );
+}
+
+/// `const void x = …` is rejected (void cannot be a variable type).
+#[test]
+fn test_const_void_type_rejected() {
+    assert!(
+        parse_and_type_check("void main() { const void X = 1; }").is_err(),
+        "const void must be rejected"
+    );
+}
