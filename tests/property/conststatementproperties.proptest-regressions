@@ -1,0 +1,10 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc 4f37b0bc45c67577c8c1208ce52295b11d59c2793b5685f3c8012100342ba107 # shrinks to assign = ConstAssignment { _const: "const", _type: "int", _identifier: "_", _rvalue: "+~(A_9vOVSb2_XsCOEav_6_H_ix_u_6bG - \" ! ezVLA A0D! C3vpd \")" }
+cc 69a82561d1b3c21f735ec495d22cfb105891949774263039cb12d4da9062f8d4 # shrinks to assign = ConstAssignment { _const: "const", _type: "float", _identifier: "a", _rvalue: "\" 7.P-?uWE\"" }
+cc 4764a2c9af9862e0a349f005d54d63c2978af01da32b89e480c7b879770e713d # shrinks to assign = ConstAssignment { _const: "const", _type: "int", _identifier: "_123", _rvalue: "\"HA?,8\"" }
+cc b9302267b3e9dce09e3ff5b81540d948a78c2589b6a95819e58156cbdc667bee # shrinks to assign = ConstAssignment { _const: "const", _type: "float", _identifier: "if", _rvalue: "\"QNHsjn!?\"" }
