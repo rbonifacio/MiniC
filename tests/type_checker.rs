@@ -27,6 +27,7 @@ fn test_type_check_int_float_coercion() {
     let prog = result.unwrap();
     let main_fn = prog.functions.iter().find(|f| f.name == "main").unwrap();
     if let mini_c::ir::ast::Statement::Decl { ref init, .. } = main_fn.body.stmt {
+        let init = init.as_ref().expect("Decl init should be present");
         assert_eq!(init.ty, Type::Float);
     } else {
         panic!("expected Decl");
@@ -201,4 +202,27 @@ fn test_type_check_sqrt_wrong_arity() {
 fn test_type_check_print_wrong_arity() {
     let result = parse_and_type_check("void main() { print(1, 2); }");
     assert!(result.is_err(), "expected arity error for print(1, 2)");
+}
+
+// LAMBDA
+
+#[test]
+fn test_type_check_lambda_capture() {
+    let src = r#"
+        void main() {
+            int externo = 10;
+            fn(int) -> int f = fn(int x) -> int { return x + externo; };
+        }
+    "#;
+    let (_, unchecked) = program(src).expect("Falha no parser");
+    // Usando &unchecked para evitar erro de mismatched types (E0308)
+    let result = type_check(&unchecked);
+    assert!(result.is_ok(), "Type Checker não encontrou a variável capturada 'externo'");
+}
+
+#[test]
+fn test_type_check_void_lambda() {
+    let src = "void main() { fn() -> void f = fn() -> void { return; }; }";
+    let (_, unchecked) = program(src).expect("Falha no parser");
+    assert!(type_check(&unchecked).is_ok());
 }

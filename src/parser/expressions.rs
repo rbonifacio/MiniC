@@ -34,9 +34,11 @@
 //! recursing on the right-hand side, which would accidentally produce
 //! right-associative trees.
 
-use crate::ir::ast::{Expr, ExprD, UncheckedExpr};
+use crate::ir::ast::{Expr, ExprD, Param, UncheckedExpr};
 use crate::parser::identifiers::identifier;
+use crate::parser::functions::type_name;
 use crate::parser::literals::literal;
+use crate::parser::statements::block_statement;
 use nom::{
     branch::alt,
     bytes::complete::tag,
@@ -65,11 +67,51 @@ pub fn parse_call(input: &str) -> IResult<&str, (String, Vec<UncheckedExpr>)> {
     Ok((rest, (name.to_string(), args)))
 }
 
+/// Parser de Lambda
+fn lambda_expr(input: &str) -> IResult<&str, UncheckedExpr> {
+    // fn ( Type name, ... ) -> Type  { ... }
+    let (rest, _) = preceded(multispace0, tag("fn"))(input)?;
+    let (rest, params) = delimited(
+        preceded(multispace0, tag("(")),
+        separated_list0(
+            preceded(multispace0, tag(",")),
+            map(
+                tuple((
+                    preceded(multispace0, type_name),
+                    preceded(nom::character::complete::multispace1, identifier),
+                )),
+                |(ty, name)| -> Param { (name.to_string(), ty) },
+            ),
+        ),
+        preceded(multispace0, tag(")")),
+    )(rest)?;
+    let (rest, _) = preceded(multispace0, tag("->"))(rest)?;
+    let (rest, return_tipo) = preceded(multispace0, type_name)(rest)?;
+    let (rest, crp) = preceded(multispace0, block_statement)(rest)?;
+    Ok((
+        rest,
+        wrap(Expr::Lambda {
+            params,
+            return_tipo,
+            crp: Box::new(crp),
+        }),
+    ))
+}
+
+/// Parser de lista de args
+fn arg_list(input: &str) -> IResult<&str, Vec<UncheckedExpr>> {
+    delimited(
+        preceded(multispace0, tag("(")),
+        separated_list0(preceded(multispace0, tag(",")), preceded(multispace0, expression)),
+        preceded(multispace0, tag(")")),
+    )(input)
+}
+
 /// Atom: literal, call, array literal, identifier, or parenthesized expression.
 fn atom(input: &str) -> IResult<&str, UncheckedExpr> {
     alt((
+        lambda_expr,
         map(literal, |l| wrap(Expr::Literal(l.into()))),
-        map(parse_call, |(name, args)| wrap(Expr::Call { name, args })),
         map(
             delimited(
                 preceded(multispace0, char('[')),
@@ -94,6 +136,21 @@ fn atom(input: &str) -> IResult<&str, UncheckedExpr> {
 fn primary(input: &str) -> IResult<&str, UncheckedExpr> {
     let (mut rest, mut acc) = atom(input)?;
     loop {
+        if let Ok((r, args)) = arg_list(rest) {
+            acc = if let Expr::Ident(name) = &acc.exp {
+                wrap(Expr::Call {
+                    name: name.clone(),
+                    args,
+                })
+            } else {
+                wrap(Expr::CallExpr {
+                    chmd: Box::new(acc),
+                    args,
+                })
+            };
+            rest = r;
+            continue;
+        }
         let index_parse = delimited(
             preceded(multispace0, char('[')),
             preceded(multispace0, expression),

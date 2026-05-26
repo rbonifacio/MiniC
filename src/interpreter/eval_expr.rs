@@ -145,7 +145,30 @@ pub fn eval_expr(expr: &CheckedExpr, env: &mut Environment<Value>) -> Result<Val
         Expr::Call { name, args } => {
             let arg_vals: Result<Vec<Value>, RuntimeError> =
                 args.iter().map(|a| eval_expr(a, env)).collect();
-            eval_call(name, arg_vals?, env)
+
+            let callee = env.get(name)
+                .cloned()
+                .ok_or_else(|| RuntimeError::new(format!("undefined function '{}'", name)))?;
+
+            eval_call_value(callee, arg_vals?, env)
+        }
+
+        Expr::CallExpr { chmd, args } => {
+            let callee_val = eval_expr(chmd, env)?;
+            let arg_vals: Result<Vec<Value>, RuntimeError> =
+                args.iter().map(|a| eval_expr(a, env)).collect();
+            eval_call_value(callee_val, arg_vals?, env)
+        }
+
+        Expr::Lambda { params, return_tipo, crp } => {
+            let captured = env.snapshot();
+            let decl = crate::ir::ast::FunDecl {
+                name: "<lambda>".to_string(),
+                params: params.clone(),
+                return_type: return_tipo.clone(),
+                body: crp.clone(),
+            };
+            Ok(Value::Fn(FnValue::Closure { decl, captured }))
         }
     }
 }
@@ -177,6 +200,63 @@ pub fn eval_call(
         }
         Some(_) => Err(RuntimeError::new(format!("'{}' is not a function", name))),
         None => Err(RuntimeError::new(format!("undefined function '{}'", name))),
+    }
+}
+
+fn eval_call_value(
+    callee: Value,
+    args: Vec<Value>,
+    env: &mut Environment<Value>,
+) -> Result<Value, RuntimeError> {
+    match callee {
+        Value::Fn(FnValue::Native(f)) => (f)(args),
+
+        Value::Fn(FnValue::UserDefined(decl)) => {
+            if args.len() != decl.params.len() {
+                return Err(RuntimeError::new(format!(
+                    "function '{}' expects {} arguments, got {}",
+                    decl.name,
+                    decl.params.len(),
+                    args.len()
+                )));
+            }
+            let snapshot = env.snapshot();
+            for ((param_name, _), val) in decl.params.iter().zip(args.into_iter()) {
+                env.declare(param_name.clone(), val);
+            }
+            let result = exec_stmt(&decl.body, env)?;
+            env.restore(snapshot);
+            Ok(result.unwrap_or(Value::Void))
+        }
+
+        Value::Fn(FnValue::Closure { decl, captured }) => {
+            if args.len() != decl.params.len() {
+                return Err(RuntimeError::new(format!(
+                    "function expects {} arguments, got {}",
+                    decl.params.len(),
+                    args.len()
+                )));
+            }
+
+            let caller_snapshot = env.snapshot();
+
+            // entra no ambiente capturado (lexical scoping)
+            env.restore(captured);
+
+            // bind dos params “por cima” do capturado
+            for ((param_name, _), val) in decl.params.iter().zip(args.into_iter()) {
+                env.declare(param_name.clone(), val);
+            }
+
+            let result = exec_stmt(&decl.body, env)?;
+
+            // volta para o caller
+            env.restore(caller_snapshot);
+
+            Ok(result.unwrap_or(Value::Void))
+        }
+
+        other => Err(RuntimeError::new(format!("'{}' is not a function", other))),
     }
 }
 
