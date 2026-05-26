@@ -72,6 +72,8 @@ pub enum Literal {
 }
 
 /// Expression with type decoration.
+pub type Name = String;
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct ExprD<Ty> {
     pub exp: Expr<Ty>,
