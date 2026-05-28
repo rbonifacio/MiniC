@@ -1,0 +1,11 @@
+void main() {
+    float a = 10.0;
+    int b = 5;
+    str c = "teste";
+    bool d = true;
+
+    float* a_ref = &a;
+    int* b_ref = &b;
+    str* c_ref = &c;
+    bool* d_ref = &d;
+}

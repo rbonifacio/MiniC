@@ -162,11 +162,22 @@ fn while_statement(input: &str) -> IResult<&str, UncheckedStmt> {
 
 /// Parse an lvalue: identifier followed by zero or more `[ expr ]` suffixes.
 fn lvalue(input: &str) -> IResult<&str, UncheckedExpr> {
-    let (mut rest, id) = preceded(multispace0, identifier)(input)?;
-    let mut acc = ExprD {
-        exp: Expr::Ident(id.to_string()),
-        ty: (),
-    };
+    let (mut rest, mut acc) = preceded(
+        multispace0,
+        alt((
+            map(preceded(tag("*"), identifier), |id| ExprD {
+                exp: Expr::Deref(Box::new(ExprD {
+                    exp: Expr::Ident(id.to_string()),
+                    ty: (),
+                })),
+                ty: (),
+            }),
+            map(identifier, |id| ExprD {
+                exp: Expr::Ident(id.to_string()),
+                ty: (),
+            }),
+        )),
+    )(input)?;
     loop {
         let index_parse = delimited(
             preceded(multispace0, char('[')),
