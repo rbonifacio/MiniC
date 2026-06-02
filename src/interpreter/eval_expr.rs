@@ -147,9 +147,11 @@ pub fn eval_expr(expr: &CheckedExpr, env: &mut Environment<Value>) -> Result<Val
                 args.iter().map(|a| eval_expr(a, env)).collect();
             eval_call(name, arg_vals?, env)
         }
-
-        Expr::AddrOf(_) | Expr::Deref(_) => Err(RuntimeError::new(
-            "address-of and dereference are not implemented in the interpreter yet",
+        Expr::AddrOf(elem) => Err(RuntimeError::new(
+            "address-of is not implemented in the interpreter yet",
+        )),
+        Expr::Deref(_elem) => Err(RuntimeError::new(
+            "dereference is not implemented in the interpreter yet",
         )),
     }
 }
