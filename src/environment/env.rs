@@ -59,14 +59,12 @@ use std::collections::{HashMap, HashSet};
 /// Both variable bindings and function bindings are stored in the same map.
 pub struct Environment<V> {
     bindings: HashMap<String, V>,
-    pointer_bindings: HashMap<String, String>,
 }
 
 impl<V: Clone> Environment<V> {
     pub fn new() -> Self {
         Self {
             bindings: HashMap::new(),
-            pointer_bindings: HashMap::new(),
         }
     }
 
@@ -108,26 +106,6 @@ impl<V: Clone> Environment<V> {
     /// Remove any binding whose name is not in `outer` (for block-exit cleanup).
     pub fn remove_new(&mut self, outer: &HashSet<String>) {
         self.bindings.retain(|k, _| outer.contains(k));
-    }
-
-    //bind a pointer name to an address    
-    pub fn declare_pointer(&mut self, name: impl Into<String>, address: String) {
-        self.pointer_bindings.insert(name.into(), address);
-    }
-
-    //look up a pointer binding by name
-    pub fn get_pointer(&self, name: &str) -> Option<&String> {
-        self.pointer_bindings.get(name)
-    }
-
-    //update an existing pointer binding. Returns `false` if the name is not bound.
-    pub fn set_pointer(&mut self, name: &str, address: String) -> bool {
-        if self.pointer_bindings.contains_key(name) {
-            self.pointer_bindings.insert(name.to_string(), address);
-            true
-        } else {
-            false
-        }
     }
 }
 
