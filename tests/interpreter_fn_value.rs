@@ -1,4 +1,6 @@
-use mini_c::{interpreter::interpret, parser::program, semantic::type_check};
+use mini_c::interpreter::interpret;
+use mini_c::parser::program;
+use mini_c::semantic::type_check;
 
 fn run(src: &str) -> Result<(), String> {
     let (_, unchecked) = program(src).map_err(|e| format!("parse error: {:?}", e))?;
@@ -15,4 +17,16 @@ fn test_fn_value_runtime() {
         }
     "#;
     assert!(run(src).is_ok(), "expected runtime to succeed");
+}
+
+#[test]
+fn test_fn_value_call_through_variable() {
+    let src = r#"
+        void main() {
+            fn(int) -> int f = fn(int x) -> int { return x * 2; };
+            fn(int) -> int g = f;
+            print(g(21));
+        }
+    "#;
+    assert!(run(src).is_ok(), "expected function call through variable to succeed");
 }

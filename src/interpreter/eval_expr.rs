@@ -162,7 +162,7 @@ pub fn eval_expr(expr: &CheckedExpr, env: &mut Environment<Value>) -> Result<Val
 
         Expr::Lambda { params, return_tipo, crp } => {
             let captured = env.snapshot();
-            let decl = crate::ir::ast::FunDecl {
+            let decl = crate::ir::ast::CheckedFunDecl {
                 name: "<lambda>".to_string(),
                 params: params.clone(),
                 return_type: return_tipo.clone(),
