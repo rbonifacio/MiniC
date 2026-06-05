@@ -9,9 +9,10 @@
 //! * [`Literal`] — a constant value written directly in source code.
 //! * [`Expr`] / [`ExprD`] — expressions (arithmetic, comparisons, calls, …).
 //! * [`Statement`] / [`StatementD`] — statements (declarations, assignments,
-//!   `if`, `while`, `return`, blocks).
+//!   `if`, `while`, `return`, `assert`, blocks).
 //! * [`FunDecl`] — a single function declaration with its body.
-//! * [`Program`] — the top-level container: a list of function declarations.
+//! * [`TestDecl`] — a named test block with a body.
+//! * [`Program`] — the top-level container: function declarations and test blocks.
 //!
 //! Convenience type aliases pin the `Ty` parameter to either `()` or `Type`:
 //! `UncheckedExpr`, `CheckedExpr`, `UncheckedProgram`, `CheckedProgram`, etc.
@@ -151,6 +152,8 @@ pub enum Statement<Ty> {
     },
     /// Return statement: `return [expr]`.
     Return(Option<Box<ExprD<Ty>>>),
+    /// Assertion: `assert expr ;`. Fails at runtime if expr evaluates to false.
+    Assert(Box<ExprD<Ty>>),
 }
 
 /// A typed parameter: (name, type).
@@ -165,10 +168,19 @@ pub struct FunDecl<Ty> {
     pub body: Box<StatementD<Ty>>,
 }
 
-/// A complete MiniC program: function declarations only. Execution starts at `main`.
+/// A named test block: `test "name" { stmts }`.
+#[derive(Debug, Clone, PartialEq)]
+pub struct TestDecl<Ty> {
+    pub name: String,
+    pub body: Box<StatementD<Ty>>,
+}
+
+/// A complete MiniC program: function declarations and test blocks.
+/// Execution starts at `main` (--run mode) or runs all tests (--test mode).
 #[derive(Debug, Clone, PartialEq)]
 pub struct Program<Ty> {
     pub functions: Vec<FunDecl<Ty>>,
+    pub tests: Vec<TestDecl<Ty>>,
 }
 
 // Type synonyms for checked and unchecked phases.
@@ -178,5 +190,7 @@ pub type UncheckedStmt = StatementD<()>;
 pub type CheckedStmt = StatementD<Type>;
 pub type UncheckedFunDecl = FunDecl<()>;
 pub type CheckedFunDecl = FunDecl<Type>;
+pub type UncheckedTestDecl = TestDecl<()>;
+pub type CheckedTestDecl = TestDecl<Type>;
 pub type UncheckedProgram = Program<()>;
 pub type CheckedProgram = Program<Type>;

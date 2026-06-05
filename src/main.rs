@@ -1,10 +1,11 @@
 use std::{env, fs, process};
 
-use mini_c::{interpreter::interpret, parser::program, semantic::type_check};
+use mini_c::{interpreter::{interpret, run_tests}, parser::program, semantic::type_check};
 
 fn usage() -> ! {
     eprintln!("Usage: minic --check <file.minic>");
     eprintln!("       minic --run   <file.minic>");
+    eprintln!("       minic --test  <file.minic>");
     process::exit(1);
 }
 
@@ -54,6 +55,12 @@ fn main() {
         // Task 3.2 / 3.3: --run interprets after check
         "--run" => {
             if let Err(e) = interpret(&checked) {
+                eprintln!("{}", e);
+                process::exit(1);
+            }
+        }
+        "--test" => {
+            if let Err(e) = run_tests(&checked) {
                 eprintln!("{}", e);
                 process::exit(1);
             }

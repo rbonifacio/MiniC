@@ -1,4 +1,4 @@
-use mini_c::{interpreter::interpret, parser::program, semantic::type_check};
+use mini_c::{interpreter::{interpret, run_tests}, parser::program, semantic::type_check};
 
 /// Parse, type-check, and interpret a MiniC source string.
 fn run(src: &str) -> Result<(), String> {
@@ -7,6 +7,15 @@ fn run(src: &str) -> Result<(), String> {
         .map(|(_, p)| p)?;
     let checked = type_check(&unchecked).map_err(|e| format!("type error: {}", e.message))?;
     interpret(&checked).map_err(|e| format!("runtime error: {}", e.message))
+}
+
+/// Parse, type-check, and run tests in a MiniC source string.
+fn run_tests_str(src: &str) -> Result<(), String> {
+    let unchecked = program(src)
+        .map_err(|e| format!("parse error: {:?}", e))
+        .map(|(_, p)| p)?;
+    let checked = type_check(&unchecked).map_err(|e| format!("type error: {}", e.message))?;
+    run_tests(&checked).map_err(|e| format!("runtime error: {}", e.message))
 }
 
 // ---------------------------------------------------------------------------
@@ -255,4 +264,86 @@ fn test_stdlib_pow_float_args() {
         void main() { float r = pow(2.0, 3.0); }
     "#;
     assert!(run(src).is_ok(), "{}", run(src).unwrap_err());
+}
+
+// ---------------------------------------------------------------------------
+// 8. Built-in test framework
+// ---------------------------------------------------------------------------
+
+#[test]
+fn test_assert_true_passes() {
+    let src = r#"
+        void main() { assert true; }
+    "#;
+    assert!(run(src).is_ok(), "{}", run(src).unwrap_err());
+}
+
+#[test]
+fn test_assert_false_fails() {
+    let src = r#"
+        void main() { assert false; }
+    "#;
+    let result = run(src);
+    assert!(result.is_err(), "expected assert to fail");
+    assert!(result.unwrap_err().contains("assertion failed"));
+}
+
+#[test]
+fn test_assert_expression() {
+    let src = r#"
+        void main() { assert 1 + 1 == 2; }
+    "#;
+    assert!(run(src).is_ok(), "{}", run(src).unwrap_err());
+}
+
+#[test]
+fn test_test_block_passes() {
+    let src = r#"
+        int add(int a, int b) { return a + b; }
+        test "addition" {
+            assert add(2, 3) == 5;
+        }
+    "#;
+    assert!(run_tests_str(src).is_ok(), "{}", run_tests_str(src).unwrap_err());
+}
+
+#[test]
+fn test_test_block_fails() {
+    let src = r#"
+        test "bad" {
+            assert 1 == 2;
+        }
+    "#;
+    assert!(run_tests_str(src).is_err(), "expected test failure");
+}
+
+#[test]
+fn test_multiple_tests_partial_failure() {
+    let src = r#"
+        test "ok" { assert true; }
+        test "fail" { assert false; }
+    "#;
+    let result = run_tests_str(src);
+    assert!(result.is_err(), "expected failure summary");
+}
+
+#[test]
+fn test_multiple_tests_all_pass() {
+    let src = r#"
+        test "one" { assert 1 == 1; }
+        test "two" { assert 2 + 2 == 4; }
+    "#;
+    assert!(run_tests_str(src).is_ok(), "{}", run_tests_str(src).unwrap_err());
+}
+
+#[test]
+fn test_test_block_with_variables() {
+    let src = r#"
+        test "vars" {
+            int x = 10;
+            int y = 20;
+            assert x + y == 30;
+        }
+    "#;
+    assert!(run_tests_str(src).is_ok(), "{}", run_tests_str(src).unwrap_err());
 }
