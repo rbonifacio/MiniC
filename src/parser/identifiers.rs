@@ -7,7 +7,7 @@
 //! * [`identifier`] — parses a valid MiniC identifier: starts with a letter
 //!   or underscore, followed by letters, digits, or underscores. Rejects
 //!   reserved words (`true`, `false`, `int`, `float`, `bool`, `str`, `void`,
-//!   `return`).
+//!   `return`, `for`).
 //!
 //! # Design Decisions
 //!
@@ -27,12 +27,14 @@ use nom::{
     IResult,
 };
 
-/// Reserved words: boolean literals and type names.
-const RESERVED: &[&str] = &["true", "false", "int", "float", "bool", "str", "void", "return"];
+/// Reserved words: boolean literals, type names, and control-flow keywords.
+const RESERVED: &[&str] = &[
+    "true", "false", "int", "float", "bool", "str", "void", "return", "for",
+];
 
 /// Parse an identifier (variable name).
 /// Must start with letter or underscore; subsequent chars may be letter, digit, or underscore.
-/// Rejects reserved words (true, false, int, float, bool, str, void).
+/// Rejects reserved words (true, false, int, float, bool, str, void, return, for).
 pub fn identifier(input: &str) -> IResult<&str, &str> {
     let id_parser = recognize(pair(
         take_while1(|c: char| c.is_alphabetic() || c == '_'),

@@ -232,6 +232,14 @@ fn type_check_stmt(
                 body: Box::new(body_checked),
             }
         }
+        // `for` is introduced by the parser in Milestone 1; its type-checking
+        // semantics (loop-local scope for `init`, `cond: Bool`, well-typed
+        // `update`) are the subject of Milestone 2.
+        Statement::For { .. } => {
+            return Err(TypeError::new(
+                "for statements are not yet type-checked (Milestone 2)",
+            ));
+        }
         Statement::Return(expr) => match expr {
             None => {
                 if *expected_return != Type::Unit {

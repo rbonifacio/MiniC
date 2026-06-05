@@ -202,3 +202,32 @@ fn test_type_check_print_wrong_arity() {
     let result = parse_and_type_check("void main() { print(1, 2); }");
     assert!(result.is_err(), "expected arity error for print(1, 2)");
 }
+
+// ---------------------------------------------------------------------------
+// Milestone 1 lock-in: `for` is parsed but not yet type-checked. The type
+// checker must reject it with a clear message so the placeholder does not
+// silently disappear when Milestone 2 lands.
+// ---------------------------------------------------------------------------
+#[test]
+fn test_type_check_for_rejected_in_milestone_1() {
+    let result = parse_and_type_check(
+        "void main() { for (int i = 0; i < 10; i = i + 1) { print(i); } }",
+    );
+    assert!(result.is_err(), "expected for-statement to be rejected");
+    let msg = result.unwrap_err().message;
+    assert!(
+        msg.contains("for statements are not yet type-checked"),
+        "unexpected error message: {}",
+        msg
+    );
+}
+
+#[test]
+fn test_type_check_empty_for_rejected_in_milestone_1() {
+    let result = parse_and_type_check("void main() { for (;;) { return; } }");
+    assert!(result.is_err());
+    assert!(result
+        .unwrap_err()
+        .message
+        .contains("for statements are not yet type-checked"));
+}

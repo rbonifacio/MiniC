@@ -91,3 +91,36 @@ fn test_parse_top_level_statements_fail() {
     let result = parse_program_file("top_level_statements.minic");
     assert!(result.is_err(), "top-level statements without def should fail to parse");
 }
+
+#[test]
+fn test_parse_for_loop_program() {
+    let prog = parse_program_file("parser_for_loop.minic")
+        .expect("program with a for loop should parse");
+    assert_eq!(prog.functions.len(), 1);
+    assert_eq!(prog.functions[0].name, "main");
+    assert_eq!(prog.functions[0].return_type, Type::Unit);
+    let body = &prog.functions[0].body.stmt;
+    if let Statement::Block { ref seq } = body {
+        assert_eq!(seq.len(), 3);
+        assert!(matches!(seq[0].stmt, Statement::Decl { ref name, ref ty, .. }
+            if name == "sum" && ty == &Type::Int));
+        assert!(matches!(seq[1].stmt, Statement::For { .. }));
+        assert!(matches!(seq[2].stmt, Statement::Call { ref name, .. } if name == "print"));
+        if let Statement::For {
+            ref init,
+            ref update,
+            ref body,
+            ..
+        } = seq[1].stmt
+        {
+            let init = init.as_ref().unwrap();
+            assert!(matches!(init.stmt, Statement::Decl { ref name, .. } if name == "i"));
+
+            let update = update.as_ref().unwrap();
+            assert!(matches!(update.stmt, Statement::Assign { .. }));
+            assert!(matches!(body.stmt, Statement::Block { ref seq } if seq.len() == 1));
+        }
+    } else {
+        panic!("expected main to have a block body");
+    }
+}

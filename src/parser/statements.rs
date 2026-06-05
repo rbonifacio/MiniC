@@ -13,15 +13,18 @@
 //! # Grammar
 //!
 //! ```text
-//! statement  := block | if_stmt | while_stmt | simple ';'
+//! statement  := block | if_stmt | while_stmt | for_stmt | simple ';'
 //! block      := '{' statement* '}'
 //! if_stmt    := 'if' expr block ['else' block]
 //! while_stmt := 'while' expr block
+//! for_stmt   := 'for' '(' [for_init] ';' [expr] ';' [for_update] ')' block
+//! for_init   := decl_no_semi | assign_no_semi
+//! for_update := assign_no_semi
 //! simple     := return | decl | call | assign
 //! ```
 //!
 //! Every simple statement is terminated by `;`.
-//! Compound statements (`if`, `while`, block) end with `}` and need no `;`.
+//! Compound statements (`if`, `while`, `for`, block) end with `}` and need no `;`.
 //!
 //! # Design Decisions
 //!
@@ -58,7 +61,7 @@ fn wrap(s: Statement<()>) -> UncheckedStmt {
     StatementD { stmt: s, ty: () }
 }
 
-/// Parse any statement: block | if | while | return | decl | call | assignment.
+/// Parse any statement: block | if | while | for | return | decl | call | assignment.
 pub fn statement(input: &str) -> IResult<&str, UncheckedStmt> {
     preceded(
         multispace0,
@@ -66,6 +69,7 @@ pub fn statement(input: &str) -> IResult<&str, UncheckedStmt> {
             block_statement,
             if_statement,
             while_statement,
+            for_statement,
             return_statement,
             decl_statement,
             call_statement,
@@ -155,6 +159,80 @@ fn while_statement(input: &str) -> IResult<&str, UncheckedStmt> {
         rest,
         wrap(Statement::While {
             cond: Box::new(cond),
+            body: Box::new(body),
+        }),
+    ))
+}
+
+/// Parse a variable declaration header `Type ident = expr` without the trailing `;`.
+/// Used inside the `for` header where the `;` is part of the for-statement grammar.
+fn decl_no_semi(input: &str) -> IResult<&str, UncheckedStmt> {
+    map(
+        tuple((
+            type_name,
+            preceded(nom::character::complete::multispace1, identifier),
+            preceded(multispace0, tag("=")),
+            preceded(multispace0, expression),
+        )),
+        |(ty, name, _, init)| {
+            wrap(Statement::Decl {
+                name: name.to_string(),
+                ty,
+                init: Box::new(init),
+            })
+        },
+    )(input)
+}
+
+/// Parse an assignment `lvalue = expr` without the trailing `;`.
+/// Used inside the `for` header for both the init (when an assignment) and the update clauses.
+fn assign_no_semi(input: &str) -> IResult<&str, UncheckedStmt> {
+    map(
+        tuple((
+            lvalue,
+            preceded(multispace0, tag("=")),
+            preceded(multispace0, expression),
+        )),
+        |(target, _, value)| {
+            wrap(Statement::Assign {
+                target: Box::new(target),
+                value: Box::new(value),
+            })
+        },
+    )(input)
+}
+
+/// `for` init: a declaration or an assignment (both without the trailing `;`).
+fn for_init_clause(input: &str) -> IResult<&str, UncheckedStmt> {
+    alt((decl_no_semi, assign_no_semi))(input)
+}
+
+/// `for` update: an assignment (without the trailing `;`).
+fn for_update_clause(input: &str) -> IResult<&str, UncheckedStmt> {
+    assign_no_semi(input)
+}
+
+/// Parse a for statement: `for ( [init] ; [cond] ; [update] ) block`.
+/// - `init` is an optional declaration or assignment (no trailing `;`).
+/// - `cond` is an optional expression.
+/// - `update` is an optional assignment (no trailing `;`).
+/// - The body must be a block; bare statements are not allowed.
+fn for_statement(input: &str) -> IResult<&str, UncheckedStmt> {
+    let (rest, _) = preceded(multispace0, tag("for"))(input)?;
+    let (rest, _) = preceded(multispace0, char('('))(rest)?;
+    let (rest, init) = opt(preceded(multispace0, for_init_clause))(rest)?;
+    let (rest, _) = preceded(multispace0, char(';'))(rest)?;
+    let (rest, cond) = opt(preceded(multispace0, expression))(rest)?;
+    let (rest, _) = preceded(multispace0, char(';'))(rest)?;
+    let (rest, update) = opt(preceded(multispace0, for_update_clause))(rest)?;
+    let (rest, _) = preceded(multispace0, char(')'))(rest)?;
+    let (rest, body) = preceded(multispace0, block_statement)(rest)?;
+    Ok((
+        rest,
+        wrap(Statement::For {
+            init: init.map(Box::new),
+            cond: cond.map(Box::new),
+            update: update.map(Box::new),
             body: Box::new(body),
         }),
     ))

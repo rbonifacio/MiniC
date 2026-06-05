@@ -112,6 +112,14 @@ pub fn exec_stmt(stmt: &CheckedStmt, env: &mut Environment<Value>) -> ExecResult
             }
         },
 
+        // `for` lands here only if it somehow slips past the type checker. The
+        // execution semantics are defined in Milestone 2; for Milestone 1 we
+        // surface a runtime error so the program fails loudly rather than
+        // silently doing the wrong thing.
+        Statement::For { .. } => Err(RuntimeError::new(
+            "for statements are not yet executable (Milestone 2)".to_string(),
+        )),
+
         // --- Return ---
         Statement::Return(Some(expr)) => {
             let val = eval_expr(expr, env)?;

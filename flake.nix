@@ -10,9 +10,7 @@
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs { inherit system; };
-      in
-      {
-        devShells.default = pkgs.mkShell {
+        devShell = pkgs.mkShell {
           buildInputs = [
             pkgs.cargo
             pkgs.rustc
@@ -26,6 +24,10 @@
             export PS1="MiniC ❄️  > "
           '';
         };
+      in
+      {
+        devShells.default = devShell;
+        devShell = devShell;
       }
     );
 }

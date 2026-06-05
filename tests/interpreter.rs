@@ -1,4 +1,9 @@
-use mini_c::{interpreter::interpret, parser::program, semantic::type_check};
+use mini_c::{
+    interpreter::interpret,
+    ir::ast::{FunDecl, Program, Statement, StatementD, Type},
+    parser::program,
+    semantic::type_check,
+};
 
 /// Parse, type-check, and interpret a MiniC source string.
 fn run(src: &str) -> Result<(), String> {
@@ -255,4 +260,53 @@ fn test_stdlib_pow_float_args() {
         void main() { float r = pow(2.0, 3.0); }
     "#;
     assert!(run(src).is_ok(), "{}", run(src).unwrap_err());
+}
+
+// ---------------------------------------------------------------------------
+// Milestone 1 lock-in: the interpreter should surface a clear error when it
+// encounters a `for` statement (normally unreachable because the type checker
+// rejects it first). This guards against the placeholder silently disappearing.
+// ---------------------------------------------------------------------------
+#[test]
+fn test_interpret_for_rejected_in_milestone_1() {
+    // Build a minimal CheckedProgram directly: `void main() { for (;;) {} }`.
+    // We can't go through type_check because that also rejects `for`, so we
+    // construct the AST by hand.
+    let empty_block = StatementD {
+        stmt: Statement::Block { seq: vec![] },
+        ty: Type::Unit,
+    };
+    let for_stmt = StatementD {
+        stmt: Statement::For {
+            init: None,
+            cond: None,
+            update: None,
+            body: Box::new(empty_block),
+        },
+        ty: Type::Unit,
+    };
+    let main_body = StatementD {
+        stmt: Statement::Block {
+            seq: vec![for_stmt],
+        },
+        ty: Type::Unit,
+    };
+    let prog = Program {
+        functions: vec![FunDecl {
+            name: "main".to_string(),
+            params: vec![],
+            return_type: Type::Unit,
+            body: Box::new(main_body),
+        }],
+    };
+
+    let result = interpret(&prog);
+    assert!(result.is_err(), "expected interpreter to reject for-statement");
+    assert!(
+        result
+            .unwrap_err()
+            .message
+            .contains("for statements are not yet executable"),
+        "expected placeholder error message"
+    );
 }
