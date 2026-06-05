@@ -94,21 +94,34 @@ fn atom(input: &str) -> IResult<&str, UncheckedExpr> {
 fn primary(input: &str) -> IResult<&str, UncheckedExpr> {
     let (mut rest, mut acc) = atom(input)?;
     loop {
-        let index_parse = delimited(
+        if let Ok((r, index)) = delimited(
             preceded(multispace0, char('[')),
             preceded(multispace0, expression),
             preceded(multispace0, char(']')),
-        )(rest);
-        match index_parse {
-            Ok((r, index)) => {
-                acc = wrap(Expr::Index {
-                    base: Box::new(acc),
-                    index: Box::new(index),
-                });
-                rest = r;
-            }
-            Err(_) => break,
+        )(rest)
+        {
+            acc = wrap(Expr::Index {
+                base: Box::new(acc),
+                index: Box::new(index),
+            });
+            rest = r;
+            continue;
         }
+
+        if let Ok((r, (_, member))) = pair(
+            preceded(multispace0, char('.')),
+            preceded(multispace0, identifier),
+        )(rest)
+        {
+            acc = wrap(Expr::Member {
+                base: Box::new(acc),
+                member: member.to_string(),
+            });
+            rest = r;
+            continue;
+        }
+
+        break;
     }
     Ok((rest, acc))
 }

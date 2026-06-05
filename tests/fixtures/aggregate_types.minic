@@ -1,0 +1,12 @@
+struct Point { bool valid; int[][] coords; }
+union Payload { int code; struct Point p; }
+enum Kind { A; B = 2; }
+
+void main() {
+	struct Point p = 0;
+	p.valid = true;
+	print(p.valid);
+	enum Kind k = 0;
+	int v = k.B;
+	print(v);
+}

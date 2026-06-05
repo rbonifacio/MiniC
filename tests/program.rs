@@ -1,9 +1,9 @@
 //! Integration tests for parsing MiniC programs from files.
 
+use mini_c::ir::ast::{IdentifierDecl, Statement, Type, UncheckedProgram};
+use mini_c::parser::program;
 use nom::combinator::all_consuming;
 use std::path::Path;
-use mini_c::ir::ast::{Statement, Type, UncheckedProgram};
-use mini_c::parser::program;
 
 fn fixtures_dir() -> std::path::PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures")
@@ -28,8 +28,7 @@ fn test_parse_empty_program() {
 
 #[test]
 fn test_parse_main_only() {
-    let prog =
-        parse_program_file("statements_only.minic").expect("main-only program should parse");
+    let prog = parse_program_file("statements_only.minic").expect("main-only program should parse");
     assert_eq!(prog.functions.len(), 1);
     assert_eq!(prog.functions[0].name, "main");
     assert!(matches!(prog.functions[0].body.stmt, Statement::Block { ref seq } if seq.len() == 2));
@@ -46,9 +45,7 @@ fn test_parse_function_single() {
     assert_eq!(prog.functions.len(), 1);
     assert_eq!(prog.functions[0].name, "foo");
     assert!(prog.functions[0].params.is_empty());
-    assert!(
-        matches!(prog.functions[0].body.stmt, Statement::Decl { ref name, .. } if name == "x")
-    );
+    assert!(matches!(prog.functions[0].body.stmt, Statement::Decl { ref name, .. } if name == "x"));
 }
 
 #[test]
@@ -59,7 +56,16 @@ fn test_parse_function_with_block() {
     assert_eq!(prog.functions[0].name, "add");
     assert_eq!(
         prog.functions[0].params,
-        vec![("x".to_string(), Type::Int), ("y".to_string(), Type::Int)]
+        vec![
+            IdentifierDecl {
+                name: "x".to_string(),
+                ty: Type::Int,
+            },
+            IdentifierDecl {
+                name: "y".to_string(),
+                ty: Type::Int,
+            },
+        ]
     );
     assert!(matches!(prog.functions[0].body.stmt, Statement::Block { ref seq } if seq.len() == 2));
 }
@@ -89,5 +95,20 @@ fn test_parse_invalid_syntax_fails() {
 #[test]
 fn test_parse_top_level_statements_fail() {
     let result = parse_program_file("top_level_statements.minic");
-    assert!(result.is_err(), "top-level statements without def should fail to parse");
+    assert!(
+        result.is_err(),
+        "top-level statements without def should fail to parse"
+    );
+}
+
+#[test]
+fn test_parse_program_with_aggregate_declarations() {
+    let prog = parse_program_file("aggregate_types.minic")
+        .expect("program with aggregate type declarations should parse");
+    assert_eq!(prog.type_declarations.len(), 3);
+    assert_eq!(prog.type_declarations[0].identifier, "Point");
+    assert_eq!(prog.type_declarations[1].identifier, "Payload");
+    assert_eq!(prog.type_declarations[2].identifier, "Kind");
+    assert_eq!(prog.functions.len(), 1);
+    assert_eq!(prog.functions[0].name, "main");
 }

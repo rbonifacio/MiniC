@@ -40,7 +40,7 @@
 //! for more detail on this mechanism.
 
 use crate::environment::Environment;
-use crate::ir::ast::{CheckedExpr, Expr, Literal};
+use crate::ir::ast::{AgtTypeMember, AgtTypeSpecifier, CheckedExpr, Expr, Literal, Type};
 
 use super::exec_stmt::exec_stmt;
 use super::value::{FnValue, RuntimeError, Value};
@@ -64,15 +64,55 @@ pub fn eval_expr(expr: &CheckedExpr, env: &mut Environment<Value>) -> Result<Val
             ))),
         },
 
-        Expr::Add(l, r) => numeric_binop(eval_expr(l, env)?, eval_expr(r, env)?, |a, b| a + b, |a, b| a + b),
-        Expr::Sub(l, r) => numeric_binop(eval_expr(l, env)?, eval_expr(r, env)?, |a, b| a - b, |a, b| a - b),
-        Expr::Mul(l, r) => numeric_binop(eval_expr(l, env)?, eval_expr(r, env)?, |a, b| a * b, |a, b| a * b),
-        Expr::Div(l, r) => numeric_binop(eval_expr(l, env)?, eval_expr(r, env)?, |a, b| a / b, |a, b| a / b),
+        Expr::Add(l, r) => numeric_binop(
+            eval_expr(l, env)?,
+            eval_expr(r, env)?,
+            |a, b| a + b,
+            |a, b| a + b,
+        ),
+        Expr::Sub(l, r) => numeric_binop(
+            eval_expr(l, env)?,
+            eval_expr(r, env)?,
+            |a, b| a - b,
+            |a, b| a - b,
+        ),
+        Expr::Mul(l, r) => numeric_binop(
+            eval_expr(l, env)?,
+            eval_expr(r, env)?,
+            |a, b| a * b,
+            |a, b| a * b,
+        ),
+        Expr::Div(l, r) => numeric_binop(
+            eval_expr(l, env)?,
+            eval_expr(r, env)?,
+            |a, b| a / b,
+            |a, b| a / b,
+        ),
 
-        Expr::Lt(l, r) => numeric_cmp(eval_expr(l, env)?, eval_expr(r, env)?, |a, b| a < b, |a, b| a < b),
-        Expr::Le(l, r) => numeric_cmp(eval_expr(l, env)?, eval_expr(r, env)?, |a, b| a <= b, |a, b| a <= b),
-        Expr::Gt(l, r) => numeric_cmp(eval_expr(l, env)?, eval_expr(r, env)?, |a, b| a > b, |a, b| a > b),
-        Expr::Ge(l, r) => numeric_cmp(eval_expr(l, env)?, eval_expr(r, env)?, |a, b| a >= b, |a, b| a >= b),
+        Expr::Lt(l, r) => numeric_cmp(
+            eval_expr(l, env)?,
+            eval_expr(r, env)?,
+            |a, b| a < b,
+            |a, b| a < b,
+        ),
+        Expr::Le(l, r) => numeric_cmp(
+            eval_expr(l, env)?,
+            eval_expr(r, env)?,
+            |a, b| a <= b,
+            |a, b| a <= b,
+        ),
+        Expr::Gt(l, r) => numeric_cmp(
+            eval_expr(l, env)?,
+            eval_expr(r, env)?,
+            |a, b| a > b,
+            |a, b| a > b,
+        ),
+        Expr::Ge(l, r) => numeric_cmp(
+            eval_expr(l, env)?,
+            eval_expr(r, env)?,
+            |a, b| a >= b,
+            |a, b| a >= b,
+        ),
 
         Expr::Eq(l, r) => {
             let lv = eval_expr(l, env)?;
@@ -147,6 +187,58 @@ pub fn eval_expr(expr: &CheckedExpr, env: &mut Environment<Value>) -> Result<Val
                 args.iter().map(|a| eval_expr(a, env)).collect();
             eval_call(name, arg_vals?, env)
         }
+
+        Expr::Member { base, member } => {
+            let base_val = eval_expr(base, env)?;
+            match &base.ty {
+                Type::Aggregate {
+                    specifier,
+                    identifier,
+                } => match specifier {
+                    AgtTypeSpecifier::Struct => match base_val {
+                        Value::Struct { fields, .. } => {
+                            fields.get(member).cloned().ok_or_else(|| {
+                                RuntimeError::new(format!(
+                                    "missing struct member '{}.{}'",
+                                    identifier, member
+                                ))
+                            })
+                        }
+                        other => Err(RuntimeError::new(format!(
+                            "expected struct runtime value for {}, got {}",
+                            identifier, other
+                        ))),
+                    },
+                    AgtTypeSpecifier::Union => match base_val {
+                        Value::Union {
+                            active_field,
+                            value,
+                            ..
+                        } => {
+                            if &active_field == member {
+                                Ok(*value)
+                            } else {
+                                Err(RuntimeError::new(format!(
+                                    "union member '{}.{}' is inactive (active field: {})",
+                                    identifier, member, active_field
+                                )))
+                            }
+                        }
+                        other => Err(RuntimeError::new(format!(
+                            "expected union runtime value for {}, got {}",
+                            identifier, other
+                        ))),
+                    },
+                    AgtTypeSpecifier::Enum => {
+                        enum_member_value(identifier, member, env).map(Value::Int)
+                    }
+                },
+                other => Err(RuntimeError::new(format!(
+                    "member access requires aggregate base type, got {:?}",
+                    other
+                ))),
+            }
+        }
     }
 }
 
@@ -168,8 +260,8 @@ pub fn eval_call(
                 )));
             }
             let snapshot = env.snapshot();
-            for ((param_name, _), val) in decl.params.iter().zip(args.into_iter()) {
-                env.declare(param_name.clone(), val);
+            for (param, val) in decl.params.iter().zip(args.into_iter()) {
+                env.declare(param.name.clone(), val);
             }
             let result = exec_stmt(&decl.body, env)?;
             env.restore(snapshot);
@@ -180,8 +272,33 @@ pub fn eval_call(
     }
 }
 
-// --- Helpers ---
+fn enum_member_value(
+    agt_identifier: &str,
+    member: &str,
+    env: &Environment<Value>,
+) -> Result<i64, RuntimeError> {
+    let decl = env
+        .aggregate_type(&AgtTypeSpecifier::Enum, agt_identifier)
+        .ok_or_else(|| RuntimeError::new(format!("unknown enum type '{}'", agt_identifier)))?;
 
+    let mut next_value: i64 = 0;
+    for entry in &decl.members {
+        if let AgtTypeMember::Enumerator { name, value } = entry {
+            let resolved = value.unwrap_or(next_value);
+            if name == member {
+                return Ok(resolved);
+            }
+            next_value = resolved + 1;
+        }
+    }
+
+    Err(RuntimeError::new(format!(
+        "unknown enumerator '{}.{}'",
+        agt_identifier, member
+    )))
+}
+
+// --- Helpers ---
 fn eval_literal(lit: &Literal) -> Value {
     match lit {
         Literal::Int(n) => Value::Int(*n),
