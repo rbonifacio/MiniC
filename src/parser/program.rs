@@ -15,6 +15,11 @@
 //! function declaration causes the parse to stop. The type checker then
 //! verifies that a `main` function exists.
 //!
+//! Local `const T name = expr ;` is recognised inside function bodies via
+//! [`crate::parser::statements::const_statement`] (wired from [`crate::parser::statements::statement`]).
+//! Extending this module with `alt((const_statement, fun_decl))` plus a rich enough
+//! [`crate::ir::ast::Program`] is the usual next step for top-level constants.
+//!
 //! # Design Decisions
 //!
 //! ## `many0` as the top-level combinator

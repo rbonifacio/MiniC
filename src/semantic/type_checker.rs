@@ -166,6 +166,27 @@ fn type_check_stmt(
                 init: Box::new(init_checked),
             }
         }
+        Statement::ConstDecl { name, ty, init } => {
+            if ty == &Type::Unit {
+                return Err(TypeError::new("cannot declare variable of type void"));
+            }
+            if env.get(name).is_some() {
+                return Err(TypeError::new(format!("redeclaration of variable: {}", name)));
+            }
+            let init_checked = type_check_expr_to_typed(init, env)?;
+            if !types_compatible(&init_checked.ty, ty) {
+                return Err(TypeError::new(format!(
+                    "declaration of {}: expected {:?}, got {:?}",
+                    name, ty, init_checked.ty
+                )));
+            }
+            env.declare(name.clone(), ty.clone());
+            Statement::ConstDecl {
+                name: name.clone(),
+                ty: ty.clone(),
+                init: Box::new(init_checked),
+            }
+        }
         Statement::Assign { target, value } => {
             let value_checked = type_check_expr_to_typed(value, env)?;
             type_check_assign_target(&target.exp, &value_checked.ty, env)?;

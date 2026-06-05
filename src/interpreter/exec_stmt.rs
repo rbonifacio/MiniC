@@ -52,6 +52,13 @@ pub fn exec_stmt(stmt: &CheckedStmt, env: &mut Environment<Value>) -> ExecResult
             Ok(None)
         }
 
+        // --- Constant declaration ---
+        Statement::ConstDecl { name, init, .. } => {
+            let val = eval_expr(init, env)?;
+            env.declare(name.clone(), val);
+            Ok(None)
+        }
+
         // --- Assignment ---
         Statement::Assign { target, value } => {
             let val = eval_expr(value, env)?;

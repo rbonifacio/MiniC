@@ -1,0 +1,1080 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_OUTPUT_EXCMD	mixed	/number, pattern, mixed, or combineV2/
+!_TAG_OUTPUT_FILESEP	slash	/slash or backslash/
+!_TAG_OUTPUT_MODE	u-ctags	/u-ctags or e-ctags/
+!_TAG_PATTERN_LENGTH_LIMIT	96	/0 for no limit/
+!_TAG_PROC_CWD	/home/egb2/git/MiniC/	//
+!_TAG_PROGRAM_AUTHOR	Universal Ctags Team	//
+!_TAG_PROGRAM_NAME	Universal Ctags	/Derived from Exuberant Ctags/
+!_TAG_PROGRAM_URL	https://ctags.io/	/official site/
+!_TAG_PROGRAM_VERSION	5.9.0	//
+A	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/branch/mod.rs	/^impl<Input, Output, Error: ParseError<Input>, A: Parser<Input, Output, Error>>$/;"	c
+Alpha	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  Alpha,$/;"	e	enum:ErrorKind
+AlphaNumeric	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  AlphaNumeric,$/;"	e	enum:ErrorKind
+Alt	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/branch/mod.rs	/^pub trait Alt<I, O, E> {$/;"	i
+Alt	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  Alt,$/;"	e	enum:ErrorKind
+And	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^impl<'a, I, O1, O2, E, F: Parser<I, O1, E>, G: Parser<I, O2, E>> Parser<I, (O1, O2), E>$/;"	c
+And	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^pub struct And<F, G> {$/;"	s
+AndThen	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^impl<'a, I, O1, O2, E, F: Parser<I, O1, E>, G: Parser<O1, O2, E>> Parser<I, O2, E>$/;"	c
+AndThen	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^pub struct AndThen<F, G, O1> {$/;"	s
+AsBytes	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^pub trait AsBytes {$/;"	i
+AsChar	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^pub trait AsChar {$/;"	i
+B	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/sequence/tests.rs	/^struct B {$/;"	s
+Big	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/mod.rs	/^  Big,$/;"	e	enum:Endianness
+Box	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^impl<'a, I, O, E> Parser<I, O, E> for Box<dyn Parser<I, O, E> + 'a> {$/;"	c
+C	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/sequence/tests.rs	/^struct C {$/;"	s
+CHARS	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^static CHARS: &[u8] = b"0123456789abcdef";$/;"	v
+Char	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  Char(char),$/;"	e	enum:VerboseErrorKind
+Char	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  Char,$/;"	e	enum:ErrorKind
+Compare	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^pub trait Compare<T> {$/;"	i
+CompareResult	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^pub enum CompareResult {$/;"	g
+Complete	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  Complete,$/;"	e	enum:ErrorKind
+Context	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  Context(&'static str),$/;"	e	enum:VerboseErrorKind
+ContextError	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^impl<I> ContextError<I> for () {}$/;"	c
+ContextError	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^pub trait ContextError<I>: Sized {$/;"	i
+Count	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  Count,$/;"	e	enum:ErrorKind
+CrLf	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  CrLf,$/;"	e	enum:ErrorKind
+CustomError	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/combinator/tests.rs	/^impl From<u32> for CustomError {$/;"	c
+CustomError	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/combinator/tests.rs	/^impl<I> ParseError<I> for CustomError {$/;"	c
+CustomError	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/combinator/tests.rs	/^struct CustomError;$/;"	s
+Digit	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  Digit,$/;"	e	enum:ErrorKind
+Done	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/combinator/mod.rs	/^  Done,$/;"	e	enum:State
+Endianness	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/mod.rs	/^pub enum Endianness {$/;"	g
+Eof	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  Eof,$/;"	e	enum:ErrorKind
+Err	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^impl Err<(&[u8], ErrorKind)> {$/;"	c
+Err	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^impl Err<(&str, ErrorKind)> {$/;"	c
+Err	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^impl Err<error::Error<&[u8]>> {$/;"	c
+Err	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^impl Err<error::Error<&str>> {$/;"	c
+Err	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^impl<E: Eq> Eq for Err<E> {}$/;"	c
+Err	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^impl<E> Err<E> {$/;"	c
+Err	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^impl<E> Error for Err<E>$/;"	c
+Err	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^impl<E> fmt::Display for Err<E>$/;"	c
+Err	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^impl<T> Err<(T, ErrorKind)> {$/;"	c
+Err	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^impl<T> Err<error::Error<T>> {$/;"	c
+Err	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^pub enum Err<E> {$/;"	g
+Error	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^impl<I, E> FromExternalError<I, E> for Error<I> {$/;"	c
+Error	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^impl<I: fmt::Debug + fmt::Display> std::error::Error for Error<I> {}$/;"	c
+Error	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^impl<I: fmt::Display> fmt::Display for Error<I> {$/;"	c
+Error	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^impl<I> ContextError<I> for Error<I> {}$/;"	c
+Error	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^impl<I> Error<I> {$/;"	c
+Error	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^impl<I> ParseError<I> for Error<I> {$/;"	c
+Error	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^pub struct Error<I> {$/;"	s
+Error	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^  Error(E),$/;"	e	enum:Err
+Error	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  Error,$/;"	e	enum:CompareResult
+Error	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^impl<I> ErrorConvert<error::Error<(I, usize)>> for error::Error<I> {$/;"	c
+Error	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^impl<I> ErrorConvert<error::Error<I>> for error::Error<(I, usize)> {$/;"	c
+ErrorConvert	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^impl ErrorConvert<()> for () {$/;"	c
+ErrorConvert	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^pub trait ErrorConvert<E> {$/;"	i
+ErrorKind	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^impl ErrorKind {$/;"	c
+ErrorKind	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^impl<I, E> FromExternalError<I, E> for (I, ErrorKind) {$/;"	c
+ErrorKind	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^impl<I> ContextError<I> for (I, ErrorKind) {}$/;"	c
+ErrorKind	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^impl<I> ParseError<I> for (I, ErrorKind) {$/;"	c
+ErrorKind	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^pub enum ErrorKind {$/;"	g
+ErrorKind	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^impl<I> ErrorConvert<((I, usize), ErrorKind)> for (I, ErrorKind) {$/;"	c
+ErrorKind	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^impl<I> ErrorConvert<(I, ErrorKind)> for ((I, usize), ErrorKind) {$/;"	c
+ErrorStr	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/branch/tests.rs	/^impl From<u32> for ErrorStr {$/;"	c
+ErrorStr	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/branch/tests.rs	/^impl<'a> From<&'a str> for ErrorStr {$/;"	c
+ErrorStr	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/branch/tests.rs	/^impl<I: Debug> ParseError<I> for ErrorStr {$/;"	c
+ErrorStr	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/branch/tests.rs	/^pub struct ErrorStr(String);$/;"	s
+Escaped	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  Escaped,$/;"	e	enum:ErrorKind
+EscapedTransform	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  EscapedTransform,$/;"	e	enum:ErrorKind
+ExtendInto	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^pub trait ExtendInto {$/;"	i
+Extender	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  type Extender = String;$/;"	t	implementation:char
+Extender	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  type Extender = String;$/;"	t	implementation:str
+Extender	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  type Extender = Vec<u8>;$/;"	t	implementation:u8
+Extender	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  type Extender;$/;"	t	interface:ExtendInto
+F	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^impl<'a, I, O, E, F> Parser<I, O, E> for F$/;"	c
+F	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/sequence/mod.rs	/^impl<Input, Output, Error: ParseError<Input>, F: Parser<Input, Output, Error>>$/;"	c
+Fail	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  Fail,$/;"	e	enum:ErrorKind
+Failure	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/combinator/mod.rs	/^  Failure(E),$/;"	e	enum:State
+Failure	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^  Failure(E),$/;"	e	enum:Err
+FindSubstring	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^pub trait FindSubstring<T> {$/;"	i
+FindToken	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^pub trait FindToken<T> {$/;"	i
+Finish	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^pub trait Finish<I, O, E> {$/;"	i
+Fix	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  Fix,$/;"	e	enum:ErrorKind
+FlatMap	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^impl<'a, I, O1, O2, E, F: Parser<I, O1, E>, G: Fn(O1) -> H, H: Parser<I, O2, E>> Parser<I, O2, E/;"	c
+FlatMap	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^pub struct FlatMap<F, G, O1> {$/;"	s
+Float	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  Float,$/;"	e	enum:ErrorKind
+FromExternalError	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^impl<I, E> FromExternalError<I, E> for () {$/;"	c
+FromExternalError	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^pub trait FromExternalError<I, E> {$/;"	i
+HexDigit	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  HexDigit,$/;"	e	enum:ErrorKind
+HexDisplay	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^pub trait HexDisplay {$/;"	i
+IResult	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^impl<I, O, E> Finish<I, O, E> for IResult<I, O, E> {$/;"	c
+IResult	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^pub type IResult<I, O, E = error::Error<I>> = Result<(I, O), Err<E>>;$/;"	t
+Incomplete	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/combinator/mod.rs	/^  Incomplete(Needed),$/;"	e	enum:State
+Incomplete	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^  Incomplete(Needed),$/;"	e	enum:Err
+Incomplete	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  Incomplete,$/;"	e	enum:CompareResult
+InputIter	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^pub trait InputIter {$/;"	i
+InputLength	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^pub trait InputLength {$/;"	i
+InputTake	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^pub trait InputTake: Sized {$/;"	i
+InputTakeAtPosition	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^pub trait InputTakeAtPosition: Sized {$/;"	i
+Into	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^impl<$/;"	c
+Into	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^pub struct Into<F, O1, O2: From<O1>, E1, E2: From<E1>> {$/;"	s
+IsA	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  IsA,$/;"	e	enum:ErrorKind
+IsNot	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  IsNot,$/;"	e	enum:ErrorKind
+Item	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/combinator/mod.rs	/^  type Item = Output;$/;"	t
+Item	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  type Item = <T as InputIter>::Item;$/;"	t	implementation:T
+Item	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  type Item = char;$/;"	t	implementation:char
+Item	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  type Item = char;$/;"	t	implementation:str
+Item	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  type Item = u8;$/;"	t	implementation:u8
+Item	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  type Item;$/;"	t	interface:ExtendInto
+Item	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  type Item;$/;"	t	interface:InputIter
+Item	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  type Item;$/;"	t	interface:InputTakeAtPosition
+Iter	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  type Iter = CharIndices<'a>;$/;"	t	implementation:str
+Iter	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  type Iter = Enumerate<Self::IterElem>;$/;"	t	implementation:u8
+Iter	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  type Iter: Iterator<Item = (usize, Self::Item)>;$/;"	t	interface:InputIter
+IterElem	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  type IterElem = Chars<'a>;$/;"	t	implementation:str
+IterElem	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  type IterElem = Copied<Iter<'a, u8>>;$/;"	t	implementation:u8
+IterElem	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  type IterElem: Iterator<Item = Self::Item>;$/;"	t	interface:InputIter
+LengthValue	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  LengthValue,$/;"	e	enum:ErrorKind
+LengthValueFn	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  LengthValueFn,$/;"	e	enum:ErrorKind
+Little	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/mod.rs	/^  Little,$/;"	e	enum:Endianness
+Many0	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  Many0,$/;"	e	enum:ErrorKind
+Many0Count	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  Many0Count,$/;"	e	enum:ErrorKind
+Many1	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  Many1,$/;"	e	enum:ErrorKind
+Many1Count	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  Many1Count,$/;"	e	enum:ErrorKind
+ManyMN	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  ManyMN,$/;"	e	enum:ErrorKind
+ManyTill	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  ManyTill,$/;"	e	enum:ErrorKind
+Map	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^impl<'a, I, O1, O2, E, F: Parser<I, O1, E>, G: Fn(O1) -> O2> Parser<I, O2, E> for Map<F, G, O1> /;"	c
+Map	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^pub struct Map<F, G, O1> {$/;"	s
+MapOpt	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  MapOpt,$/;"	e	enum:ErrorKind
+MapRes	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  MapRes,$/;"	e	enum:ErrorKind
+MultiSpace	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  MultiSpace,$/;"	e	enum:ErrorKind
+Native	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/mod.rs	/^  Native,$/;"	e	enum:Endianness
+Needed	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^impl Needed {$/;"	c
+Needed	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^pub enum Needed {$/;"	g
+NilError	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/tests.rs	/^impl<I> From<(I, ErrorKind)> for NilError {$/;"	c
+NilError	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/tests.rs	/^impl<I> ParseError<I> for NilError {$/;"	c
+NilError	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/tests.rs	/^pub struct NilError;$/;"	s
+Nom	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  Nom(ErrorKind),$/;"	e	enum:VerboseErrorKind
+NonEmpty	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  NonEmpty,$/;"	e	enum:ErrorKind
+NoneOf	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  NoneOf,$/;"	e	enum:ErrorKind
+Not	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  Not,$/;"	e	enum:ErrorKind
+OctDigit	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  OctDigit,$/;"	e	enum:ErrorKind
+Offset	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^pub trait Offset {$/;"	i
+Ok	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  Ok,$/;"	e	enum:CompareResult
+OneOf	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  OneOf,$/;"	e	enum:ErrorKind
+Or	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^impl<'a, I: Clone, O, E: crate::error::ParseError<I>, F: Parser<I, O, E>, G: Parser<I, O, E>>$/;"	c
+Or	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^pub struct Or<F, G> {$/;"	s
+ParseError	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^impl<I> ParseError<I> for () {$/;"	c
+ParseError	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^pub trait ParseError<I>: Sized {$/;"	i
+ParseTo	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^pub trait ParseTo<R> {$/;"	i
+Parser	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^pub trait Parser<I, O, E> {$/;"	i
+ParserIterator	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/combinator/mod.rs	/^impl<'a, Input, Output, Error, F> core::iter::Iterator for &'a mut ParserIterator<Input, Error, /;"	c
+ParserIterator	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/combinator/mod.rs	/^impl<I: Clone, E, F> ParserIterator<I, E, F> {$/;"	c
+ParserIterator	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/combinator/mod.rs	/^pub struct ParserIterator<I, E, F> {$/;"	s
+Permutation	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/branch/mod.rs	/^pub trait Permutation<I, O, E> {$/;"	i
+Permutation	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  Permutation,$/;"	e	enum:ErrorKind
+RegexpCapture	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  RegexpCapture,$/;"	e	enum:ErrorKind
+RegexpCaptures	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  RegexpCaptures,$/;"	e	enum:ErrorKind
+RegexpFind	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  RegexpFind,$/;"	e	enum:ErrorKind
+RegexpMatch	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  RegexpMatch,$/;"	e	enum:ErrorKind
+RegexpMatches	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  RegexpMatches,$/;"	e	enum:ErrorKind
+Running	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/combinator/mod.rs	/^  Running,$/;"	e	enum:State
+Satisfy	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  Satisfy,$/;"	e	enum:ErrorKind
+SeparatedList	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  SeparatedList,$/;"	e	enum:ErrorKind
+SeparatedNonEmptyList	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  SeparatedNonEmptyList,$/;"	e	enum:ErrorKind
+Size	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^  Size(NonZeroUsize),$/;"	e	enum:Needed
+Slice	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^pub trait Slice<R> {$/;"	i
+Space	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  Space,$/;"	e	enum:ErrorKind
+State	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/combinator/mod.rs	/^enum State<E> {$/;"	g
+Switch	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  Switch,$/;"	e	enum:ErrorKind
+T	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^impl<$/;"	c
+T	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^impl<'a, T> InputLength for &'a [T] {$/;"	c
+T	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^impl<T: InputLength + InputIter + InputTake + Clone + UnspecializedInput> InputTakeAtPosition$/;"	c
+Tag	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  Tag,$/;"	e	enum:ErrorKind
+TagBits	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  TagBits,$/;"	e	enum:ErrorKind
+TagClosure	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  TagClosure,$/;"	e	enum:ErrorKind
+TakeTill1	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  TakeTill1,$/;"	e	enum:ErrorKind
+TakeUntil	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  TakeUntil,$/;"	e	enum:ErrorKind
+TakeWhile1	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  TakeWhile1,$/;"	e	enum:ErrorKind
+TakeWhileMN	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  TakeWhileMN,$/;"	e	enum:ErrorKind
+ToUsize	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^pub trait ToUsize {$/;"	i
+TooLarge	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  TooLarge,$/;"	e	enum:ErrorKind
+Tuple	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/sequence/mod.rs	/^impl<I, E: ParseError<I>> Tuple<I, (), E> for () {$/;"	c
+Tuple	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/sequence/mod.rs	/^pub trait Tuple<I, O, E> {$/;"	i
+Unknown	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^  Unknown,$/;"	e	enum:Needed
+UnspecializedInput	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^pub trait UnspecializedInput {}$/;"	i
+VerboseError	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^impl<I, E> FromExternalError<I, E> for VerboseError<I> {$/;"	c
+VerboseError	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^impl<I: fmt::Debug + fmt::Display> std::error::Error for VerboseError<I> {}$/;"	c
+VerboseError	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^impl<I: fmt::Display> fmt::Display for VerboseError<I> {$/;"	c
+VerboseError	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^impl<I> ContextError<I> for VerboseError<I> {$/;"	c
+VerboseError	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^impl<I> ParseError<I> for VerboseError<I> {$/;"	c
+VerboseError	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^pub struct VerboseError<I> {$/;"	s
+VerboseError	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^impl<I> ErrorConvert<error::VerboseError<(I, usize)>> for error::VerboseError<I> {$/;"	c
+VerboseError	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^impl<I> ErrorConvert<error::VerboseError<I>> for error::VerboseError<(I, usize)> {$/;"	c
+VerboseErrorKind	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^pub enum VerboseErrorKind {$/;"	g
+Verify	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  Verify,$/;"	e	enum:ErrorKind
+a	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/sequence/tests.rs	/^  a: u8,$/;"	m	struct:B
+a	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/sequence/tests.rs	/^  a: u8,$/;"	m	struct:C
+a_or_b	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bytes/tests.rs	/^  fn a_or_b(i: &[u8]) -> IResult<&[u8], &[u8]> {$/;"	f	function:is_a
+a_or_b	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bytes/tests.rs	/^  fn a_or_b(i: &[u8]) -> IResult<&[u8], &[u8]> {$/;"	f	function:is_not
+add_context	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  fn add_context(_input: I, _ctx: &'static str, other: Self) -> Self {$/;"	P	interface:ContextError
+add_context	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  fn add_context(input: I, ctx: &'static str, mut other: Self) -> Self {$/;"	P	implementation:VerboseError
+all_consuming	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/combinator/mod.rs	/^pub fn all_consuming<I, O, E: ParseError<I>, F>(mut f: F) -> impl FnMut(I) -> IResult<I, O, E>$/;"	f
+alpha0	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/complete.rs	/^pub fn alpha0<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>$/;"	f
+alpha0	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/streaming.rs	/^pub fn alpha0<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>$/;"	f
+alpha1	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/complete.rs	/^pub fn alpha1<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>$/;"	f
+alpha1	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/streaming.rs	/^pub fn alpha1<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>$/;"	f
+alphanumeric0	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/complete.rs	/^pub fn alphanumeric0<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>$/;"	f
+alphanumeric0	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/streaming.rs	/^pub fn alphanumeric0<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>$/;"	f
+alphanumeric1	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/complete.rs	/^pub fn alphanumeric1<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>$/;"	f
+alphanumeric1	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/streaming.rs	/^pub fn alphanumeric1<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>$/;"	f
+alt	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/branch/mod.rs	/^pub fn alt<I: Clone, O, E: ParseError<I>, List: Alt<I, O, E>>($/;"	f
+alt1	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/branch/tests.rs	/^  fn alt1(i: &[u8]) -> IResult<&[u8], &[u8], ErrorStr> {$/;"	f	function:alt_test
+alt1	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/branch/tests.rs	/^  fn alt1(i: &[u8]) -> IResult<&[u8], &[u8]> {$/;"	f	function:alt_incomplete
+alt2	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/branch/tests.rs	/^  fn alt2(i: &[u8]) -> IResult<&[u8], &[u8], ErrorStr> {$/;"	f	function:alt_test
+alt3	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/branch/tests.rs	/^  fn alt3(i: &[u8]) -> IResult<&[u8], &[u8], ErrorStr> {$/;"	f	function:alt_test
+alt4	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/branch/tests.rs	/^  fn alt4(i: &[u8]) -> IResult<&[u8], &[u8]> {$/;"	f	function:alt_test
+alt_incomplete	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/branch/tests.rs	/^fn alt_incomplete() {$/;"	f
+alt_test	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/branch/tests.rs	/^fn alt_test() {$/;"	f
+alt_trait	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/branch/mod.rs	/^macro_rules! alt_trait($/;"	M
+alt_trait_impl	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/branch/mod.rs	/^macro_rules! alt_trait_impl($/;"	M
+alt_trait_inner	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/branch/mod.rs	/^macro_rules! alt_trait_inner($/;"	M
+and	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^  fn and<G, O2>(self, g: G) -> And<Self, G>$/;"	P	interface:Parser
+and_then	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^  fn and_then<G, O2>(self, g: G) -> AndThen<Self, G, O>$/;"	P	interface:Parser
+anychar	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/complete.rs	/^pub fn anychar<T, E: ParseError<T>>(input: T) -> IResult<T, char, E>$/;"	f
+anychar	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/streaming.rs	/^pub fn anychar<T, E: ParseError<T>>(input: T) -> IResult<T, char, E>$/;"	f
+anychar_str	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/streaming.rs	/^  fn anychar_str() {$/;"	f	module:tests
+append	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/branch/tests.rs	/^  fn append(input: I, kind: ErrorKind, other: Self) -> Self {$/;"	P	implementation:ErrorStr
+append	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/combinator/tests.rs	/^  fn append(_: I, _: ErrorKind, _: CustomError) -> Self {$/;"	P	implementation:CustomError
+append	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  fn append(_: I, _: ErrorKind, _: Self) -> Self {}$/;"	P	implementation:ParseError
+append	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  fn append(_: I, _: ErrorKind, other: Self) -> Self {$/;"	P	implementation:Error
+append	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  fn append(_: I, _: ErrorKind, other: Self) -> Self {$/;"	P	implementation:ErrorKind
+append	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  fn append(input: I, kind: ErrorKind, mut other: Self) -> Self {$/;"	P	implementation:VerboseError
+append	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  fn append(input: I, kind: ErrorKind, other: Self) -> Self;$/;"	P	interface:ParseError
+append	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/tests.rs	/^  fn append(_: I, _: ErrorKind, _: NilError) -> NilError {$/;"	P	implementation:NilError
+append_error	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^pub fn append_error<I, E: ParseError<I>>(input: I, kind: ErrorKind, other: E) -> E {$/;"	f
+array_impls	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^macro_rules! array_impls {$/;"	M
+as_bytes	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn as_bytes(&self) -> &[u8] {$/;"	P	implementation:str
+as_bytes	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn as_bytes(&self) -> &[u8] {$/;"	P	implementation:u8
+as_bytes	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn as_bytes(&self) -> &[u8];$/;"	P	interface:AsBytes
+as_bytes_array_impls	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^macro_rules! as_bytes_array_impls {$/;"	M
+as_char	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn as_char(self) -> char {$/;"	P	implementation:char
+as_char	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn as_char(self) -> char {$/;"	P	implementation:u8
+as_char	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn as_char(self) -> char;$/;"	P	interface:AsChar
+assert_parse	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/complete.rs	/^  macro_rules! assert_parse($/;"	M	module:tests
+assert_parse	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/streaming.rs	/^  macro_rules! assert_parse($/;"	M	module:tests
+assert_parse	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/combinator/tests.rs	/^macro_rules! assert_parse($/;"	M
+assert_parse	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^  macro_rules! assert_parse($/;"	M	module:tests
+assert_parse	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^  macro_rules! assert_parse($/;"	M	module:tests
+assert_size	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^  macro_rules! assert_size ($/;"	M	module:tests
+b	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/sequence/tests.rs	/^  b: Option<u8>,$/;"	m	struct:C
+b	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/sequence/tests.rs	/^  b: u8,$/;"	m	struct:B
+be_f32	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^pub fn be_f32<I, E: ParseError<I>>(input: I) -> IResult<I, f32, E>$/;"	f
+be_f32	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^pub fn be_f32<I, E: ParseError<I>>(input: I) -> IResult<I, f32, E>$/;"	f
+be_f32_tests	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^  fn be_f32_tests() {$/;"	f	module:tests
+be_f32_tests	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^  fn be_f32_tests() {$/;"	f	module:tests
+be_f64	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^pub fn be_f64<I, E: ParseError<I>>(input: I) -> IResult<I, f64, E>$/;"	f
+be_f64	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^pub fn be_f64<I, E: ParseError<I>>(input: I) -> IResult<I, f64, E>$/;"	f
+be_f64_tests	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^  fn be_f64_tests() {$/;"	f	module:tests
+be_f64_tests	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^  fn be_f64_tests() {$/;"	f	module:tests
+be_i128	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^pub fn be_i128<I, E: ParseError<I>>(input: I) -> IResult<I, i128, E>$/;"	f
+be_i128	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^pub fn be_i128<I, E: ParseError<I>>(input: I) -> IResult<I, i128, E>$/;"	f
+be_i128_tests	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^  fn be_i128_tests() {$/;"	f	module:tests
+be_i16	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^pub fn be_i16<I, E: ParseError<I>>(input: I) -> IResult<I, i16, E>$/;"	f
+be_i16	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^pub fn be_i16<I, E: ParseError<I>>(input: I) -> IResult<I, i16, E>$/;"	f
+be_i16_tests	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^  fn be_i16_tests() {$/;"	f	module:tests
+be_i24	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^pub fn be_i24<I, E: ParseError<I>>(input: I) -> IResult<I, i32, E>$/;"	f
+be_i24	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^pub fn be_i24<I, E: ParseError<I>>(input: I) -> IResult<I, i32, E>$/;"	f
+be_i24_tests	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^  fn be_i24_tests() {$/;"	f	module:tests
+be_i32	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^pub fn be_i32<I, E: ParseError<I>>(input: I) -> IResult<I, i32, E>$/;"	f
+be_i32	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^pub fn be_i32<I, E: ParseError<I>>(input: I) -> IResult<I, i32, E>$/;"	f
+be_i32_tests	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^  fn be_i32_tests() {$/;"	f	module:tests
+be_i64	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^pub fn be_i64<I, E: ParseError<I>>(input: I) -> IResult<I, i64, E>$/;"	f
+be_i64	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^pub fn be_i64<I, E: ParseError<I>>(input: I) -> IResult<I, i64, E>$/;"	f
+be_i64_tests	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^  fn be_i64_tests() {$/;"	f	module:tests
+be_i8	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^pub fn be_i8<I, E: ParseError<I>>(input: I) -> IResult<I, i8, E>$/;"	f
+be_i8	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^pub fn be_i8<I, E: ParseError<I>>(input: I) -> IResult<I, i8, E>$/;"	f
+be_i8_tests	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^  fn be_i8_tests() {$/;"	f	module:tests
+be_tst16	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^    fn be_tst16(i: &[u8]) -> IResult<&[u8], u16> {$/;"	f	function:tests::configurable_endianness
+be_tst16	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^    fn be_tst16(i: &[u8]) -> IResult<&[u8], u16> {$/;"	f	function:tests::configurable_endianness
+be_tst32	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^    fn be_tst32(i: &[u8]) -> IResult<&[u8], u32> {$/;"	f	function:tests::configurable_endianness
+be_tst32	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^    fn be_tst32(i: &[u8]) -> IResult<&[u8], u32> {$/;"	f	function:tests::configurable_endianness
+be_tst64	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^    fn be_tst64(i: &[u8]) -> IResult<&[u8], u64> {$/;"	f	function:tests::configurable_endianness
+be_tst64	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^    fn be_tst64(i: &[u8]) -> IResult<&[u8], u64> {$/;"	f	function:tests::configurable_endianness
+be_tsti16	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^    fn be_tsti16(i: &[u8]) -> IResult<&[u8], i16> {$/;"	f	function:tests::configurable_endianness
+be_tsti16	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^    fn be_tsti16(i: &[u8]) -> IResult<&[u8], i16> {$/;"	f	function:tests::configurable_endianness
+be_tsti32	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^    fn be_tsti32(i: &[u8]) -> IResult<&[u8], i32> {$/;"	f	function:tests::configurable_endianness
+be_tsti32	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^    fn be_tsti32(i: &[u8]) -> IResult<&[u8], i32> {$/;"	f	function:tests::configurable_endianness
+be_tsti64	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^    fn be_tsti64(i: &[u8]) -> IResult<&[u8], i64> {$/;"	f	function:tests::configurable_endianness
+be_tsti64	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^    fn be_tsti64(i: &[u8]) -> IResult<&[u8], i64> {$/;"	f	function:tests::configurable_endianness
+be_u128	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^pub fn be_u128<I, E: ParseError<I>>(input: I) -> IResult<I, u128, E>$/;"	f
+be_u128	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^pub fn be_u128<I, E: ParseError<I>>(input: I) -> IResult<I, u128, E>$/;"	f
+be_u16	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^pub fn be_u16<I, E: ParseError<I>>(input: I) -> IResult<I, u16, E>$/;"	f
+be_u16	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^pub fn be_u16<I, E: ParseError<I>>(input: I) -> IResult<I, u16, E>$/;"	f
+be_u24	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^pub fn be_u24<I, E: ParseError<I>>(input: I) -> IResult<I, u32, E>$/;"	f
+be_u24	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^pub fn be_u24<I, E: ParseError<I>>(input: I) -> IResult<I, u32, E>$/;"	f
+be_u24_tests	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^  fn be_u24_tests() {$/;"	f	module:tests
+be_u32	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^pub fn be_u32<I, E: ParseError<I>>(input: I) -> IResult<I, u32, E>$/;"	f
+be_u32	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^pub fn be_u32<I, E: ParseError<I>>(input: I) -> IResult<I, u32, E>$/;"	f
+be_u64	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^pub fn be_u64<I, E: ParseError<I>>(input: I) -> IResult<I, u64, E>$/;"	f
+be_u64	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^pub fn be_u64<I, E: ParseError<I>>(input: I) -> IResult<I, u64, E>$/;"	f
+be_u8	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^pub fn be_u8<I, E: ParseError<I>>(input: I) -> IResult<I, u8, E>$/;"	f
+be_u8	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^pub fn be_u8<I, E: ParseError<I>>(input: I) -> IResult<I, u8, E>$/;"	f
+bits	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bits/mod.rs	/^pub fn bits<I, O, E1, E2, P>(mut parser: P) -> impl FnMut(I) -> IResult<I, O, E2>$/;"	f
+bits	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/lib.rs	/^pub mod bits;$/;"	n
+bool	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bits/complete.rs	/^pub fn bool<I, E: ParseError<(I, usize)>>(input: (I, usize)) -> IResult<(I, usize), bool, E>$/;"	f
+bool	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bits/streaming.rs	/^pub fn bool<I, E: ParseError<(I, usize)>>(input: (I, usize)) -> IResult<(I, usize), bool, E>$/;"	f
+branch	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/lib.rs	/^pub mod branch;$/;"	n
+bytes	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bits/mod.rs	/^pub fn bytes<I, O, E1, E2, P>(mut parser: P) -> impl FnMut((I, usize)) -> IResult<(I, usize), O,/;"	f
+bytes	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/lib.rs	/^pub mod bytes;$/;"	n
+case_insensitive	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/str.rs	/^  fn case_insensitive() {$/;"	f	module:test
+char	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/complete.rs	/^pub fn char<I, Error: ParseError<I>>(c: char) -> impl Fn(I) -> IResult<I, char, Error>$/;"	f
+char	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/streaming.rs	/^pub fn char<I, Error: ParseError<I>>(c: char) -> impl Fn(I) -> IResult<I, char, Error>$/;"	f
+char	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^impl AsChar for char {$/;"	c
+char	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^impl ExtendInto for char {$/;"	c
+char	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^impl<'a, 'b> FindToken<&'a char> for &'b [char] {$/;"	c
+char	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^impl<'a> AsChar for &'a char {$/;"	c
+char	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^impl<'a> FindToken<char> for &'a [char] {$/;"	c
+char_byteslice	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/tests.rs	/^fn char_byteslice() {$/;"	f
+char_str	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/tests.rs	/^fn char_str() {$/;"	f
+character	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/complete.rs	/^  fn character() {$/;"	f	module:tests
+character	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/streaming.rs	/^  fn character() {$/;"	f	module:tests
+character	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/lib.rs	/^pub mod character;$/;"	n
+character_s	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/complete.rs	/^  fn character_s() {$/;"	f	module:tests
+character_s	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/streaming.rs	/^  fn character_s() {$/;"	f	module:tests
+check_unix_lineending	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/complete.rs	/^  fn check_unix_lineending() {$/;"	f	module:tests
+check_unix_lineending	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/streaming.rs	/^  fn check_unix_lineending() {$/;"	f	module:tests
+check_windows_lineending	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/complete.rs	/^  fn check_windows_lineending() {$/;"	f	module:tests
+check_windows_lineending	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/streaming.rs	/^  fn check_windows_lineending() {$/;"	f	module:tests
+choice	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/branch/mod.rs	/^  fn choice(&mut self, input: I) -> IResult<I, O, E>;$/;"	P	interface:Alt
+choice	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/branch/mod.rs	/^  fn choice(&mut self, input: Input) -> IResult<Input, Output, Error> {$/;"	P	implementation:A
+cnt	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/tests.rs	/^  fn cnt(i: &[u8]) -> IResult<&[u8], Vec<&[u8]>> {$/;"	f	function:length_count_test
+cnt_2	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/tests.rs	/^  fn cnt_2(i: &[u8]) -> IResult<&[u8], Vec<&[u8]>> {$/;"	f	function:count_test
+code	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  pub code: ErrorKind,$/;"	m	struct:Error
+combinator	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/lib.rs	/^pub mod combinator;$/;"	n
+compare	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn compare(&self, t: &'b [u8]) -> CompareResult {$/;"	P	implementation:str
+compare	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn compare(&self, t: &'b [u8]) -> CompareResult {$/;"	P	implementation:u8
+compare	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn compare(&self, t: &'b str) -> CompareResult {$/;"	P	implementation:str
+compare	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn compare(&self, t: &'b str) -> CompareResult {$/;"	P	implementation:u8
+compare	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn compare(&self, t: O) -> CompareResult {$/;"	P	implementation:T
+compare	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn compare(&self, t: T) -> CompareResult;$/;"	P	interface:Compare
+compare_no_case	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn compare_no_case(&self, t: &'b [u8]) -> CompareResult {$/;"	P	implementation:str
+compare_no_case	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn compare_no_case(&self, t: &'b [u8]) -> CompareResult {$/;"	P	implementation:u8
+compare_no_case	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn compare_no_case(&self, t: &'b str) -> CompareResult {$/;"	P	implementation:str
+compare_no_case	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn compare_no_case(&self, t: &'b str) -> CompareResult {$/;"	P	implementation:u8
+compare_no_case	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn compare_no_case(&self, t: O) -> CompareResult {$/;"	P	implementation:T
+compare_no_case	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn compare_no_case(&self, t: T) -> CompareResult;$/;"	P	interface:Compare
+complete	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bits/mod.rs	/^pub mod complete;$/;"	n
+complete	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bytes/mod.rs	/^pub mod complete;$/;"	n
+complete	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/mod.rs	/^pub mod complete;$/;"	n
+complete	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/combinator/mod.rs	/^pub fn complete<I: Clone, O, E: ParseError<I>, F>(mut f: F) -> impl FnMut(I) -> IResult<I, O, E>$/;"	f
+complete	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/mod.rs	/^pub mod complete;$/;"	n
+complete	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/sequence/tests.rs	/^fn complete() {$/;"	f
+complete_take_while_m_n_utf8_all_matching	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bytes/complete.rs	/^  fn complete_take_while_m_n_utf8_all_matching() {$/;"	f	module:tests
+complete_take_while_m_n_utf8_all_matching_substring	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bytes/complete.rs	/^  fn complete_take_while_m_n_utf8_all_matching_substring() {$/;"	f	module:tests
+cond	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/combinator/mod.rs	/^pub fn cond<I, O, E: ParseError<I>, F>($/;"	f
+configurable_endianness	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^  fn configurable_endianness() {$/;"	f	module:tests
+configurable_endianness	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^  fn configurable_endianness() {$/;"	f	module:tests
+consumed	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/combinator/mod.rs	/^pub fn consumed<I, O, F, E>(mut parser: F) -> impl FnMut(I) -> IResult<I, (I, O), E>$/;"	f
+context	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^pub fn context<I: Clone, E: ContextError<I>, F, O>($/;"	f
+convert	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^  pub fn convert<F>(e: Err<F>) -> Self$/;"	P	implementation:Err
+convert	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn convert(self) -> ((I, usize), ErrorKind) {$/;"	P	implementation:ErrorKind
+convert	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn convert(self) -> (I, ErrorKind) {$/;"	P	implementation:ErrorKind
+convert	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn convert(self) -> E;$/;"	P	interface:ErrorConvert
+convert	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn convert(self) -> error::Error<(I, usize)> {$/;"	P	implementation:Error
+convert	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn convert(self) -> error::Error<I> {$/;"	P	implementation:Error
+convert	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn convert(self) -> error::VerboseError<(I, usize)> {$/;"	P	implementation:VerboseError
+convert	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn convert(self) -> error::VerboseError<I> {$/;"	P	implementation:VerboseError
+convert	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn convert(self) {}$/;"	P	implementation:ErrorConvert
+convert_error	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^pub fn convert_error<I: core::ops::Deref<Target = str>>($/;"	f
+convert_error_panic	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  fn convert_error_panic() {$/;"	f	module:tests
+count	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/mod.rs	/^pub fn count<I, O, E, F>(mut f: F, count: usize) -> impl FnMut(I) -> IResult<I, Vec<O>, E>$/;"	f
+count0_nums	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/tests.rs	/^  fn count0_nums(i: &[u8]) -> IResult<&[u8], usize> {$/;"	f	function:many0_count_test
+count1_nums	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/tests.rs	/^  fn count1_nums(i: &[u8]) -> IResult<&[u8], usize> {$/;"	f	function:many1_count_test
+count_test	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/tests.rs	/^fn count_test() {$/;"	f
+count_zero	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/tests.rs	/^fn count_zero() {$/;"	f
+counter_2	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/tests.rs	/^  fn counter_2(i: &[u8]) -> IResult<&[u8], Vec<&[u8]>> {$/;"	f	function:count_zero
+cr_lf	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/complete.rs	/^  fn cr_lf() {$/;"	f	module:tests
+cr_lf	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/streaming.rs	/^  fn cr_lf() {$/;"	f	module:tests
+crlf	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/complete.rs	/^pub fn crlf<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>$/;"	f
+crlf	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/streaming.rs	/^pub fn crlf<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>$/;"	f
+custom_error	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/combinator/tests.rs	/^fn custom_error(input: &[u8]) -> IResult<&[u8], &[u8], CustomError> {$/;"	f
+cut	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/combinator/mod.rs	/^pub fn cut<I, O, E: ParseError<I>, F>(mut parser: F) -> impl FnMut(I) -> IResult<I, O, E>$/;"	f
+dbg_dmp	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^pub fn dbg_dmp<'a, F, O, E: std::fmt::Debug>($/;"	f
+delimited	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/sequence/mod.rs	/^pub fn delimited<I, O1, O2, O3, E: ParseError<I>, F, G, H>($/;"	f
+delimited_abc_def_ghi	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/sequence/tests.rs	/^  fn delimited_abc_def_ghi(i: &[u8]) -> IResult<&[u8], &[u8]> {$/;"	f	function:delimited_test
+delimited_test	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/sequence/tests.rs	/^fn delimited_test() {$/;"	f
+description	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  pub fn description(&self) -> &str {$/;"	P	implementation:ErrorKind
+digit0	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/complete.rs	/^pub fn digit0<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>$/;"	f
+digit0	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/streaming.rs	/^pub fn digit0<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>$/;"	f
+digit1	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/complete.rs	/^pub fn digit1<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>$/;"	f
+digit1	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/streaming.rs	/^pub fn digit1<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>$/;"	f
+digit_to_i16	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/complete.rs	/^  fn digit_to_i16(input: &str) -> IResult<&str, i16> {$/;"	f	module:tests
+digit_to_i16	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/streaming.rs	/^  fn digit_to_i16(input: &str) -> IResult<&str, i16> {$/;"	f	module:tests
+digit_to_u32	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/complete.rs	/^  fn digit_to_u32(i: &str) -> IResult<&str, u32> {$/;"	f	module:tests
+digit_to_u32	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/streaming.rs	/^  fn digit_to_u32(i: &str) -> IResult<&str, u32> {$/;"	f	module:tests
+dont_work	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/branch/tests.rs	/^  fn dont_work(input: &[u8]) -> IResult<&[u8], &[u8], ErrorStr> {$/;"	f	function:alt_test
+dot	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/str.rs	/^    fn dot(i: &str) -> IResult<&str, &str> {$/;"	f	function:test::utf8_indexing
+double	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^pub fn double<T, E: ParseError<T>>(input: T) -> IResult<T, f64, E>$/;"	f
+double	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^pub fn double<T, E: ParseError<T>>(input: T) -> IResult<T, f64, E>$/;"	f
+empty_sep	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/tests.rs	/^  fn empty_sep(i: &[u8]) -> IResult<&[u8], Vec<&[u8]>> {$/;"	f	function:separated_list0_test
+end_of_line	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/complete.rs	/^  fn end_of_line() {$/;"	f	module:tests
+end_of_line	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/streaming.rs	/^  fn end_of_line() {$/;"	f	module:tests
+eof	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/combinator/mod.rs	/^pub fn eof<I: InputLength + Clone, E: ParseError<I>>(input: I) -> IResult<I, I, E> {$/;"	f
+eof_on_slices	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/combinator/tests.rs	/^fn eof_on_slices() {$/;"	f
+eof_on_strs	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/combinator/tests.rs	/^fn eof_on_strs() {$/;"	f
+err_map_test	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^  fn err_map_test() {$/;"	f	module:tests
+err_test	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/sequence/tests.rs	/^  fn err_test(i: &[u8]) -> IResult<&[u8], &[u8]> {$/;"	f	function:complete
+error	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/lib.rs	/^pub mod error;$/;"	n
+error_node_position	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^macro_rules! error_node_position($/;"	M
+error_position	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^macro_rules! error_position($/;"	M
+error_to_u32	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^pub fn error_to_u32(e: &ErrorKind) -> u32 {$/;"	f
+errors	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  pub errors: crate::lib::std::vec::Vec<(I, VerboseErrorKind)>,$/;"	m	struct:VerboseError
+esc	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bytes/tests.rs	/^  fn esc(i: &[u8]) -> IResult<&[u8], &[u8]> {$/;"	f	function:escaping
+esc	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bytes/tests.rs	/^  fn esc(i: &[u8]) -> IResult<&[u8], String> {$/;"	f	function:escape_transform
+escape_transform	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bytes/tests.rs	/^fn escape_transform() {$/;"	f
+escaped	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bytes/complete.rs	/^pub fn escaped<'a, Input: 'a, Error, F, G, O1, O2>($/;"	f
+escaped	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bytes/streaming.rs	/^pub fn escaped<Input, Error, F, G, O1, O2>($/;"	f
+escaped_hang	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bytes/complete.rs	/^  fn escaped_hang() {$/;"	f	module:tests
+escaped_hang_1118	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bytes/complete.rs	/^  fn escaped_hang_1118() {$/;"	f	module:tests
+escaped_string	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bytes/complete.rs	/^  fn escaped_string(input: &str) -> IResult<&str, &str> {$/;"	f	module:tests
+escaped_transform	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bytes/complete.rs	/^pub fn escaped_transform<Input, Error, F, G, O1, O2, ExtendItem, Output>($/;"	f
+escaped_transform	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bytes/streaming.rs	/^pub fn escaped_transform<Input, Error, F, G, O1, O2, ExtendItem, Output>($/;"	f
+escaping	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bytes/tests.rs	/^fn escaping() {$/;"	f
+extend_into	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn extend_into(&self, acc: &mut Self::Extender);$/;"	P	interface:ExtendInto
+extend_into	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn extend_into(&self, acc: &mut String) {$/;"	P	implementation:char
+extend_into	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn extend_into(&self, acc: &mut String) {$/;"	P	implementation:str
+extend_into	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn extend_into(&self, acc: &mut Vec<u8>) {$/;"	P	implementation:u8
+f	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/tests.rs	/^  fn f(i: &[u8]) -> IResult<&[u8], char> {$/;"	f	function:char_byteslice
+f	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/tests.rs	/^  fn f(i: &[u8]) -> IResult<&[u8], char> {$/;"	f	function:none_of_test
+f	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/tests.rs	/^  fn f(i: &[u8]) -> IResult<&[u8], char> {$/;"	f	function:one_of_test
+f	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/tests.rs	/^  fn f(i: &str) -> IResult<&str, char> {$/;"	f	function:char_str
+f	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^  f: F,$/;"	m	struct:And
+f	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^  f: F,$/;"	m	struct:AndThen
+f	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^  f: F,$/;"	m	struct:FlatMap
+f	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^  f: F,$/;"	m	struct:Into
+f	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^  f: F,$/;"	m	struct:Map
+f	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^  f: F,$/;"	m	struct:Or
+f	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/str.rs	/^    fn f(i: &str) -> IResult<&str, &str> {$/;"	f	function:test::recognize_is_a
+f	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/str.rs	/^    fn f(i: &str) -> IResult<&str, &str> {$/;"	f	function:test::take_while
+f	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/str.rs	/^    fn f(i: &str) -> IResult<&str, &str> {$/;"	f	function:test::take_while1
+f32	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^pub fn f32<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, f32, E/;"	f
+f32	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^pub fn f32<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, f32, E/;"	f
+f64	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^pub fn f64<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, f64, E/;"	f
+f64	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^pub fn f64<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, f64, E/;"	f
+fail	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/combinator/mod.rs	/^pub fn fail<I, O, E: ParseError<I>>(i: I) -> IResult<I, O, E> {$/;"	f
+fail_test	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/combinator/tests.rs	/^fn fail_test() {$/;"	f
+fill	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/mod.rs	/^pub fn fill<'a, I, O, E, F>(f: F, buf: &'a mut [O]) -> impl FnMut(I) -> IResult<I, (), E> + 'a$/;"	f
+find_substring	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn find_substring(&self, substr: &'b [u8]) -> Option<usize> {$/;"	P	implementation:u8
+find_substring	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn find_substring(&self, substr: &'b str) -> Option<usize> {$/;"	P	implementation:str
+find_substring	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn find_substring(&self, substr: &'b str) -> Option<usize> {$/;"	P	implementation:u8
+find_substring	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn find_substring(&self, substr: T) -> Option<usize>;$/;"	P	interface:FindSubstring
+find_token	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn find_token(&self, token: &char) -> bool {$/;"	P	implementation:char
+find_token	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn find_token(&self, token: &u8) -> bool {$/;"	P	implementation:str
+find_token	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn find_token(&self, token: &u8) -> bool {$/;"	P	implementation:u8
+find_token	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn find_token(&self, token: T) -> bool;$/;"	P	interface:FindToken
+find_token	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn find_token(&self, token: char) -> bool {$/;"	P	implementation:char
+find_token	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn find_token(&self, token: char) -> bool {$/;"	P	implementation:str
+find_token	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn find_token(&self, token: char) -> bool {$/;"	P	implementation:u8
+find_token	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn find_token(&self, token: u8) -> bool {$/;"	P	implementation:str
+find_token	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn find_token(&self, token: u8) -> bool {$/;"	P	implementation:u8
+finish	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/combinator/mod.rs	/^  pub fn finish(mut self) -> IResult<I, (), E> {$/;"	P	implementation:ParserIterator
+finish	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^  fn finish(self) -> Result<(I, O), E> {$/;"	P	implementation:IResult
+finish	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^  fn finish(self) -> Result<(I, O), E>;$/;"	P	interface:Finish
+flat_map	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/combinator/mod.rs	/^pub fn flat_map<I, O1, O2, E: ParseError<I>, F, G, H>($/;"	f
+flat_map	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^  fn flat_map<G, H, O2>(self, g: G) -> FlatMap<Self, G, O>$/;"	P	interface:Parser
+float	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^pub fn float<T, E: ParseError<T>>(input: T) -> IResult<T, f32, E>$/;"	f
+float	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^pub fn float<T, E: ParseError<T>>(input: T) -> IResult<T, f32, E>$/;"	f
+float_test	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^  fn float_test() {$/;"	f	module:tests
+float_test	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^  fn float_test() {$/;"	f	module:tests
+fmt	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {$/;"	P	implementation:Error
+fmt	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {$/;"	P	implementation:VerboseError
+fmt	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {$/;"	f
+fold_into_vec	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/tests.rs	/^  fn fold_into_vec<T>(mut acc: Vec<T>, item: T) -> Vec<T> {$/;"	f	function:fold_many0_test
+fold_into_vec	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/tests.rs	/^  fn fold_into_vec<T>(mut acc: Vec<T>, item: T) -> Vec<T> {$/;"	f	function:fold_many1_test
+fold_into_vec	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/tests.rs	/^  fn fold_into_vec<T>(mut acc: Vec<T>, item: T) -> Vec<T> {$/;"	f	function:fold_many_m_n_test
+fold_many0	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/mod.rs	/^pub fn fold_many0<I, O, E, F, G, H, R>($/;"	f
+fold_many0_test	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/tests.rs	/^fn fold_many0_test() {$/;"	f
+fold_many1	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/mod.rs	/^pub fn fold_many1<I, O, E, F, G, H, R>($/;"	f
+fold_many1_test	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/tests.rs	/^fn fold_many1_test() {$/;"	f
+fold_many_m_n	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/mod.rs	/^pub fn fold_many_m_n<I, O, E, F, G, H, R>($/;"	f
+fold_many_m_n_test	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/tests.rs	/^fn fold_many_m_n_test() {$/;"	f
+from	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/branch/tests.rs	/^  fn from(i: &'a str) -> Self {$/;"	P	implementation:ErrorStr
+from	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/branch/tests.rs	/^  fn from(i: u32) -> Self {$/;"	P	implementation:ErrorStr
+from	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/combinator/tests.rs	/^  fn from(_: u32) -> Self {$/;"	P	implementation:CustomError
+from	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/tests.rs	/^  fn from(_: (I, ErrorKind)) -> Self {$/;"	P	implementation:NilError
+from_char	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  fn from_char(input: I, _: char) -> Self {$/;"	P	interface:ParseError
+from_char	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  fn from_char(input: I, c: char) -> Self {$/;"	P	implementation:VerboseError
+from_error_kind	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/branch/tests.rs	/^  fn from_error_kind(input: I, kind: ErrorKind) -> Self {$/;"	P	implementation:ErrorStr
+from_error_kind	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/combinator/tests.rs	/^  fn from_error_kind(_: I, _: ErrorKind) -> Self {$/;"	P	implementation:CustomError
+from_error_kind	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  fn from_error_kind(_: I, _: ErrorKind) -> Self {}$/;"	P	implementation:ParseError
+from_error_kind	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  fn from_error_kind(input: I, kind: ErrorKind) -> Self {$/;"	P	implementation:Error
+from_error_kind	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  fn from_error_kind(input: I, kind: ErrorKind) -> Self {$/;"	P	implementation:ErrorKind
+from_error_kind	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  fn from_error_kind(input: I, kind: ErrorKind) -> Self {$/;"	P	implementation:VerboseError
+from_error_kind	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  fn from_error_kind(input: I, kind: ErrorKind) -> Self;$/;"	P	interface:ParseError
+from_error_kind	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/tests.rs	/^  fn from_error_kind(_: I, _: ErrorKind) -> NilError {$/;"	P	implementation:NilError
+from_external_error	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  fn from_external_error(_input: I, _kind: ErrorKind, _e: E) -> Self {}$/;"	P	implementation:FromExternalError
+from_external_error	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  fn from_external_error(input: I, kind: ErrorKind, _e: E) -> Self {$/;"	P	implementation:Error
+from_external_error	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  fn from_external_error(input: I, kind: ErrorKind, _e: E) -> Self {$/;"	P	implementation:ErrorKind
+from_external_error	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  fn from_external_error(input: I, kind: ErrorKind, _e: E) -> Self {$/;"	P	implementation:VerboseError
+from_external_error	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  fn from_external_error(input: I, kind: ErrorKind, e: E) -> Self;$/;"	P	interface:FromExternalError
+full_line_unix	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/complete.rs	/^  fn full_line_unix() {$/;"	f	module:tests
+full_line_unix	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/streaming.rs	/^  fn full_line_unix() {$/;"	f	module:tests
+full_line_windows	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/complete.rs	/^  fn full_line_windows() {$/;"	f	module:tests
+full_line_windows	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/streaming.rs	/^  fn full_line_windows() {$/;"	f	module:tests
+g	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^  g: G,$/;"	m	struct:And
+g	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^  g: G,$/;"	m	struct:AndThen
+g	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^  g: G,$/;"	m	struct:FlatMap
+g	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^  g: G,$/;"	m	struct:Map
+g	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^  g: G,$/;"	m	struct:Or
+hex_digit0	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/complete.rs	/^pub fn hex_digit0<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>$/;"	f
+hex_digit0	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/streaming.rs	/^pub fn hex_digit0<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>$/;"	f
+hex_digit1	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/complete.rs	/^pub fn hex_digit1<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>$/;"	f
+hex_digit1	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/streaming.rs	/^pub fn hex_digit1<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>$/;"	f
+hex_digit_test	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/complete.rs	/^  fn hex_digit_test() {$/;"	f	module:tests
+hex_digit_test	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/streaming.rs	/^  fn hex_digit_test() {$/;"	f	module:tests
+hex_u32	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^pub fn hex_u32<'a, E: ParseError<&'a [u8]>>(input: &'a [u8]) -> IResult<&'a [u8], u32, E> {$/;"	f
+hex_u32	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^pub fn hex_u32<'a, E: ParseError<&'a [u8]>>(input: &'a [u8]) -> IResult<&'a [u8], u32, E> {$/;"	f
+hex_u32_tests	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^  fn hex_u32_tests() {$/;"	f	module:tests
+hex_u32_tests	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^  fn hex_u32_tests() {$/;"	f	module:tests
+i128	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^pub fn i128<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, i128,/;"	f
+i128	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^pub fn i128<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, i128,/;"	f
+i128_tests	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^  fn i128_tests() {$/;"	f	module:tests
+i16	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^pub fn i16<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, i16, E/;"	f
+i16	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^pub fn i16<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, i16, E/;"	f
+i16_tests	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^  fn i16_tests() {$/;"	f	module:tests
+i24	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^pub fn i24<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, i32, E/;"	f
+i24	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^pub fn i24<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, i32, E/;"	f
+i24_tests	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^  fn i24_tests() {$/;"	f	module:tests
+i32	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^pub fn i32<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, i32, E/;"	f
+i32	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^pub fn i32<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, i32, E/;"	f
+i32_tests	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^  fn i32_tests() {$/;"	f	module:tests
+i64	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^pub fn i64<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, i64, E/;"	f
+i64	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^pub fn i64<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, i64, E/;"	f
+i64_tests	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^  fn i64_tests() {$/;"	f	module:tests
+i8	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^pub fn i8<I, E: ParseError<I>>(i: I) -> IResult<I, i8, E>$/;"	f
+i8	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^pub fn i8<I, E: ParseError<I>>(i: I) -> IResult<I, i8, E>$/;"	f
+i8_tests	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^  fn i8_tests() {$/;"	f	module:tests
+i8_tests	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^  fn i8_tests() {$/;"	f	module:tests
+impl_fn_slice	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^macro_rules! impl_fn_slice {$/;"	M
+infinite_many	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/tests.rs	/^fn infinite_many() {$/;"	f
+input	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/combinator/mod.rs	/^  input: I,$/;"	m	struct:ParserIterator
+input	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  pub input: I,$/;"	m	struct:Error
+input_len	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn input_len(&self) -> usize {$/;"	P	implementation:T
+input_len	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn input_len(&self) -> usize {$/;"	P	implementation:str
+input_len	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn input_len(&self) -> usize {$/;"	P	implementation:usize
+input_len	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn input_len(&self) -> usize;$/;"	P	interface:InputLength
+internal	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/lib.rs	/^mod internal;$/;"	n
+into	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/combinator/mod.rs	/^pub fn into<I, O1, O2, E1, E2, F>(mut parser: F) -> impl FnMut(I) -> IResult<I, O2, E2>$/;"	f
+into	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^  fn into<O2: From<O>, E2: From<E>>(self) -> Into<Self, O, O2, E, E2>$/;"	P	interface:Parser
+ints	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/complete.rs	/^macro_rules! ints {$/;"	M
+ints	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/streaming.rs	/^macro_rules! ints {$/;"	M
+is_a	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bytes/complete.rs	/^pub fn is_a<T, Input, Error: ParseError<Input>>($/;"	f
+is_a	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bytes/streaming.rs	/^pub fn is_a<T, Input, Error: ParseError<Input>>($/;"	f
+is_a	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bytes/tests.rs	/^fn is_a() {$/;"	f
+is_a_fail	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/str.rs	/^  fn is_a_fail() {$/;"	f	module:test
+is_a_succeed	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/str.rs	/^  fn is_a_succeed() {$/;"	f	module:test
+is_alpha	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn is_alpha(self) -> bool {$/;"	P	implementation:char
+is_alpha	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn is_alpha(self) -> bool {$/;"	P	implementation:u8
+is_alpha	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn is_alpha(self) -> bool;$/;"	P	interface:AsChar
+is_alphabetic	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/mod.rs	/^pub fn is_alphabetic(chr: u8) -> bool {$/;"	f
+is_alphabetic	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/str.rs	/^  fn is_alphabetic(c: char) -> bool {$/;"	f	module:test
+is_alphanum	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn is_alphanum(self) -> bool {$/;"	P	implementation:char
+is_alphanum	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn is_alphanum(self) -> bool {$/;"	P	implementation:u8
+is_alphanum	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn is_alphanum(self) -> bool;$/;"	P	interface:AsChar
+is_alphanumeric	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/mod.rs	/^pub fn is_alphanumeric(chr: u8) -> bool {$/;"	f
+is_dec_digit	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn is_dec_digit(self) -> bool {$/;"	P	implementation:char
+is_dec_digit	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn is_dec_digit(self) -> bool {$/;"	P	implementation:u8
+is_dec_digit	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn is_dec_digit(self) -> bool;$/;"	P	interface:AsChar
+is_digit	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/mod.rs	/^pub fn is_digit(chr: u8) -> bool {$/;"	f
+is_hex_digit	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/mod.rs	/^pub fn is_hex_digit(chr: u8) -> bool {$/;"	f
+is_hex_digit	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn is_hex_digit(self) -> bool {$/;"	P	implementation:char
+is_hex_digit	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn is_hex_digit(self) -> bool {$/;"	P	implementation:u8
+is_hex_digit	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn is_hex_digit(self) -> bool;$/;"	P	interface:AsChar
+is_incomplete	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^  pub fn is_incomplete(&self) -> bool {$/;"	P	implementation:Err
+is_known	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^  pub fn is_known(&self) -> bool {$/;"	P	implementation:Needed
+is_newline	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/mod.rs	/^pub fn is_newline(chr: u8) -> bool {$/;"	f
+is_not	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bytes/complete.rs	/^pub fn is_not<T, Input, Error: ParseError<Input>>($/;"	f
+is_not	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bytes/streaming.rs	/^pub fn is_not<T, Input, Error: ParseError<Input>>($/;"	f
+is_not	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bytes/tests.rs	/^fn is_not() {$/;"	f
+is_not_fail	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/str.rs	/^  fn is_not_fail() {$/;"	f	module:test
+is_not_line_ending_bytes	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/complete.rs	/^  fn is_not_line_ending_bytes() {$/;"	f	module:tests
+is_not_line_ending_bytes	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/streaming.rs	/^  fn is_not_line_ending_bytes() {$/;"	f	module:tests
+is_not_line_ending_str	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/complete.rs	/^  fn is_not_line_ending_str() {$/;"	f	module:tests
+is_not_line_ending_str	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/streaming.rs	/^  fn is_not_line_ending_str() {$/;"	f	module:tests
+is_not_succeed	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/str.rs	/^  fn is_not_succeed() {$/;"	f	module:test
+is_oct_digit	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/mod.rs	/^pub fn is_oct_digit(chr: u8) -> bool {$/;"	f
+is_oct_digit	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn is_oct_digit(self) -> bool {$/;"	P	implementation:char
+is_oct_digit	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn is_oct_digit(self) -> bool {$/;"	P	implementation:u8
+is_oct_digit	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn is_oct_digit(self) -> bool;$/;"	P	interface:AsChar
+is_space	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/mod.rs	/^pub fn is_space(chr: u8) -> bool {$/;"	f
+iter_elements	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn iter_elements(&self) -> Self::IterElem {$/;"	P	implementation:str
+iter_elements	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn iter_elements(&self) -> Self::IterElem {$/;"	P	implementation:u8
+iter_elements	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn iter_elements(&self) -> Self::IterElem;$/;"	P	interface:InputIter
+iter_indices	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn iter_indices(&self) -> Self::Iter {$/;"	P	implementation:str
+iter_indices	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn iter_indices(&self) -> Self::Iter {$/;"	P	implementation:u8
+iter_indices	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn iter_indices(&self) -> Self::Iter;$/;"	P	interface:InputIter
+iterator	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/combinator/mod.rs	/^  iterator: F,$/;"	m	struct:ParserIterator
+iterator	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/combinator/mod.rs	/^pub fn iterator<Input, Output, Error, F>(input: Input, f: F) -> ParserIterator<Input, Error, F>$/;"	f
+le_f32	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^pub fn le_f32<I, E: ParseError<I>>(input: I) -> IResult<I, f32, E>$/;"	f
+le_f32	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^pub fn le_f32<I, E: ParseError<I>>(input: I) -> IResult<I, f32, E>$/;"	f
+le_f32_tests	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^  fn le_f32_tests() {$/;"	f	module:tests
+le_f32_tests	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^  fn le_f32_tests() {$/;"	f	module:tests
+le_f64	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^pub fn le_f64<I, E: ParseError<I>>(input: I) -> IResult<I, f64, E>$/;"	f
+le_f64	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^pub fn le_f64<I, E: ParseError<I>>(input: I) -> IResult<I, f64, E>$/;"	f
+le_f64_tests	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^  fn le_f64_tests() {$/;"	f	module:tests
+le_f64_tests	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^  fn le_f64_tests() {$/;"	f	module:tests
+le_i128	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^pub fn le_i128<I, E: ParseError<I>>(input: I) -> IResult<I, i128, E>$/;"	f
+le_i128	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^pub fn le_i128<I, E: ParseError<I>>(input: I) -> IResult<I, i128, E>$/;"	f
+le_i128_tests	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^  fn le_i128_tests() {$/;"	f	module:tests
+le_i128_tests	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^  fn le_i128_tests() {$/;"	f	module:tests
+le_i16	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^pub fn le_i16<I, E: ParseError<I>>(input: I) -> IResult<I, i16, E>$/;"	f
+le_i16	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^pub fn le_i16<I, E: ParseError<I>>(input: I) -> IResult<I, i16, E>$/;"	f
+le_i16_tests	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^  fn le_i16_tests() {$/;"	f	module:tests
+le_i16_tests	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^  fn le_i16_tests() {$/;"	f	module:tests
+le_i24	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^pub fn le_i24<I, E: ParseError<I>>(input: I) -> IResult<I, i32, E>$/;"	f
+le_i24	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^pub fn le_i24<I, E: ParseError<I>>(input: I) -> IResult<I, i32, E>$/;"	f
+le_i24_tests	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^  fn le_i24_tests() {$/;"	f	module:tests
+le_i24_tests	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^  fn le_i24_tests() {$/;"	f	module:tests
+le_i32	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^pub fn le_i32<I, E: ParseError<I>>(input: I) -> IResult<I, i32, E>$/;"	f
+le_i32	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^pub fn le_i32<I, E: ParseError<I>>(input: I) -> IResult<I, i32, E>$/;"	f
+le_i32_tests	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^  fn le_i32_tests() {$/;"	f	module:tests
+le_i32_tests	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^  fn le_i32_tests() {$/;"	f	module:tests
+le_i64	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^pub fn le_i64<I, E: ParseError<I>>(input: I) -> IResult<I, i64, E>$/;"	f
+le_i64	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^pub fn le_i64<I, E: ParseError<I>>(input: I) -> IResult<I, i64, E>$/;"	f
+le_i64_tests	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^  fn le_i64_tests() {$/;"	f	module:tests
+le_i64_tests	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^  fn le_i64_tests() {$/;"	f	module:tests
+le_i8	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^pub fn le_i8<I, E: ParseError<I>>(input: I) -> IResult<I, i8, E>$/;"	f
+le_i8	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^pub fn le_i8<I, E: ParseError<I>>(input: I) -> IResult<I, i8, E>$/;"	f
+le_i8_tests	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^  fn le_i8_tests() {$/;"	f	module:tests
+le_i8_tests	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^  fn le_i8_tests() {$/;"	f	module:tests
+le_tst16	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^    fn le_tst16(i: &[u8]) -> IResult<&[u8], u16> {$/;"	f	function:tests::configurable_endianness
+le_tst16	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^    fn le_tst16(i: &[u8]) -> IResult<&[u8], u16> {$/;"	f	function:tests::configurable_endianness
+le_tst32	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^    fn le_tst32(i: &[u8]) -> IResult<&[u8], u32> {$/;"	f	function:tests::configurable_endianness
+le_tst32	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^    fn le_tst32(i: &[u8]) -> IResult<&[u8], u32> {$/;"	f	function:tests::configurable_endianness
+le_tst64	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^    fn le_tst64(i: &[u8]) -> IResult<&[u8], u64> {$/;"	f	function:tests::configurable_endianness
+le_tst64	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^    fn le_tst64(i: &[u8]) -> IResult<&[u8], u64> {$/;"	f	function:tests::configurable_endianness
+le_tsti16	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^    fn le_tsti16(i: &[u8]) -> IResult<&[u8], i16> {$/;"	f	function:tests::configurable_endianness
+le_tsti16	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^    fn le_tsti16(i: &[u8]) -> IResult<&[u8], i16> {$/;"	f	function:tests::configurable_endianness
+le_tsti32	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^    fn le_tsti32(i: &[u8]) -> IResult<&[u8], i32> {$/;"	f	function:tests::configurable_endianness
+le_tsti32	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^    fn le_tsti32(i: &[u8]) -> IResult<&[u8], i32> {$/;"	f	function:tests::configurable_endianness
+le_tsti64	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^    fn le_tsti64(i: &[u8]) -> IResult<&[u8], i64> {$/;"	f	function:tests::configurable_endianness
+le_tsti64	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^    fn le_tsti64(i: &[u8]) -> IResult<&[u8], i64> {$/;"	f	function:tests::configurable_endianness
+le_u128	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^pub fn le_u128<I, E: ParseError<I>>(input: I) -> IResult<I, u128, E>$/;"	f
+le_u128	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^pub fn le_u128<I, E: ParseError<I>>(input: I) -> IResult<I, u128, E>$/;"	f
+le_u16	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^pub fn le_u16<I, E: ParseError<I>>(input: I) -> IResult<I, u16, E>$/;"	f
+le_u16	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^pub fn le_u16<I, E: ParseError<I>>(input: I) -> IResult<I, u16, E>$/;"	f
+le_u24	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^pub fn le_u24<I, E: ParseError<I>>(input: I) -> IResult<I, u32, E>$/;"	f
+le_u24	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^pub fn le_u24<I, E: ParseError<I>>(input: I) -> IResult<I, u32, E>$/;"	f
+le_u24_tests	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^  fn le_u24_tests() {$/;"	f	module:tests
+le_u24_tests	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^  fn le_u24_tests() {$/;"	f	module:tests
+le_u32	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^pub fn le_u32<I, E: ParseError<I>>(input: I) -> IResult<I, u32, E>$/;"	f
+le_u32	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^pub fn le_u32<I, E: ParseError<I>>(input: I) -> IResult<I, u32, E>$/;"	f
+le_u64	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^pub fn le_u64<I, E: ParseError<I>>(input: I) -> IResult<I, u64, E>$/;"	f
+le_u64	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^pub fn le_u64<I, E: ParseError<I>>(input: I) -> IResult<I, u64, E>$/;"	f
+le_u8	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^pub fn le_u8<I, E: ParseError<I>>(input: I) -> IResult<I, u8, E>$/;"	f
+le_u8	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^pub fn le_u8<I, E: ParseError<I>>(input: I) -> IResult<I, u8, E>$/;"	f
+len	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn len(self) -> usize {$/;"	P	implementation:char
+len	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn len(self) -> usize {$/;"	P	implementation:u8
+len	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn len(self) -> usize;$/;"	P	interface:AsChar
+length_count	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/mod.rs	/^pub fn length_count<I, O, N, E, F, G>(mut f: F, mut g: G) -> impl FnMut(I) -> IResult<I, Vec<O>,/;"	f
+length_count_test	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/tests.rs	/^fn length_count_test() {$/;"	f
+length_data	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/mod.rs	/^pub fn length_data<I, N, E, F>(mut f: F) -> impl FnMut(I) -> IResult<I, I, E>$/;"	f
+length_data_test	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/tests.rs	/^fn length_data_test() {$/;"	f
+length_value	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/mod.rs	/^pub fn length_value<I, O, N, E, F, G>(mut f: F, mut g: G) -> impl FnMut(I) -> IResult<I, O, E>$/;"	f
+length_value_1	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/tests.rs	/^  fn length_value_1(i: &[u8]) -> IResult<&[u8], u16> {$/;"	f	function:length_value_test
+length_value_2	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/tests.rs	/^  fn length_value_2(i: &[u8]) -> IResult<&[u8], (u8, u8)> {$/;"	f	function:length_value_test
+length_value_test	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/tests.rs	/^fn length_value_test() {$/;"	f
+lib	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/lib.rs	/^pub mod lib {$/;"	n
+line_ending	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/complete.rs	/^pub fn line_ending<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>$/;"	f
+line_ending	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/streaming.rs	/^pub fn line_ending<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>$/;"	f
+lowercase_byte	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^fn lowercase_byte(c: u8) -> u8 {$/;"	f
+macros	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/lib.rs	/^mod macros;$/;"	n
+make_error	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^pub fn make_error<I, E: ParseError<I>>(input: I, kind: ErrorKind) -> E {$/;"	f
+many0	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/mod.rs	/^pub fn many0<I, O, E, F>(mut f: F) -> impl FnMut(I) -> IResult<I, Vec<O>, E>$/;"	f
+many0_count	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/mod.rs	/^pub fn many0_count<I, O, E, F>(mut f: F) -> impl FnMut(I) -> IResult<I, usize, E>$/;"	f
+many0_count_test	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/tests.rs	/^fn many0_count_test() {$/;"	f
+many0_test	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/tests.rs	/^fn many0_test() {$/;"	f
+many1	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/mod.rs	/^pub fn many1<I, O, E, F>(mut f: F) -> impl FnMut(I) -> IResult<I, Vec<O>, E>$/;"	f
+many1_count	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/mod.rs	/^pub fn many1_count<I, O, E, F>(mut f: F) -> impl FnMut(I) -> IResult<I, usize, E>$/;"	f
+many1_count_test	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/tests.rs	/^fn many1_count_test() {$/;"	f
+many1_test	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/tests.rs	/^fn many1_test() {$/;"	f
+many_m_n	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/mod.rs	/^pub fn many_m_n<I, O, E, F>($/;"	f
+many_m_n_test	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/tests.rs	/^fn many_m_n_test() {$/;"	f
+many_till	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/mod.rs	/^pub fn many_till<I, O, P, E, F, G>($/;"	f
+many_till_test	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/tests.rs	/^fn many_till_test() {$/;"	f
+map	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/combinator/mod.rs	/^pub fn map<I, O1, O2, E, F, G>(mut parser: F, mut f: G) -> impl FnMut(I) -> IResult<I, O2, E>$/;"	f
+map	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^  fn map<G, O2>(self, g: G) -> Map<Self, G, O>$/;"	P	interface:Parser
+map	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^  pub fn map<E2, F>(self, f: F) -> Err<E2>$/;"	P	implementation:Err
+map	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^  pub fn map<F: Fn(NonZeroUsize) -> usize>(self, f: F) -> Needed {$/;"	P	implementation:Needed
+map_input	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^  pub fn map_input<U, F>(self, f: F) -> Err<(U, ErrorKind)>$/;"	P	implementation:Err
+map_input	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^  pub fn map_input<U, F>(self, f: F) -> Err<error::Error<U>>$/;"	P	implementation:Err
+map_opt	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/combinator/mod.rs	/^pub fn map_opt<I: Clone, O1, O2, E: ParseError<I>, F, G>($/;"	f
+map_parser	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/combinator/mod.rs	/^pub fn map_parser<I, O1, O2, E: ParseError<I>, F, G>($/;"	f
+map_res	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/combinator/mod.rs	/^pub fn map_res<I: Clone, O1, O2, E: FromExternalError<I, E2>, E2, F, G>($/;"	f
+multi	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/lib.rs	/^pub mod multi;$/;"	n
+multi	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/tests.rs	/^  fn multi(i: &[u8]) -> IResult<&[u8], (Vec<&[u8]>, &[u8])> {$/;"	f	function:many_till_test
+multi	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/tests.rs	/^  fn multi(i: &[u8]) -> IResult<&[u8], Vec<&[u8]>> {$/;"	f	function:fold_many0_test
+multi	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/tests.rs	/^  fn multi(i: &[u8]) -> IResult<&[u8], Vec<&[u8]>> {$/;"	f	function:fold_many1_test
+multi	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/tests.rs	/^  fn multi(i: &[u8]) -> IResult<&[u8], Vec<&[u8]>> {$/;"	f	function:fold_many_m_n_test
+multi	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/tests.rs	/^  fn multi(i: &[u8]) -> IResult<&[u8], Vec<&[u8]>> {$/;"	f	function:many0_test
+multi	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/tests.rs	/^  fn multi(i: &[u8]) -> IResult<&[u8], Vec<&[u8]>> {$/;"	f	function:many1_test
+multi	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/tests.rs	/^  fn multi(i: &[u8]) -> IResult<&[u8], Vec<&[u8]>> {$/;"	f	function:many_m_n_test
+multi	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/tests.rs	/^  fn multi(i: &[u8]) -> IResult<&[u8], Vec<&[u8]>> {$/;"	f	function:separated_list0_test
+multi	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/tests.rs	/^  fn multi(i: &[u8]) -> IResult<&[u8], Vec<&[u8]>> {$/;"	f	function:separated_list1_test
+multi0	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/tests.rs	/^  fn multi0(i: &[u8]) -> IResult<&[u8], Vec<&[u8]>> {$/;"	f	function:infinite_many
+multi1	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/tests.rs	/^  fn multi1(i: &[u8]) -> IResult<&[u8], Vec<&[u8]>> {$/;"	f	function:infinite_many
+multi_empty	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/tests.rs	/^  fn multi_empty(i: &[u8]) -> IResult<&[u8], Vec<&[u8]>> {$/;"	f	function:fold_many0_test
+multi_empty	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/tests.rs	/^  fn multi_empty(i: &[u8]) -> IResult<&[u8], Vec<&[u8]>> {$/;"	f	function:many0_test
+multi_empty	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/tests.rs	/^  fn multi_empty(i: &[u8]) -> IResult<&[u8], Vec<&[u8]>> {$/;"	f	function:separated_list0_test
+multi_longsep	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/tests.rs	/^  fn multi_longsep(i: &[u8]) -> IResult<&[u8], Vec<&[u8]>> {$/;"	f	function:separated_list0_test
+multi_longsep	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/tests.rs	/^  fn multi_longsep(i: &[u8]) -> IResult<&[u8], Vec<&[u8]>> {$/;"	f	function:separated_list1_test
+multispace0	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/complete.rs	/^pub fn multispace0<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>$/;"	f
+multispace0	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/streaming.rs	/^pub fn multispace0<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>$/;"	f
+multispace1	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/complete.rs	/^pub fn multispace1<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>$/;"	f
+multispace1	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/streaming.rs	/^pub fn multispace1<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>$/;"	f
+new	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  pub fn new(input: I, code: ErrorKind) -> Error<I> {$/;"	P	implementation:Error
+new	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^  pub fn new(s: usize) -> Self {$/;"	P	implementation:Needed
+new_builder	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn new_builder(&self) -> Self::Extender;$/;"	P	interface:ExtendInto
+new_builder	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn new_builder(&self) -> String {$/;"	P	implementation:char
+new_builder	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn new_builder(&self) -> String {$/;"	P	implementation:str
+new_builder	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn new_builder(&self) -> Vec<u8> {$/;"	P	implementation:u8
+newline	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/complete.rs	/^pub fn newline<I, Error: ParseError<I>>(input: I) -> IResult<I, char, Error>$/;"	f
+newline	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/streaming.rs	/^pub fn newline<I, Error: ParseError<I>>(input: I) -> IResult<I, char, Error>$/;"	f
+next	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/combinator/mod.rs	/^  fn next(&mut self) -> Option<Self::Item> {$/;"	f
+none_of	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/complete.rs	/^pub fn none_of<I, T, Error: ParseError<I>>(list: T) -> impl Fn(I) -> IResult<I, char, Error>$/;"	f
+none_of	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/streaming.rs	/^pub fn none_of<I, T, Error: ParseError<I>>(list: T) -> impl Fn(I) -> IResult<I, char, Error>$/;"	f
+none_of_test	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/tests.rs	/^fn none_of_test() {$/;"	f
+not	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/combinator/mod.rs	/^pub fn not<I: Clone, O, E: ParseError<I>, F>(mut parser: F) -> impl FnMut(I) -> IResult<I, (), E/;"	f
+not_aaa	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/combinator/tests.rs	/^  fn not_aaa(i: &[u8]) -> IResult<&[u8], ()> {$/;"	f	function:not_test
+not_line_ending	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/complete.rs	/^pub fn not_line_ending<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>$/;"	f
+not_line_ending	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/streaming.rs	/^pub fn not_line_ending<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>$/;"	f
+not_test	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/combinator/tests.rs	/^fn not_test() {$/;"	f
+number	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/lib.rs	/^pub mod number;$/;"	n
+number	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/tests.rs	/^fn number(i: &[u8]) -> IResult<&[u8], u32> {$/;"	f
+oct_digit0	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/complete.rs	/^pub fn oct_digit0<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>$/;"	f
+oct_digit0	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/streaming.rs	/^pub fn oct_digit0<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>$/;"	f
+oct_digit1	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/complete.rs	/^pub fn oct_digit1<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>$/;"	f
+oct_digit1	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/streaming.rs	/^pub fn oct_digit1<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>$/;"	f
+oct_digit_test	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/complete.rs	/^  fn oct_digit_test() {$/;"	f	module:tests
+oct_digit_test	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/streaming.rs	/^  fn oct_digit_test() {$/;"	f	module:tests
+offset	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/complete.rs	/^  fn offset() {$/;"	f	module:tests
+offset	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/streaming.rs	/^  fn offset() {$/;"	f	module:tests
+offset	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn offset(&self, second: &Self) -> usize {$/;"	P	implementation:str
+offset	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn offset(&self, second: &Self) -> usize {$/;"	P	implementation:u8
+offset	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn offset(&self, second: &Self) -> usize;$/;"	P	interface:Offset
+one_of	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/complete.rs	/^pub fn one_of<I, T, Error: ParseError<I>>(list: T) -> impl Fn(I) -> IResult<I, char, Error>$/;"	f
+one_of	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/streaming.rs	/^pub fn one_of<I, T, Error: ParseError<I>>(list: T) -> impl Fn(I) -> IResult<I, char, Error>$/;"	f
+one_of_test	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/tests.rs	/^fn one_of_test() {$/;"	f
+opt	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/combinator/mod.rs	/^pub fn opt<I: Clone, O, E: ParseError<I>, F>(mut f: F) -> impl FnMut(I) -> IResult<I, Option<O>,/;"	f
+opt_abcd	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/combinator/tests.rs	/^  fn opt_abcd(i: &[u8]) -> IResult<&[u8], Option<&[u8]>> {$/;"	f	function:opt_test
+opt_test	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/combinator/tests.rs	/^fn opt_test() {$/;"	f
+or	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^  fn or(self, other: Self) -> Self {$/;"	P	interface:ParseError
+or	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^  fn or<G>(self, g: G) -> Or<Self, G>$/;"	P	interface:Parser
+pair	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/sequence/mod.rs	/^pub fn pair<I, O1, O2, E: ParseError<I>, F, G>($/;"	f
+pair_abc_def	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/sequence/tests.rs	/^  fn pair_abc_def(i: &[u8]) -> IResult<&[u8], (&[u8], &[u8])> {$/;"	f	function:pair_test
+pair_test	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/sequence/tests.rs	/^fn pair_test() {$/;"	f
+parse	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^  fn parse(&mut self, i: I) -> IResult<I, (O1, O2), E> {$/;"	P	implementation:And
+parse	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^  fn parse(&mut self, i: I) -> IResult<I, O, E> {$/;"	P	implementation:Or
+parse	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^  fn parse(&mut self, i: I) -> IResult<I, O, E> {$/;"	f
+parse	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^  fn parse(&mut self, i: I) -> IResult<I, O2, E2> {$/;"	P	implementation:Into
+parse	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^  fn parse(&mut self, i: I) -> IResult<I, O2, E> {$/;"	P	implementation:AndThen
+parse	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^  fn parse(&mut self, i: I) -> IResult<I, O2, E> {$/;"	P	implementation:FlatMap
+parse	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^  fn parse(&mut self, i: I) -> IResult<I, O2, E> {$/;"	P	implementation:Map
+parse	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^  fn parse(&mut self, input: I) -> IResult<I, O, E> {$/;"	P	implementation:Box
+parse	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^  fn parse(&mut self, input: I) -> IResult<I, O, E>;$/;"	P	interface:Parser
+parse	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/sequence/mod.rs	/^  fn parse(&mut self, input: I) -> IResult<I, (), E> {$/;"	P	implementation:Tuple
+parse	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/sequence/mod.rs	/^  fn parse(&mut self, input: I) -> IResult<I, O, E>;$/;"	P	interface:Tuple
+parse	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/sequence/mod.rs	/^  fn parse(&mut self, input: Input) -> IResult<Input, (Output,), Error> {$/;"	P	implementation:F
+parse_f64	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^  fn parse_f64(i: &str) -> IResult<&str, f64, ()> {$/;"	f	module:tests
+parse_f64	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^  fn parse_f64(i: &str) -> IResult<&str, f64, ()> {$/;"	f	module:tests
+parse_to	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn parse_to(&self) -> Option<R> {$/;"	P	implementation:str
+parse_to	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn parse_to(&self) -> Option<R> {$/;"	P	implementation:u8
+parse_to	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn parse_to(&self) -> Option<R>;$/;"	P	interface:ParseTo
+parser2	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/combinator/tests.rs	/^  fn parser2(i: &[u8]) -> IResult<&[u8], u32> {$/;"	f	function:test_verify_ref
+peek	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/combinator/mod.rs	/^pub fn peek<I: Clone, O, E: ParseError<I>, F>(mut f: F) -> impl FnMut(I) -> IResult<I, O, E>$/;"	f
+peek_tag	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/combinator/tests.rs	/^  fn peek_tag(i: &[u8]) -> IResult<&[u8], &[u8]> {$/;"	f	function:peek_test
+peek_test	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/combinator/tests.rs	/^fn peek_test() {$/;"	f
+perm	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/branch/tests.rs	/^  fn perm(i: &[u8]) -> IResult<&[u8], (&[u8], &[u8], &[u8])> {$/;"	f	function:permutation_test
+permutation	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/branch/mod.rs	/^  fn permutation(&mut self, input: I) -> IResult<I, O, E>;$/;"	P	interface:Permutation
+permutation	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/branch/mod.rs	/^pub fn permutation<I: Clone, O, E: ParseError<I>, List: Permutation<I, O, E>>($/;"	f
+permutation_test	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/branch/tests.rs	/^fn permutation_test() {$/;"	f
+permutation_trait	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/branch/mod.rs	/^macro_rules! permutation_trait($/;"	M
+permutation_trait_impl	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/branch/mod.rs	/^macro_rules! permutation_trait_impl($/;"	M
+permutation_trait_inner	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/branch/mod.rs	/^macro_rules! permutation_trait_inner($/;"	M
+phantom	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^  phantom: core::marker::PhantomData<O1>,$/;"	m	struct:AndThen
+phantom	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^  phantom: core::marker::PhantomData<O1>,$/;"	m	struct:FlatMap
+phantom	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^  phantom: core::marker::PhantomData<O1>,$/;"	m	struct:Map
+phantom_err1	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^  phantom_err1: core::marker::PhantomData<E1>,$/;"	m	struct:Into
+phantom_err2	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^  phantom_err2: core::marker::PhantomData<E2>,$/;"	m	struct:Into
+phantom_out1	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^  phantom_out1: core::marker::PhantomData<O1>,$/;"	m	struct:Into
+phantom_out2	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^  phantom_out2: core::marker::PhantomData<O2>,$/;"	m	struct:Into
+position	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn position<P>(&self, predicate: P) -> Option<usize>$/;"	P	implementation:str
+position	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn position<P>(&self, predicate: P) -> Option<usize>$/;"	P	implementation:u8
+position	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn position<P>(&self, predicate: P) -> Option<usize>$/;"	P	interface:InputIter
+preceded	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/sequence/mod.rs	/^pub fn preceded<I, O1, O2, E: ParseError<I>, F, G>($/;"	f
+preceded_abcd_efgh	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/sequence/tests.rs	/^  fn preceded_abcd_efgh(i: &[u8]) -> IResult<&[u8], &[u8]> {$/;"	f	function:preceded_test
+preceded_test	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/sequence/tests.rs	/^fn preceded_test() {$/;"	f
+prelude	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/lib.rs	/^    pub mod prelude {$/;"	n	module:lib::std
+recipes	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/lib.rs	/^pub mod recipes {}$/;"	n
+recognize	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/combinator/mod.rs	/^pub fn recognize<I: Clone + Offset + Slice<RangeTo<usize>>, O, E: ParseError<I>, F>($/;"	f
+recognize_float	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^pub fn recognize_float<T, E:ParseError<T>>(input: T) -> IResult<T, T, E>$/;"	f
+recognize_float	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^pub fn recognize_float<T, E:ParseError<T>>(input: T) -> IResult<T, T, E>$/;"	f
+recognize_float_or_exceptions	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^pub fn recognize_float_or_exceptions<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>$/;"	f
+recognize_float_or_exceptions	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^pub fn recognize_float_or_exceptions<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>$/;"	f
+recognize_float_parts	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^pub fn recognize_float_parts<T, E: ParseError<T>>(input: T) -> IResult<T, (bool, T, T, i32), E>$/;"	f
+recognize_float_parts	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^pub fn recognize_float_parts<T, E: ParseError<T>>(input: T) -> IResult<T, (bool, T, T, i32), E>$/;"	f
+recognize_is_a	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/str.rs	/^  fn recognize_is_a() {$/;"	f	module:test
+rest	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/combinator/mod.rs	/^pub fn rest<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>$/;"	f
+rest_len	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/combinator/mod.rs	/^pub fn rest_len<T, E: ParseError<T>>(input: T) -> IResult<T, usize, E>$/;"	f
+rest_len_on_slices	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/combinator/tests.rs	/^fn rest_len_on_slices() {$/;"	f
+rest_on_slices	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/combinator/tests.rs	/^fn rest_on_slices() {$/;"	f
+rest_on_strs	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/combinator/tests.rs	/^fn rest_on_strs() {$/;"	f
+satisfy	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/complete.rs	/^pub fn satisfy<F, I, Error: ParseError<I>>(cond: F) -> impl Fn(I) -> IResult<I, char, Error>$/;"	f
+satisfy	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/streaming.rs	/^pub fn satisfy<F, I, Error: ParseError<I>>(cond: F) -> impl Fn(I) -> IResult<I, char, Error>$/;"	f
+sep_pair_abc_def	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/sequence/tests.rs	/^  fn sep_pair_abc_def(i: &[u8]) -> IResult<&[u8], (&[u8], &[u8])> {$/;"	f	function:separated_pair_test
+separated_list0	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/mod.rs	/^pub fn separated_list0<I, O, O2, E, F, G>($/;"	f
+separated_list0_test	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/tests.rs	/^fn separated_list0_test() {$/;"	f
+separated_list1	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/mod.rs	/^pub fn separated_list1<I, O, O2, E, F, G>($/;"	f
+separated_list1_test	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/tests.rs	/^fn separated_list1_test() {$/;"	f
+separated_pair	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/sequence/mod.rs	/^pub fn separated_pair<I, O1, O2, O3, E: ParseError<I>, F, G, H>($/;"	f
+separated_pair_test	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/sequence/tests.rs	/^fn separated_pair_test() {$/;"	f
+sequence	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/lib.rs	/^pub mod sequence;$/;"	n
+sign	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/complete.rs	/^pub(crate) fn sign<T, E: ParseError<T>>(input: T) -> IResult<T, bool, E>$/;"	f
+sign	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/streaming.rs	/^pub(crate) fn sign<T, E: ParseError<T>>(input: T) -> IResult<T, bool, E>$/;"	f
+single_element_tuples	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/sequence/tests.rs	/^fn single_element_tuples() {$/;"	f
+size_test	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^  fn size_test() {$/;"	f	module:tests
+slice	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn slice(&self, range: R) -> Self;$/;"	P	interface:Slice
+slice_index	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn slice_index(&self, count: usize) -> Result<usize, Needed> {$/;"	P	implementation:str
+slice_index	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn slice_index(&self, count: usize) -> Result<usize, Needed> {$/;"	P	implementation:u8
+slice_index	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn slice_index(&self, count: usize) -> Result<usize, Needed>;$/;"	P	interface:InputIter
+slice_range_impl	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^macro_rules! slice_range_impl {$/;"	M
+slice_ranges_impl	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^macro_rules! slice_ranges_impl {$/;"	M
+source	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^  fn source(&self) -> Option<&(dyn Error + 'static)> {$/;"	f
+space0	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/complete.rs	/^pub fn space0<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>$/;"	f
+space0	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/streaming.rs	/^pub fn space0<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>$/;"	f
+space1	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/complete.rs	/^pub fn space1<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>$/;"	f
+space1	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/streaming.rs	/^pub fn space1<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>$/;"	f
+split_at_position	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn split_at_position<P, E: ParseError<Self>>(&self, predicate: P) -> IResult<Self, Self, E>$/;"	P	implementation:T
+split_at_position	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn split_at_position<P, E: ParseError<Self>>(&self, predicate: P) -> IResult<Self, Self, E>$/;"	P	implementation:str
+split_at_position	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn split_at_position<P, E: ParseError<Self>>(&self, predicate: P) -> IResult<Self, Self, E>$/;"	P	implementation:u8
+split_at_position	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn split_at_position<P, E: ParseError<Self>>(&self, predicate: P) -> IResult<Self, Self, E>$/;"	P	interface:InputTakeAtPosition
+split_at_position1	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn split_at_position1<P, E: ParseError<Self>>($/;"	P	implementation:T
+split_at_position1	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn split_at_position1<P, E: ParseError<Self>>($/;"	P	implementation:str
+split_at_position1	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn split_at_position1<P, E: ParseError<Self>>($/;"	P	implementation:u8
+split_at_position1	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn split_at_position1<P, E: ParseError<Self>>($/;"	P	interface:InputTakeAtPosition
+split_at_position1_complete	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn split_at_position1_complete<P, E: ParseError<Self>>($/;"	P	implementation:T
+split_at_position1_complete	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn split_at_position1_complete<P, E: ParseError<Self>>($/;"	P	implementation:str
+split_at_position1_complete	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn split_at_position1_complete<P, E: ParseError<Self>>($/;"	P	implementation:u8
+split_at_position1_complete	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn split_at_position1_complete<P, E: ParseError<Self>>($/;"	P	interface:InputTakeAtPosition
+split_at_position_complete	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn split_at_position_complete<P, E: ParseError<Self>>($/;"	P	implementation:T
+split_at_position_complete	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn split_at_position_complete<P, E: ParseError<Self>>($/;"	P	implementation:str
+split_at_position_complete	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn split_at_position_complete<P, E: ParseError<Self>>($/;"	P	implementation:u8
+split_at_position_complete	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn split_at_position_complete<P, E: ParseError<Self>>($/;"	P	interface:InputTakeAtPosition
+state	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/combinator/mod.rs	/^  state: Option<State<E>>,$/;"	m	struct:ParserIterator
+std	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/lib.rs	/^  pub mod std {$/;"	n	module:lib
+str	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/lib.rs	/^mod str;$/;"	n
+str	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^impl AsBytes for str {$/;"	c
+str	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^impl ExtendInto for &str {$/;"	c
+str	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^impl ExtendInto for str {$/;"	c
+str	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^impl HexDisplay for str {$/;"	c
+str	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^impl Offset for str {$/;"	c
+str	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^impl<'a, 'b> Compare<&'b [u8]> for &'a str {$/;"	c
+str	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^impl<'a, 'b> Compare<&'b str> for &'a str {$/;"	c
+str	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^impl<'a, 'b> FindSubstring<&'b str> for &'a str {$/;"	c
+str	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^impl<'a, 'b> FindToken<&'a u8> for &'b str {$/;"	c
+str	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^impl<'a, R: FromStr> ParseTo<R> for &'a str {$/;"	c
+str	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^impl<'a> AsBytes for &'a str {$/;"	c
+str	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^impl<'a> FindToken<char> for &'a str {$/;"	c
+str	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^impl<'a> FindToken<u8> for &'a str {$/;"	c
+str	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^impl<'a> InputIter for &'a str {$/;"	c
+str	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^impl<'a> InputLength for &'a str {$/;"	c
+str	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^impl<'a> InputTake for &'a str {$/;"	c
+str	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^impl<'a> InputTakeAtPosition for &'a str {$/;"	c
+str	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^impl<'a> Offset for &'a str {$/;"	c
+streaming	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bits/mod.rs	/^pub mod streaming;$/;"	n
+streaming	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bytes/mod.rs	/^pub mod streaming;$/;"	n
+streaming	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/mod.rs	/^pub mod streaming;$/;"	n
+streaming	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/mod.rs	/^pub mod streaming;$/;"	n
+succ	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/macros.rs	/^macro_rules! succ ($/;"	M
+success	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/combinator/mod.rs	/^pub fn success<I, O: Clone, E: ParseError<I>>(val: O) -> impl Fn(I) -> IResult<I, O, E> {$/;"	f
+tab	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/complete.rs	/^pub fn tab<I, Error: ParseError<I>>(input: I) -> IResult<I, char, Error>$/;"	f
+tab	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/streaming.rs	/^pub fn tab<I, Error: ParseError<I>>(input: I) -> IResult<I, char, Error>$/;"	f
+tag	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bits/complete.rs	/^pub fn tag<I, O, C, E: ParseError<(I, usize)>>($/;"	f
+tag	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bits/streaming.rs	/^pub fn tag<I, O, C, E: ParseError<(I, usize)>>($/;"	f
+tag	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bytes/complete.rs	/^pub fn tag<T, Input, Error: ParseError<Input>>($/;"	f
+tag	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bytes/streaming.rs	/^pub fn tag<T, Input, Error: ParseError<Input>>($/;"	f
+tag_no_case	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bytes/complete.rs	/^pub fn tag_no_case<T, Input, Error: ParseError<Input>>($/;"	f
+tag_no_case	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bytes/streaming.rs	/^pub fn tag_no_case<T, Input, Error: ParseError<Input>>($/;"	f
+tagtr_error	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/str.rs	/^  fn tagtr_error() {$/;"	f	module:test
+tagtr_incomplete	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/str.rs	/^  fn tagtr_incomplete() {$/;"	f	module:test
+tagtr_succeed	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/str.rs	/^  fn tagtr_succeed() {$/;"	f	module:test
+take	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bits/complete.rs	/^pub fn take<I, O, C, E: ParseError<(I, usize)>>($/;"	f
+take	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bits/streaming.rs	/^pub fn take<I, O, C, E: ParseError<(I, usize)>>($/;"	f
+take	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bytes/complete.rs	/^pub fn take<C, Input, Error: ParseError<Input>>($/;"	f
+take	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bytes/streaming.rs	/^pub fn take<C, Input, Error: ParseError<Input>>($/;"	f
+take	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/tests.rs	/^  fn take(i: &[u8]) -> IResult<&[u8], &[u8]> {$/;"	f	function:length_data_test
+take	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn take(&self, count: usize) -> Self {$/;"	P	implementation:str
+take	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn take(&self, count: usize) -> Self {$/;"	P	implementation:u8
+take	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn take(&self, count: usize) -> Self;$/;"	P	interface:InputTake
+take_full_line	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/complete.rs	/^    fn take_full_line(i: &[u8]) -> IResult<&[u8], (&[u8], &[u8])> {$/;"	f	function:tests::full_line_unix
+take_full_line	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/complete.rs	/^    fn take_full_line(i: &[u8]) -> IResult<&[u8], (&[u8], &[u8])> {$/;"	f	function:tests::full_line_windows
+take_full_line	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/streaming.rs	/^    fn take_full_line(i: &[u8]) -> IResult<&[u8], (&[u8], &[u8])> {$/;"	f	function:tests::full_line_unix
+take_full_line	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/streaming.rs	/^    fn take_full_line(i: &[u8]) -> IResult<&[u8], (&[u8], &[u8])> {$/;"	f	function:tests::full_line_windows
+take_s_incomplete	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/str.rs	/^  fn take_s_incomplete() {$/;"	f	module:test
+take_s_succeed	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/str.rs	/^  fn take_s_succeed() {$/;"	f	module:test
+take_split	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn take_split(&self, count: usize) -> (Self, Self) {$/;"	P	implementation:str
+take_split	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn take_split(&self, count: usize) -> (Self, Self) {$/;"	P	implementation:u8
+take_split	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn take_split(&self, count: usize) -> (Self, Self);$/;"	P	interface:InputTake
+take_till	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bytes/complete.rs	/^pub fn take_till<F, Input, Error: ParseError<Input>>($/;"	f
+take_till	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bytes/streaming.rs	/^pub fn take_till<F, Input, Error: ParseError<Input>>($/;"	f
+take_till1	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bytes/complete.rs	/^pub fn take_till1<F, Input, Error: ParseError<Input>>($/;"	f
+take_till1	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bytes/streaming.rs	/^pub fn take_till1<F, Input, Error: ParseError<Input>>($/;"	f
+take_till_s_succeed	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/str.rs	/^  fn take_till_s_succeed() {$/;"	f	module:test
+take_until	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bytes/complete.rs	/^pub fn take_until<T, Input, Error: ParseError<Input>>($/;"	f
+take_until	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bytes/streaming.rs	/^pub fn take_until<T, Input, Error: ParseError<Input>>($/;"	f
+take_until1	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bytes/complete.rs	/^pub fn take_until1<T, Input, Error: ParseError<Input>>($/;"	f
+take_until1	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bytes/streaming.rs	/^pub fn take_until1<T, Input, Error: ParseError<Input>>($/;"	f
+take_until_error	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/str.rs	/^  fn take_until_error() {$/;"	f	module:test
+take_until_incomplete	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/str.rs	/^  fn take_until_incomplete() {$/;"	f	module:test
+take_until_succeed	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/str.rs	/^  fn take_until_succeed() {$/;"	f	module:test
+take_while	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bytes/complete.rs	/^pub fn take_while<F, Input, Error: ParseError<Input>>($/;"	f
+take_while	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bytes/streaming.rs	/^pub fn take_while<F, Input, Error: ParseError<Input>>($/;"	f
+take_while	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/str.rs	/^  fn take_while() {$/;"	f	module:test
+take_while1	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bytes/complete.rs	/^pub fn take_while1<F, Input, Error: ParseError<Input>>($/;"	f
+take_while1	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bytes/streaming.rs	/^pub fn take_while1<F, Input, Error: ParseError<Input>>($/;"	f
+take_while1	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/str.rs	/^  fn take_while1() {$/;"	f	module:test
+take_while1_fail	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/str.rs	/^  fn take_while1_fail() {$/;"	f	module:test
+take_while1_succeed	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/str.rs	/^  fn take_while1_succeed() {$/;"	f	module:test
+take_while_m_n	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bytes/complete.rs	/^pub fn take_while_m_n<F, Input, Error: ParseError<Input>>($/;"	f
+take_while_m_n	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bytes/streaming.rs	/^pub fn take_while_m_n<F, Input, Error: ParseError<Input>>($/;"	f
+take_while_succeed_none	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/str.rs	/^  fn take_while_succeed_none() {$/;"	f	module:test
+take_while_succeed_some	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/str.rs	/^  fn take_while_succeed_some() {$/;"	f	module:test
+terminated	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/sequence/mod.rs	/^pub fn terminated<I, O1, O2, E: ParseError<I>, F, G>($/;"	f
+terminated_abcd_efgh	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/sequence/tests.rs	/^  fn terminated_abcd_efgh(i: &[u8]) -> IResult<&[u8], &[u8]> {$/;"	f	function:terminated_test
+terminated_test	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/sequence/tests.rs	/^fn terminated_test() {$/;"	f
+test	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bits/complete.rs	/^mod test {$/;"	n
+test	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bits/mod.rs	/^mod test {$/;"	n
+test	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bits/streaming.rs	/^mod test {$/;"	n
+test	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/combinator/tests.rs	/^  fn test(i: &[u8]) -> IResult<&[u8], &[u8]> {$/;"	f	function:verify_test
+test	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/str.rs	/^    fn test(i: &str) -> IResult<&str, &str> {$/;"	f	function:test::case_insensitive
+test	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/str.rs	/^    fn test(input: &str) -> IResult<&str, &str> {$/;"	f	function:test::is_a_fail
+test	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/str.rs	/^    fn test(input: &str) -> IResult<&str, &str> {$/;"	f	function:test::is_a_succeed
+test	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/str.rs	/^    fn test(input: &str) -> IResult<&str, &str> {$/;"	f	function:test::is_not_fail
+test	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/str.rs	/^    fn test(input: &str) -> IResult<&str, &str> {$/;"	f	function:test::is_not_succeed
+test	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/str.rs	/^    fn test(input: &str) -> IResult<&str, &str> {$/;"	f	function:test::tagtr_succeed
+test	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/str.rs	/^    fn test(input: &str) -> IResult<&str, &str> {$/;"	f	function:test::take_till_s_succeed
+test	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/str.rs	/^    fn test(input: &str) -> IResult<&str, &str> {$/;"	f	function:test::take_while1_fail
+test	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/str.rs	/^    fn test(input: &str) -> IResult<&str, &str> {$/;"	f	function:test::take_while1_succeed
+test	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/str.rs	/^    fn test(input: &str) -> IResult<&str, &str> {$/;"	f	function:test::take_while_succeed_none
+test	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/str.rs	/^    fn test(input: &str) -> IResult<&str, &str> {$/;"	f	function:test::take_while_succeed_some
+test	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/str.rs	/^mod test {$/;"	n
+test_all_consuming	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/combinator/tests.rs	/^fn test_all_consuming() {$/;"	f
+test_bool_0	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bits/complete.rs	/^  fn test_bool_0() {$/;"	f	module:test
+test_bool_0	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bits/streaming.rs	/^  fn test_bool_0() {$/;"	f	module:test
+test_bool_eof	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bits/complete.rs	/^  fn test_bool_eof() {$/;"	f	module:test
+test_bool_eof	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bits/streaming.rs	/^  fn test_bool_eof() {$/;"	f	module:test
+test_complete_byte_consumption_bits	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bits/mod.rs	/^  fn test_complete_byte_consumption_bits() {$/;"	f	module:test
+test_flat_map	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/combinator/tests.rs	/^fn test_flat_map() {$/;"	f
+test_incomplete_bits	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bits/mod.rs	/^  fn test_incomplete_bits() {$/;"	f	module:test
+test_into	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/combinator/tests.rs	/^fn test_into() {$/;"	f
+test_map_opt	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/combinator/tests.rs	/^fn test_map_opt() {$/;"	f
+test_map_parser	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/combinator/tests.rs	/^fn test_map_parser() {$/;"	f
+test_offset_str	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn test_offset_str() {$/;"	f	module:tests
+test_offset_u8	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn test_offset_u8() {$/;"	f	module:tests
+test_partial_byte_consumption_bits	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bits/mod.rs	/^  fn test_partial_byte_consumption_bits() {$/;"	f	module:test
+test_tag_err	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bits/streaming.rs	/^  fn test_tag_err() {$/;"	f	module:test
+test_tag_ok	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bits/streaming.rs	/^  fn test_tag_ok() {$/;"	f	module:test
+test_take_0	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bits/complete.rs	/^  fn test_take_0() {$/;"	f	module:test
+test_take_0	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bits/streaming.rs	/^  fn test_take_0() {$/;"	f	module:test
+test_take_eof	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bits/complete.rs	/^  fn test_take_eof() {$/;"	f	module:test
+test_take_span_over_multiple_bytes	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bits/complete.rs	/^  fn test_take_span_over_multiple_bytes() {$/;"	f	module:test
+test_verify_alloc	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/combinator/tests.rs	/^fn test_verify_alloc() {$/;"	f
+test_verify_ref	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/combinator/tests.rs	/^fn test_verify_ref() {$/;"	f
+tests	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/branch/mod.rs	/^mod tests;$/;"	n
+tests	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bytes/complete.rs	/^mod tests {$/;"	n
+tests	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bytes/mod.rs	/^mod tests;$/;"	n
+tests	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/complete.rs	/^mod tests {$/;"	n
+tests	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/mod.rs	/^mod tests;$/;"	n
+tests	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/streaming.rs	/^mod tests {$/;"	n
+tests	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/combinator/mod.rs	/^mod tests;$/;"	n
+tests	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/error.rs	/^mod tests {$/;"	n
+tests	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^mod tests {$/;"	n
+tests	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/mod.rs	/^mod tests;$/;"	n
+tests	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^mod tests {$/;"	n
+tests	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^mod tests {$/;"	n
+tests	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/sequence/mod.rs	/^mod tests;$/;"	n
+tests	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^mod tests {$/;"	n
+till_s	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/str.rs	/^    fn till_s(c: char) -> bool {$/;"	f	function:test::take_till_s_succeed
+to_hex	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn to_hex(&self, chunk_size: usize) -> String {$/;"	P	implementation:str
+to_hex	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn to_hex(&self, chunk_size: usize) -> String {$/;"	P	implementation:u8
+to_hex	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn to_hex(&self, chunk_size: usize) -> String;$/;"	P	interface:HexDisplay
+to_hex_from	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn to_hex_from(&self, chunk_size: usize, from: usize) -> String {$/;"	P	implementation:str
+to_hex_from	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn to_hex_from(&self, chunk_size: usize, from: usize) -> String {$/;"	P	implementation:u8
+to_hex_from	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn to_hex_from(&self, chunk_size: usize, from: usize) -> String;$/;"	P	interface:HexDisplay
+to_owned	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^  pub fn to_owned(self) -> Err<(String, ErrorKind)> {$/;"	P	implementation:Err
+to_owned	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^  pub fn to_owned(self) -> Err<(Vec<u8>, ErrorKind)> {$/;"	P	implementation:Err
+to_owned	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^  pub fn to_owned(self) -> Err<error::Error<String>> {$/;"	P	implementation:Err
+to_owned	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/internal.rs	/^  pub fn to_owned(self) -> Err<error::Error<Vec<u8>>> {$/;"	P	implementation:Err
+to_s	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bytes/tests.rs	/^fn to_s(i: Vec<u8>) -> String {$/;"	f
+to_usize	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn to_usize(&self) -> usize {$/;"	P	implementation:u16
+to_usize	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn to_usize(&self) -> usize {$/;"	P	implementation:u32
+to_usize	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn to_usize(&self) -> usize {$/;"	P	implementation:u64
+to_usize	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn to_usize(&self) -> usize {$/;"	P	implementation:u8
+to_usize	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn to_usize(&self) -> usize {$/;"	P	implementation:usize
+to_usize	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^  fn to_usize(&self) -> usize;$/;"	P	interface:ToUsize
+traits	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/lib.rs	/^mod traits;$/;"	n
+tst	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/multi/tests.rs	/^  fn tst(input: &[u8]) -> IResult<&[u8], &[u8]> {$/;"	f	function:infinite_many
+tuple	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/sequence/mod.rs	/^pub fn tuple<I, O, E: ParseError<I>, List: Tuple<I, O, E>>($/;"	f
+tuple_3	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/sequence/tests.rs	/^  fn tuple_3(i: &[u8]) -> IResult<&[u8], (u16, &[u8], &[u8])> {$/;"	f	function:tuple_test
+tuple_test	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/sequence/tests.rs	/^fn tuple_test() {$/;"	f
+tuple_trait	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/sequence/mod.rs	/^macro_rules! tuple_trait($/;"	M
+tuple_trait_impl	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/sequence/mod.rs	/^macro_rules! tuple_trait_impl($/;"	M
+tuple_trait_inner	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/sequence/mod.rs	/^macro_rules! tuple_trait_inner($/;"	M
+u128	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^pub fn u128<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, u128,/;"	f
+u128	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^pub fn u128<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, u128,/;"	f
+u16	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^pub fn u16<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, u16, E/;"	f
+u16	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^pub fn u16<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, u16, E/;"	f
+u16	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^impl ToUsize for u16 {$/;"	c
+u24	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^pub fn u24<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, u32, E/;"	f
+u24	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^pub fn u24<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, u32, E/;"	f
+u24_tests	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^  fn u24_tests() {$/;"	f	module:tests
+u32	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^pub fn u32<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, u32, E/;"	f
+u32	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^pub fn u32<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, u32, E/;"	f
+u32	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^impl ToUsize for u32 {$/;"	c
+u64	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^pub fn u64<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, u64, E/;"	f
+u64	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^pub fn u64<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, u64, E/;"	f
+u64	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^impl ToUsize for u64 {$/;"	c
+u8	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/complete.rs	/^pub fn u8<I, E: ParseError<I>>(input: I) -> IResult<I, u8, E>$/;"	f
+u8	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/number/streaming.rs	/^pub fn u8<I, E: ParseError<I>>(input: I) -> IResult<I, u8, E>$/;"	f
+u8	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^impl AsBytes for [u8] {$/;"	c
+u8	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^impl AsChar for u8 {$/;"	c
+u8	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^impl ExtendInto for &[u8] {$/;"	c
+u8	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^impl ExtendInto for [u8] {$/;"	c
+u8	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^impl HexDisplay for [u8] {$/;"	c
+u8	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^impl Offset for [u8] {$/;"	c
+u8	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^impl ToUsize for u8 {$/;"	c
+u8	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^impl<'a, 'b> Compare<&'b [u8]> for &'a [u8] {$/;"	c
+u8	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^impl<'a, 'b> Compare<&'b str> for &'a [u8] {$/;"	c
+u8	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^impl<'a, 'b> FindSubstring<&'b [u8]> for &'a [u8] {$/;"	c
+u8	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^impl<'a, 'b> FindSubstring<&'b str> for &'a [u8] {$/;"	c
+u8	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^impl<'a, 'b> FindToken<&'a u8> for &'b [u8] {$/;"	c
+u8	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^impl<'a, R: FromStr> ParseTo<R> for &'a [u8] {$/;"	c
+u8	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^impl<'a> AsBytes for &'a [u8] {$/;"	c
+u8	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^impl<'a> AsChar for &'a u8 {$/;"	c
+u8	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^impl<'a> FindToken<char> for &'a [u8] {$/;"	c
+u8	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^impl<'a> FindToken<u8> for &'a [u8] {$/;"	c
+u8	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^impl<'a> InputIter for &'a [u8] {$/;"	c
+u8	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^impl<'a> InputTake for &'a [u8] {$/;"	c
+u8	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^impl<'a> InputTakeAtPosition for &'a [u8] {$/;"	c
+u8	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^impl<'a> Offset for &'a [u8] {$/;"	c
+uints	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/complete.rs	/^macro_rules! uints {$/;"	M
+uints	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/streaming.rs	/^macro_rules! uints {$/;"	M
+unit_type	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/sequence/tests.rs	/^fn unit_type() {$/;"	f
+unquote	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/bytes/complete.rs	/^  fn unquote<'a>(input: &'a str) -> IResult<&'a str, &'a str> {$/;"	f	module:tests
+usize	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^impl ToUsize for usize {$/;"	c
+usize	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/traits.rs	/^impl<'a> InputLength for (&'a [u8], usize) {$/;"	c
+utf8	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/character/tests.rs	/^  fn utf8(i: &str) -> IResult<&str, char> {$/;"	f	function:one_of_test
+utf8_indexing	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/str.rs	/^  fn utf8_indexing() {$/;"	f	module:test
+value	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/combinator/mod.rs	/^pub fn value<I, O1: Clone, O2, E: ParseError<I>, F>($/;"	f
+verify	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/combinator/mod.rs	/^pub fn verify<I: Clone, O1, O2, E: ParseError<I>, F, G>($/;"	f
+verify_test	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/combinator/tests.rs	/^fn verify_test() {$/;"	f
+while1_s	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/str.rs	/^    fn while1_s(c: char) -> bool {$/;"	f	function:test::take_while1_fail
+while1_s	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/str.rs	/^    fn while1_s(c: char) -> bool {$/;"	f	function:test::take_while1_succeed
+while_s	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/str.rs	/^    fn while_s(c: char) -> bool {$/;"	f	function:test::take_while_succeed_none
+while_s	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/str.rs	/^    fn while_s(c: char) -> bool {$/;"	f	function:test::take_while_succeed_some
+work	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/branch/tests.rs	/^  fn work(input: &[u8]) -> IResult<&[u8], &[u8], ErrorStr> {$/;"	f	function:alt_test
+work2	/home/egb2/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nom-7.1.3/src/branch/tests.rs	/^  fn work2(input: &[u8]) -> IResult<&[u8], &[u8], ErrorStr> {$/;"	f	function:alt_test
