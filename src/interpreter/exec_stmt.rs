@@ -111,6 +111,9 @@ pub fn exec_stmt(stmt: &CheckedStmt, env: &mut Environment<Value>) -> ExecResult
                 }
             }
         },
+        
+        // --- Switch ---
+        Statement::Switch { .. } => todo!("switch statement interpreter not implemented yet"),
 
         // --- Return ---
         Statement::Return(Some(expr)) => {

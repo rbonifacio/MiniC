@@ -9,7 +9,7 @@
 //! * [`Literal`] — a constant value written directly in source code.
 //! * [`Expr`] / [`ExprD`] — expressions (arithmetic, comparisons, calls, …).
 //! * [`Statement`] / [`StatementD`] — statements (declarations, assignments,
-//!   `if`, `while`, `return`, blocks).
+//!   `if`, `while`, `switch`, `return`, blocks).
 //! * [`FunDecl`] — a single function declaration with its body.
 //! * [`Program`] — the top-level container: a list of function declarations.
 //!
@@ -148,6 +148,11 @@ pub enum Statement<Ty> {
     While {
         cond: Box<ExprD<Ty>>,
         body: Box<StatementD<Ty>>,
+    },
+    Switch {
+        target: Box<ExprD<Ty>>,
+        cases: Vec<(Literal, Vec<StatementD<Ty>>)>,
+        default: Vec<StatementD<Ty>>,
     },
     /// Return statement: `return [expr]`.
     Return(Option<Box<ExprD<Ty>>>),

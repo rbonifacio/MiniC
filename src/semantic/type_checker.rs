@@ -232,6 +232,7 @@ fn type_check_stmt(
                 body: Box::new(body_checked),
             }
         }
+        Statement::Switch { .. } => todo!("switch statement type checker not implemented yet"),
         Statement::Return(expr) => match expr {
             None => {
                 if *expected_return != Type::Unit {
