@@ -97,6 +97,15 @@ executor `exec_stmt` handles each statement form:
 | `return expr` | Evaluates `expr` and signals an early return |
 | `f(args)` | Evaluates arguments, calls `f`, discards the return value |
 
+In expression evaluation, MiniC also supports dedicated nodes for:
+
+- `len(expr)`
+: evaluates `expr` and returns `Int` with character count (`str`) or element
+  count (`array`).
+- `contains(container, item)`
+: evaluates both operands and returns `Bool` using substring semantics for
+  strings and membership semantics for arrays.
+
 ### How `return` propagates
 
 Statements do not normally produce values, but `return` must pass its value
