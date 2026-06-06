@@ -359,10 +359,17 @@ fn type_of_function_call(
             Ok((**return_ty).clone())
         }
 
-        other => Err(TypeError::new(format!(
-            "{} is not a function, got {:?}",
-            label, other
-        ))),
+        other => {
+            if label == "function value" {
+                Err(TypeError::new("attempting to call a non-function value"))
+            } 
+            else {
+                Err(TypeError::new(format!(
+                "{} is not a function, got {:?}",
+                label, other
+            )))
+             }
+        }
     }
 }
 
