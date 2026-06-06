@@ -152,24 +152,29 @@ fn type_check_stmt(
             if env.get(name).is_some() {
                 return Err(TypeError::new(format!("redeclaration of variable: {}", name)));
             }
-            let init = init.as_ref().ok_or_else(|| {
-                TypeError::new(format!(
-                    "variable '{}' must be initialized",
-                    name
-                ))
-            })?;
-            let init_checked = type_check_expr_to_typed(init, env)?;
-            if !types_compatible(&init_checked.ty, ty) {
-                return Err(TypeError::new(format!(
-                    "declaration of {}: expected {:?}, got {:?}",
-                    name, ty, init_checked.ty
-                )));
-            }
+            let init_checked = if let Some(init_expr) = init {
+                let checked = type_check_expr_to_typed(init_expr, env)?;
+                if !types_compatible(&checked.ty, ty) {
+                    return Err(TypeError::new(format!(
+                        "declaration of {}: expected {:?}, got {:?}",
+                        name, ty, checked.ty
+                    )));
+                }
+                Some(Box::new(checked))
+            } else {
+                if !matches!(ty, Type::Fun(_, _)) {
+                    return Err(TypeError::new(format!(
+                        "variable '{}' must be initialized",
+                        name
+                    )));
+                }
+                None
+            };
             env.declare(name.clone(), ty.clone());
             Statement::Decl {
                 name: name.clone(),
                 ty: ty.clone(),
-                init: Some(Box::new(init_checked)),
+                init: init_checked,
             }
         }
         Statement::Assign { target, value } => {
@@ -656,12 +661,12 @@ fn types_compatible(a: &Type, b: &Type) -> bool {
             }
 
             for (a, b) in params_a.iter().zip(params_b.iter()) {
-                if !types_compatible(a, b) {
+                if a != b {
                     return false;
                 }
             }
 
-            types_compatible(ret_a, ret_b)
+            ret_a == ret_b
         },
         _ => false,
     }
