@@ -2,6 +2,8 @@ use crate::ir::ast::{Literal, Name, Type};
 
 type Label = String;
 
+pub type TACProgram = Vec<Instruction>;
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum Address {
     Variable(Name, Type),
@@ -10,7 +12,7 @@ pub enum Address {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum Stmt {
+pub enum Instruction {
     Label(Label),
     CopyAssignment(Address, Address),
     UnaryAssignment(Operator, Address, Address),
@@ -20,9 +22,9 @@ pub enum Stmt {
     ConditionalJMPFalse(Address, Label),
     ConditionalJMPRelational(Operator, Address, Address, Label),
     Param(Address),
-    Call(Option<Address>, Name, usize),
-    Store(Address, Address, Address),
-    Load(Address, Address, Address),
+    Call(Option<Address>, Name, usize),   // It is either 'call p, n' or 'y = call p, n'
+    Store(Address, Address, Address),     // x[i] = y
+    Load(Address, Address, Address),      // x = y[i]
     Return(Option<Address>),
 }
 
@@ -39,6 +41,8 @@ pub enum Operator {
     GTE,               // a >= b
     EQ,                // a == b
     NE,                // a != b
+    SL,                // shift left
+    SR,                // shift right
 }
 
 // do i = i + 1 while(a[i] < v);

@@ -173,6 +173,12 @@ pub struct Program<Ty> {
     pub functions: Vec<FunDecl<Ty>>,
 }
 
+impl<Ty> Program<Ty> {
+    pub fn main_function(&self) -> Option<&FunDecl<Ty>> {
+        self.functions.iter().find(|f| f.name == "main")
+    }
+}
+
 // Type synonyms for checked and unchecked phases.
 pub type UncheckedExpr = ExprD<()>;
 pub type CheckedExpr = ExprD<Type>;
