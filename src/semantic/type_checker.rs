@@ -232,7 +232,62 @@ fn type_check_stmt(
                 body: Box::new(body_checked),
             }
         }
-        Statement::Switch { .. } => todo!("switch statement type checker not implemented yet"),
+        Statement::Switch { target, cases, default } => {
+            // Verifica o tipo da expressão alvo (target)
+            let target_checked = type_check_expr_to_typed(target, env)?;
+            
+            match target_checked.ty {
+                Type::Int | Type::Bool => {}
+                _ => {
+                    return Err(TypeError::new(format!(
+                        "switch target must be Int or Bool, got {:?}",
+                        target_checked.ty
+                    )));
+                }
+            }
+
+            // Verifica cada um dos cases
+            let mut checked_cases = Vec::new();
+            for (lit, stmts) in cases {
+                // Descobre o tipo do literal do case atual
+                let lit_ty = match lit {
+                    Literal::Int(_) => Type::Int,
+                    Literal::Bool(_) => Type::Bool,
+                };
+
+            // Garante que o tipo do literal é compatível com o tipo do target
+                if !types_compatible(&target_checked.ty, &lit_ty) {
+                    return Err(TypeError::new(format!(
+                        "switch case literal type mismatch: expected {:?}, got {:?}",
+                        target_checked.ty, lit_ty
+                    )));
+                }
+
+            // Cria um novo escopo para as instruções deste case
+                let snapshot = env.snapshot();
+                let mut checked_stmts = Vec::new();
+                for stmt in stmts {
+                    checked_stmts.push(type_check_stmt(stmt, env, expected_return)?);
+                }
+                env.restore(snapshot);
+                
+                checked_cases.push((lit.clone(), checked_stmts));
+            }
+            
+            // Verifica o ramo padrão (default)
+            let snapshot = env.snapshot();
+            let mut checked_default = Vec::new();
+            for stmt in default {
+                checked_default.push(type_check_stmt(stmt, env, expected_return)?);
+            }
+            env.restore(snapshot);
+            
+            Statement::Switch {
+                target: Box::new(target_checked),
+                cases: checked_cases,
+                default: checked_default,
+            }
+        }
         Statement::Return(expr) => match expr {
             None => {
                 if *expected_return != Type::Unit {
