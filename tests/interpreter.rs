@@ -1,8 +1,12 @@
 use mini_c::{
+    environment::Environment,
+    interpreter::exec_stmt::exec_stmt,
     interpreter::interpret,
-    ir::ast::{FunDecl, Program, Statement, StatementD, Type},
+    interpreter::value::{FnValue, Value},
+    ir::ast::Statement,
     parser::program,
     semantic::type_check,
+    stdlib::NativeRegistry,
 };
 
 /// Parse, type-check, and interpret a MiniC source string.
@@ -12,6 +16,44 @@ fn run(src: &str) -> Result<(), String> {
         .map(|(_, p)| p)?;
     let checked = type_check(&unchecked).map_err(|e| format!("type error: {}", e.message))?;
     interpret(&checked).map_err(|e| format!("runtime error: {}", e.message))
+}
+
+/// Parse, type-check, then execute `main`'s statements directly in a fresh
+/// environment and hand that environment back so individual tests can inspect
+/// the final value of a variable. Unlike [`interpret`], which discards all
+/// state, this lets us assert on what a loop actually computed.
+fn run_main_and_inspect(src: &str) -> Environment<Value> {
+    let unchecked = program(src).expect("parse should succeed").1;
+    let checked = type_check(&unchecked).expect("type check should succeed");
+
+    // Register stdlib and user functions exactly as `interpret` does, so the
+    // executed statements can call functions and built-ins like `print`.
+    let mut env = Environment::<Value>::new();
+    let registry = NativeRegistry::default();
+    for (name, entry) in registry.iter() {
+        env.declare(name.clone(), Value::Fn(FnValue::Native(entry.func)));
+    }
+    for fun in &checked.functions {
+        env.declare(fun.name.clone(), Value::Fn(FnValue::UserDefined(fun.clone())));
+    }
+
+    let main_fn = checked
+        .functions
+        .iter()
+        .find(|f| f.name == "main")
+        .expect("main must exist");
+
+    // Run the body's statements one by one (rather than as a single block) so
+    // that `main`'s own locals are not cleaned up before we can read them.
+    match &main_fn.body.stmt {
+        Statement::Block { seq } => {
+            for s in seq {
+                exec_stmt(s, &mut env).expect("execution should succeed");
+            }
+        }
+        _ => panic!("main body must be a block"),
+    }
+    env
 }
 
 // ---------------------------------------------------------------------------
@@ -263,50 +305,90 @@ fn test_stdlib_pow_float_args() {
 }
 
 // ---------------------------------------------------------------------------
-// Milestone 1 lock-in: the interpreter should surface a clear error when it
-// encounters a `for` statement (normally unreachable because the type checker
-// rejects it first). This guards against the placeholder silently disappearing.
+// For statement (Milestone 2): execution semantics.
 // ---------------------------------------------------------------------------
-#[test]
-fn test_interpret_for_rejected_in_milestone_1() {
-    // Build a minimal CheckedProgram directly: `void main() { for (;;) {} }`.
-    // We can't go through type_check because that also rejects `for`, so we
-    // construct the AST by hand.
-    let empty_block = StatementD {
-        stmt: Statement::Block { seq: vec![] },
-        ty: Type::Unit,
-    };
-    let for_stmt = StatementD {
-        stmt: Statement::For {
-            init: None,
-            cond: None,
-            update: None,
-            body: Box::new(empty_block),
-        },
-        ty: Type::Unit,
-    };
-    let main_body = StatementD {
-        stmt: Statement::Block {
-            seq: vec![for_stmt],
-        },
-        ty: Type::Unit,
-    };
-    let prog = Program {
-        functions: vec![FunDecl {
-            name: "main".to_string(),
-            params: vec![],
-            return_type: Type::Unit,
-            body: Box::new(main_body),
-        }],
-    };
 
-    let result = interpret(&prog);
-    assert!(result.is_err(), "expected interpreter to reject for-statement");
-    assert!(
-        result
-            .unwrap_err()
-            .message
-            .contains("for statements are not yet executable"),
-        "expected placeholder error message"
+// The canonical example: summing 0..9 yields 45, and the loop runs end-to-end
+// through the full pipeline (including `print`).
+#[test]
+fn test_for_full_pipeline_with_print() {
+    let src = r#"
+        void main() {
+            int sum = 0;
+            for (int i = 0; i < 10; i = i + 1) { sum = sum + i; }
+            print(sum);
+        }
+    "#;
+    assert!(run(src).is_ok(), "{}", run(src).unwrap_err());
+}
+
+// `init` runs once, the condition gates each iteration, and `update` advances
+// the counter: the accumulated sum must be exactly 0+1+...+9 = 45.
+#[test]
+fn test_for_accumulates_sum() {
+    let env = run_main_and_inspect(
+        "void main() { int sum = 0; for (int i = 0; i < 10; i = i + 1) { sum = sum + i; } }",
     );
+    assert_eq!(env.get("sum"), Some(&Value::Int(45)));
+}
+
+// The variable declared in `init` is loop-local and must be gone afterwards,
+// while assignments to outer variables persist.
+#[test]
+fn test_for_loop_var_removed_after_loop() {
+    let env = run_main_and_inspect(
+        "void main() { int sum = 0; for (int i = 0; i < 3; i = i + 1) { sum = sum + 1; } }",
+    );
+    assert_eq!(env.get("i"), None, "loop variable must not survive the loop");
+    assert_eq!(env.get("sum"), Some(&Value::Int(3)));
+}
+
+// When the condition is false on entry the body never executes.
+#[test]
+fn test_for_zero_iterations() {
+    let env = run_main_and_inspect(
+        "void main() { int x = 7; for (int i = 0; i < 0; i = i + 1) { x = 0; } }",
+    );
+    assert_eq!(env.get("x"), Some(&Value::Int(7)));
+}
+
+// Nested loops: the inner body runs `outer * inner` times.
+#[test]
+fn test_for_nested() {
+    let env = run_main_and_inspect(
+        "void main() { int c = 0; \
+         for (int i = 0; i < 3; i = i + 1) { \
+             for (int j = 0; j < 4; j = j + 1) { c = c + 1; } } }",
+    );
+    assert_eq!(env.get("c"), Some(&Value::Int(12)));
+}
+
+// An assignment-form `init` reuses a variable from the enclosing scope, which
+// therefore keeps the value that first failed the loop condition.
+#[test]
+fn test_for_assign_init_persists_outer_var() {
+    let env = run_main_and_inspect(
+        "void main() { int i = 0; int last = 0; \
+         for (i = 1; i < 5; i = i + 1) { last = i; } }",
+    );
+    assert_eq!(env.get("i"), Some(&Value::Int(5)));
+    assert_eq!(env.get("last"), Some(&Value::Int(4)));
+}
+
+// A `return` inside the body short-circuits the entire loop. Here the function
+// returns the first `i` whose square is at least 10, i.e. 4.
+#[test]
+fn test_for_return_stops_iteration() {
+    let env = run_main_and_inspect(
+        r#"
+        int first() {
+            for (int i = 0; i < 100; i = i + 1) {
+                if i * i >= 10 { return i; }
+            }
+            return -1;
+        }
+        void main() { int r = first(); }
+        "#,
+    );
+    assert_eq!(env.get("r"), Some(&Value::Int(4)));
 }
