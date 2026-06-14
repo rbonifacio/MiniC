@@ -176,7 +176,8 @@ fn test_parse_global_const_int() {
     match &prog.constants[0].stmt {
         Statement::ConstDecl { name, ty, .. } => {
             assert_eq!(name, "MAX_SIZE");
-            assert_eq!(*ty, Type::Int);
+            // FIXED: Removed the '*' prefix operator so it compares references cleanly
+            assert_eq!(ty, &Type::Int); 
         }
         other => panic!("expected ConstDecl, got {:?}", other),
     }

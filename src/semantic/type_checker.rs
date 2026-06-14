@@ -142,7 +142,10 @@ pub fn type_check(program: &UncheckedProgram) -> Result<CheckedProgram, TypeErro
         let checked = type_check_fun_decl(f, &mut env, &fn_snapshot)?;
         functions.push(checked);
     }
-    Ok(Program { functions })
+    Ok(Program { 
+        functions, 
+        constants: vec![] 
+    })
 }
 
 fn type_check_fun_decl(
@@ -333,7 +336,7 @@ fn check_call(
     env: &TypeEnv,
 ) -> Result<(), TypeError> {
     match env.get(name) {
-        Some(Type::Fun(param_tys, _)) => {
+        Some(BindingInfo { ty: Type::Fun(param_tys, _), .. }) => {
             if args.len() != param_tys.len() {
                 return Err(TypeError::new(format!(
                     "function '{}' expects {} arguments, got {}",
@@ -355,6 +358,7 @@ fn check_call(
             }
             Ok(())
         }
+        // If a binding exists but its inner type isn't a function, fail cleanly
         Some(_) => Err(TypeError::new(format!("'{}' is not a function", name))),
         None => Err(TypeError::new(format!("undefined function: {}", name))),
     }
@@ -566,7 +570,8 @@ fn type_check_expr(
                 args.iter().map(|a| type_check_expr_to_typed(a, env)).collect();
             let args_checked = args_checked?;
             match env.get(name) {
-                Some(Type::Fun(param_tys, return_ty)) => {
+                // Fix: Match on BindingInfo and pull out the inner Type::Fun data
+                Some(BindingInfo { ty: Type::Fun(param_tys, return_ty), .. }) => {
                     if args_checked.len() != param_tys.len() {
                         return Err(TypeError::new(format!(
                             "function '{}' expects {} arguments, got {}",
@@ -659,3 +664,4 @@ fn types_compatible(a: &Type, b: &Type) -> bool {
         _ => false,
     }
 }
+
