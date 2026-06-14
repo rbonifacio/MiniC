@@ -113,7 +113,39 @@ pub fn exec_stmt(stmt: &CheckedStmt, env: &mut Environment<Value>) -> ExecResult
         },
         
         // --- Switch ---
-        Statement::Switch { .. } => todo!("switch statement interpreter not implemented yet"),
+        Statement::Switch { target, cases, default } => {
+            // Avalia o valor da expressão alvo
+            let target_val = eval_expr(target, env)?;
+
+            // Determina qual bloco de comandos executar (Padrão: default)
+            let mut stmts_to_exec = default;
+            
+            for (lit, stmts) in cases {
+                let case_matches = match (lit, &target_val) {
+                    (Literal::Int(i), Value::Int(v)) => *i == *v,
+                    (Literal::Bool(b1), Value::Bool(b2)) => *b1 == *b2,
+                    _ => false,
+                };
+
+                if case_matches {
+                    stmts_to_exec = stmts; // Substitui o bloco pelo case correspondente
+                    break; // Sai do loop após encontrar o case correspondente
+                }
+            }
+
+            // Executa o bloco escolhido isolando o escopo do switch 
+            let outer_keys = env.names();
+            
+            for stmt in stmts_to_exec {
+                if let Some(ret) = exec_stmt(stmt, env)? {
+                    env.remove_new(&outer_keys); // Limpa o escopo se houver um 'return' no meio
+                    return Ok(Some(ret));
+                }
+            }
+            
+            env.remove_new(&outer_keys); // Limpa o escopo no final da execução normal
+            Ok(None)
+        },
 
         // --- Return ---
         Statement::Return(Some(expr)) => {
