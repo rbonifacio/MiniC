@@ -34,7 +34,7 @@
 //! This gives MiniC correct lexical block scoping without a scope stack.
 
 use crate::environment::Environment;
-use crate::ir::ast::{CheckedExpr, CheckedStmt, Expr, Statement};
+use crate::ir::ast::{CheckedExpr, CheckedStmt, Expr, Literal, Statement};
 
 use super::eval_expr::{eval_call, eval_expr};
 use super::value::{RuntimeError, Value};
@@ -114,6 +114,18 @@ pub fn exec_stmt(stmt: &CheckedStmt, env: &mut Environment<Value>) -> ExecResult
         
         // --- Switch ---
         Statement::Switch { target, cases, default } => {
+            // Detecta labels duplicadas como erro
+            let mut seen_cases = Vec::new();
+            for (lit, _) in cases {
+                if seen_cases.contains(lit) {
+                    return Err(RuntimeError::new(format!(
+                        "duplicate case label in switch: {:?}",
+                        lit
+                    )));
+                }
+                seen_cases.push(lit.clone());
+            }
+
             // Avalia o valor da expressão alvo
             let target_val = eval_expr(target, env)?;
 
