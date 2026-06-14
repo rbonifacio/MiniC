@@ -262,3 +262,48 @@ fn test_type_check_for_bad_update() {
     );
     assert!(result.is_err(), "expected ill-typed update to be rejected");
 }
+
+// --- Optional header clauses (each omitted individually) ---
+
+#[test]
+fn test_type_check_for_omitted_init() {
+    let result = parse_and_type_check(
+        "void main() { int i = 0; for (; i < 3; i = i + 1) { i = i; } }",
+    );
+    assert!(result.is_ok(), "{:?}", result.err());
+}
+
+#[test]
+fn test_type_check_for_omitted_cond() {
+    let result = parse_and_type_check(
+        "void main() { for (int i = 0; ; i = i + 1) { if i >= 3 { return; } } }",
+    );
+    assert!(result.is_ok(), "{:?}", result.err());
+}
+
+#[test]
+fn test_type_check_for_omitted_update() {
+    let result = parse_and_type_check(
+        "void main() { for (int i = 0; i < 3; ) { i = i + 1; } }",
+    );
+    assert!(result.is_ok(), "{:?}", result.err());
+}
+
+// Assignment init requires the target to already exist in the enclosing scope.
+#[test]
+fn test_type_check_for_assign_init_undeclared() {
+    let result = parse_and_type_check(
+        "void main() { for (i = 0; i < 3; i = i + 1) { i = i; } }",
+    );
+    assert!(result.is_err(), "expected undeclared init assignment target");
+    assert!(result.unwrap_err().message.contains("undeclared"));
+}
+
+// The loop variable from a declaration init is visible in cond, body, and update.
+#[test]
+fn test_type_check_for_init_var_visible_in_header() {
+    let result = parse_and_type_check(
+        "void main() { for (int i = 0; i < i + 10; i = i + 1) { i = i; } }",
+    );
+    assert!(result.is_ok(), "{:?}", result.err());
+}

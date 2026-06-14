@@ -1,3 +1,5 @@
+use std::path::Path;
+
 use mini_c::{
     environment::Environment,
     interpreter::exec_stmt::exec_stmt,
@@ -54,6 +56,16 @@ fn run_main_and_inspect(src: &str) -> Environment<Value> {
         _ => panic!("main body must be a block"),
     }
     env
+}
+
+fn fixtures_dir() -> std::path::PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures")
+}
+
+fn run_main_and_inspect_fixture(name: &str) -> Environment<Value> {
+    let path = fixtures_dir().join(name);
+    let src = std::fs::read_to_string(&path).expect("fixture file should exist");
+    run_main_and_inspect(src.trim())
 }
 
 // ---------------------------------------------------------------------------
@@ -308,8 +320,7 @@ fn test_stdlib_pow_float_args() {
 // For statement (Milestone 2): execution semantics.
 // ---------------------------------------------------------------------------
 
-// The canonical example: summing 0..9 yields 45, and the loop runs end-to-end
-// through the full pipeline (including `print`).
+// The canonical example: summing 0..9 yields 45 through the full pipeline.
 #[test]
 fn test_for_full_pipeline_with_print() {
     let src = r#"
@@ -320,6 +331,8 @@ fn test_for_full_pipeline_with_print() {
         }
     "#;
     assert!(run(src).is_ok(), "{}", run(src).unwrap_err());
+    let env = run_main_and_inspect(src);
+    assert_eq!(env.get("sum"), Some(&Value::Int(45)));
 }
 
 // `init` runs once, the condition gates each iteration, and `update` advances
@@ -391,4 +404,71 @@ fn test_for_return_stops_iteration() {
         "#,
     );
     assert_eq!(env.get("r"), Some(&Value::Int(4)));
+}
+
+// --- Optional header clauses (each omitted individually) ---
+
+#[test]
+fn test_for_omitted_init() {
+    let env = run_main_and_inspect(
+        "void main() { int i = 0; int sum = 0; \
+         for (; i < 3; i = i + 1) { sum = sum + 1; } }",
+    );
+    assert_eq!(env.get("sum"), Some(&Value::Int(3)));
+    assert_eq!(env.get("i"), Some(&Value::Int(3)));
+}
+
+#[test]
+fn test_for_omitted_update() {
+    let env = run_main_and_inspect(
+        "void main() { int sum = 0; \
+         for (int i = 0; i < 3; ) { sum = sum + i; i = i + 1; } }",
+    );
+    assert_eq!(env.get("sum"), Some(&Value::Int(3)));
+}
+
+#[test]
+fn test_for_omitted_cond() {
+    let env = run_main_and_inspect(
+        r#"
+        int stop_at_three() {
+            for (int i = 0; ; i = i + 1) {
+                if i >= 3 { return i; }
+            }
+            return -1;
+        }
+        void main() { int r = stop_at_three(); }
+        "#,
+    );
+    assert_eq!(env.get("r"), Some(&Value::Int(3)));
+}
+
+#[test]
+fn test_for_empty_body() {
+    assert!(
+        run("void main() { for (int i = 0; i < 3; i = i + 1) { } }").is_ok(),
+        "{}",
+        run("void main() { for (int i = 0; i < 3; i = i + 1) { } }")
+            .unwrap_err()
+    );
+}
+
+#[test]
+fn test_for_infinite_loop_exits_via_return() {
+    let env = run_main_and_inspect(
+        r#"
+        int once() {
+            for (;;) { return 42; }
+            return 0;
+        }
+        void main() { int r = once(); }
+        "#,
+    );
+    assert_eq!(env.get("r"), Some(&Value::Int(42)));
+}
+
+#[test]
+fn test_for_loop_fixture_end_to_end() {
+    let env = run_main_and_inspect_fixture("interpreter_for_loop.minic");
+    assert_eq!(env.get("sum"), Some(&Value::Int(45)));
 }
