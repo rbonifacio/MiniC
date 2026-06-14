@@ -120,7 +120,50 @@ pub fn type_check(program: &UncheckedProgram) -> Result<CheckedProgram, TypeErro
             mutability: Mutability::Const, // funções não podem ser “re-atribuídas”
         },
     );
-}
+    }
+
+    // 1. TYPE CHECK AND REGISTER GLOBAL CONSTANTS FIRST
+    let mut checked_constants = Vec::new();
+    for stmt_d in &program.constants {
+        match &stmt_d.stmt {
+            Statement::ConstDecl { name, ty, init } => {
+                if ty == &Type::Unit {
+                    return Err(TypeError::new("cannot declare variable of type void"));
+                }
+                if env.get(name).is_some() {
+                    return Err(TypeError::new(format!("redeclaration of variable: {}", name)));
+                }
+
+                // Type check the initializer expression using the current environment
+                let init_checked = type_check_expr_to_typed(init, &env)?;
+                if !types_compatible(&init_checked.ty, ty) {
+                    return Err(TypeError::new(format!(
+                        "declaration of {}: expected {:?}, got {:?}",
+                        name, ty, init_checked.ty
+                    )));
+                }
+
+                // Register the constant in the environment so subsequent constants or functions can see it
+                env.declare(
+                    name.clone(),
+                    BindingInfo {
+                        ty: ty.clone(),
+                        mutability: Mutability::Const,
+                    },
+                );
+
+                checked_constants.push(StatementD {
+                    stmt: Statement::ConstDecl {
+                        name: name.clone(),
+                        ty: ty.clone(),
+                        init: Box::new(init_checked),
+                    },
+                    ty: Type::Unit,
+                });
+            }
+            _ => continue,
+        }
+    }
 
     for f in &program.functions {
     let param_tys = f.params.iter().map(|(_, ty)| ty.clone()).collect();
@@ -144,7 +187,7 @@ pub fn type_check(program: &UncheckedProgram) -> Result<CheckedProgram, TypeErro
     }
     Ok(Program { 
         functions, 
-        constants: vec![] 
+        constants: checked_constants 
     })
 }
 
