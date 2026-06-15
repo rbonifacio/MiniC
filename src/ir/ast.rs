@@ -175,6 +175,7 @@ pub struct FunDecl<Ty> {
 #[derive(Debug, Clone, PartialEq)]
 pub struct Program<Ty> {
     pub functions: Vec<FunDecl<Ty>>,
+    pub constants: Vec<StatementD<Ty>>,
 }
 
 // Type synonyms for checked and unchecked phases.
