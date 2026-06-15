@@ -48,9 +48,9 @@ use std::collections::HashMap;
 
 use crate::environment::Environment;
 use crate::ir::ast::{
-    CheckedExpr, CheckedFunDecl, CheckedProgram, CheckedStmt, Expr, ExprD, FunDecl, Literal,
-    Program, Statement, StatementD, Type, UncheckedExpr, UncheckedFunDecl, UncheckedProgram,
-    UncheckedStmt,
+    CheckedExpr, CheckedFunDecl, CheckedProgram, CheckedStmt, CheckedTestDecl, Expr, ExprD,
+    FunDecl, Literal, Program, Statement, StatementD, TestDecl, Type, UncheckedExpr,
+    UncheckedFunDecl, UncheckedProgram, UncheckedStmt, UncheckedTestDecl,
 };
 use crate::stdlib::NativeRegistry;
 
@@ -79,16 +79,25 @@ impl std::error::Error for TypeError {}
 /// Type-check a program. Returns `Ok(CheckedProgram)` if well-typed, `Err(TypeError)` on first error.
 /// Requires a `main` function with signature `void main()`.
 pub fn type_check(program: &UncheckedProgram) -> Result<CheckedProgram, TypeError> {
-    let main_fn = program.functions.iter().find(|f| f.name == "main");
-    match main_fn {
-        None => return Err(TypeError::new("program must have a main function")),
-        Some(f) => {
-            if f.return_type != Type::Unit {
-                return Err(TypeError::new("main function must return void"));
-            }
-            if !f.params.is_empty() {
-                return Err(TypeError::new("main function must have no parameters"));
-            }
+    // In --test mode a program may have no main function, but if main exists it must be void().
+    if let Some(f) = program.functions.iter().find(|f| f.name == "main") {
+        if f.return_type != Type::Unit {
+            return Err(TypeError::new("main function must return void"));
+        }
+        if !f.params.is_empty() {
+            return Err(TypeError::new("main function must have no parameters"));
+        }
+    }
+    // Require main when there are no test blocks (pure --run programs).
+    if program.tests.is_empty() && !program.functions.iter().any(|f| f.name == "main") {
+        return Err(TypeError::new("program must have a main function"));
+    }
+
+    // Detect duplicate test names.
+    let mut seen_tests = std::collections::HashSet::new();
+    for t in &program.tests {
+        if !seen_tests.insert(&t.name) {
+            return Err(TypeError::new(format!("duplicate test name: \"{}\"", t.name)));
         }
     }
 
@@ -117,7 +126,27 @@ pub fn type_check(program: &UncheckedProgram) -> Result<CheckedProgram, TypeErro
         let checked = type_check_fun_decl(f, &mut env, &fn_snapshot)?;
         functions.push(checked);
     }
-    Ok(Program { functions })
+
+    let mut tests = Vec::new();
+    for t in &program.tests {
+        let checked = type_check_test_decl(t, &mut env, &fn_snapshot)?;
+        tests.push(checked);
+    }
+
+    Ok(Program { functions, tests })
+}
+
+fn type_check_test_decl(
+    t: &UncheckedTestDecl,
+    env: &mut Environment<Type>,
+    fn_snapshot: &HashMap<String, Type>,
+) -> Result<CheckedTestDecl, TypeError> {
+    env.restore(fn_snapshot.clone());
+    let body = type_check_stmt(&t.body, env, &Type::Unit)?;
+    Ok(TestDecl {
+        name: t.name.clone(),
+        body: Box::new(body),
+    })
 }
 
 fn type_check_fun_decl(
@@ -231,6 +260,16 @@ fn type_check_stmt(
                 cond: Box::new(cond_checked),
                 body: Box::new(body_checked),
             }
+        }
+        Statement::Assert(expr) => {
+            let checked = type_check_expr_to_typed(expr, env)?;
+            if checked.ty != Type::Bool {
+                return Err(TypeError::new(format!(
+                    "assert requires Bool, got {:?}",
+                    checked.ty
+                )));
+            }
+            Statement::Assert(Box::new(checked))
         }
         Statement::Return(expr) => match expr {
             None => {

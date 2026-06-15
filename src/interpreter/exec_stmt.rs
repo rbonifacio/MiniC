@@ -119,6 +119,16 @@ pub fn exec_stmt(stmt: &CheckedStmt, env: &mut Environment<Value>) -> ExecResult
         }
         Statement::Return(None) => Ok(Some(Value::Void)),
 
+        // --- Assert ---
+        Statement::Assert(expr) => match eval_expr(expr, env)? {
+            Value::Bool(true) => Ok(None),
+            Value::Bool(false) => Err(RuntimeError::new("assertion failed")),
+            v => Err(RuntimeError::new(format!(
+                "assert requires bool, got: {}",
+                v
+            ))),
+        },
+
         // --- Statement-level function call ---
         Statement::Call { name, args } => {
             let arg_vals: Result<Vec<Value>, RuntimeError> =

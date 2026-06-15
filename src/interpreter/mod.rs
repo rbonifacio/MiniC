@@ -61,25 +61,56 @@ use crate::stdlib::NativeRegistry;
 use eval_expr::eval_call;
 use value::{FnValue, RuntimeError, Value};
 
-/// Interpret a type-checked MiniC program, starting execution at `main`.
-pub fn interpret(program: &CheckedProgram) -> Result<(), RuntimeError> {
+fn build_env(program: &CheckedProgram) -> Environment<Value> {
     let mut env = Environment::<Value>::new();
-
-    // Register native stdlib functions as Value::Fn(FnValue::Native) bindings.
     let registry = NativeRegistry::default();
     for (name, entry) in registry.iter() {
         env.declare(name.clone(), Value::Fn(FnValue::Native(entry.func)));
     }
-
-    // Register user-defined functions as Value::Fn(FnValue::UserDefined) bindings.
     for fun in &program.functions {
         env.declare(fun.name.clone(), Value::Fn(FnValue::UserDefined(fun.clone())));
     }
+    env
+}
 
+/// Interpret a type-checked MiniC program, starting execution at `main`.
+pub fn interpret(program: &CheckedProgram) -> Result<(), RuntimeError> {
+    let mut env = build_env(program);
     if env.get("main").is_none() {
         return Err(RuntimeError::new("no 'main' function found"));
     }
-
     eval_call("main", vec![], &mut env)?;
     Ok(())
+}
+
+/// Run all test blocks in a program. Prints PASS/FAIL per test and a summary.
+/// Returns `Ok(())` if every test passed, `Err` if any failed.
+pub fn run_tests(program: &CheckedProgram) -> Result<(), RuntimeError> {
+    use exec_stmt::exec_stmt;
+
+    let mut passed = 0usize;
+    let mut failed = 0usize;
+
+    for test in &program.tests {
+        let mut env = build_env(program);
+        match exec_stmt(&test.body, &mut env) {
+            Ok(_) => {
+                println!("PASS  {}", test.name);
+                passed += 1;
+            }
+            Err(e) => {
+                println!("FAIL  {} — {}", test.name, e.message);
+                failed += 1;
+            }
+        }
+    }
+
+    let total = passed + failed;
+    println!("{} / {} tests passed", passed, total);
+
+    if failed > 0 {
+        Err(RuntimeError::new(format!("{} test(s) failed", failed)))
+    } else {
+        Ok(())
+    }
 }
