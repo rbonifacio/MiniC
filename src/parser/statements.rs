@@ -58,7 +58,7 @@ fn wrap(s: Statement<()>) -> UncheckedStmt {
     StatementD { stmt: s, ty: () }
 }
 
-/// Parse any statement: block | if | while | return | decl | call | assignment.
+/// Parse any statement: block | if | while | return | assert | decl | call | assignment.
 pub fn statement(input: &str) -> IResult<&str, UncheckedStmt> {
     preceded(
         multispace0,
@@ -67,11 +67,20 @@ pub fn statement(input: &str) -> IResult<&str, UncheckedStmt> {
             if_statement,
             while_statement,
             return_statement,
+            assert_statement,
             decl_statement,
             call_statement,
             assignment,
         )),
     )(input)
+}
+
+/// Parse an assert statement: `assert expr ;`.
+fn assert_statement(input: &str) -> IResult<&str, UncheckedStmt> {
+    let (rest, _) = preceded(multispace0, tag("assert"))(input)?;
+    let (rest, expr) = preceded(multispace0, expression)(rest)?;
+    let (rest, _) = preceded(multispace0, char(';'))(rest)?;
+    Ok((rest, wrap(Statement::Assert(Box::new(expr)))))
 }
 
 /// Parse a return statement: `return [expr] ;`.

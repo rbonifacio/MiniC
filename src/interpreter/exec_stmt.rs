@@ -126,6 +126,11 @@ pub fn exec_stmt(stmt: &CheckedStmt, env: &mut Environment<Value>) -> ExecResult
             eval_call(name, arg_vals?, env)?;
             Ok(None)
         }
+
+        // --- Assert (runtime support pending — Project 8, Part 3) ---
+        Statement::Assert(_) => Err(RuntimeError::new(
+            "assert is not yet supported by the interpreter",
+        )),
     }
 }
 
