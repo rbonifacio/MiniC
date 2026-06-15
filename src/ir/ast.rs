@@ -149,6 +149,19 @@ pub enum Statement<Ty> {
         cond: Box<ExprD<Ty>>,
         body: Box<StatementD<Ty>>,
     },
+    /// Three-part for loop: `for (init; cond; update) body`.
+    ///
+    /// Any of the three header clauses may be omitted:
+    /// `for (;;)` is valid and represents an open-ended loop.
+    ///
+    /// When present, the parser constrains `init` to `Decl` or `Assign`,
+    /// `update` to `Assign`, and `body` to `Block`.
+    For {
+        init: Option<Box<StatementD<Ty>>>,
+        cond: Option<Box<ExprD<Ty>>>,
+        update: Option<Box<StatementD<Ty>>>,
+        body: Box<StatementD<Ty>>,
+    },
     /// Return statement: `return [expr]`.
     Return(Option<Box<ExprD<Ty>>>),
 }

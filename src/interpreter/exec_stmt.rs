@@ -112,6 +112,75 @@ pub fn exec_stmt(stmt: &CheckedStmt, env: &mut Environment<Value>) -> ExecResult
             }
         },
 
+        // --- For ---
+        // Execution mirrors a C-style `for`: run `init` once, then repeatedly
+        // test `cond`, run the `body`, and run `update`. The loop variable
+        // declared by `init` lives in the same flat environment as everything
+        // else, so we clean it up on exit the same way a block does.
+        Statement::For {
+            init,
+            cond,
+            update,
+            body,
+        } => {
+            // Record the names already bound before the loop. Anything `init`
+            // adds beyond this set is loop-local and gets removed on exit,
+            // while assignments to outer variables are left untouched.
+            let outer_keys = env.names();
+
+            // `init` executes exactly once, before the first condition test.
+            // A `return` here cannot arise from the current grammar (init is a
+            // declaration or assignment), but we still propagate it defensively.
+            if let Some(init_stmt) = init {
+                if let Some(ret) = exec_stmt(init_stmt, env)? {
+                    env.remove_new(&outer_keys);
+                    return Ok(Some(ret));
+                }
+            }
+
+            loop {
+                // Evaluate the guard before each iteration. An omitted
+                // condition loops unconditionally, matching `for (;;)`.
+                let keep_going = match cond {
+                    Some(c) => match eval_expr(c, env)? {
+                        Value::Bool(b) => b,
+                        v => {
+                            env.remove_new(&outer_keys);
+                            return Err(RuntimeError::new(format!(
+                                "for condition must be bool, got: {}",
+                                v
+                            )));
+                        }
+                    },
+                    None => true,
+                };
+                if !keep_going {
+                    break;
+                }
+
+                // Run the body. A `return` inside it short-circuits the whole
+                // loop; we still clean up the loop-local binding first.
+                if let Some(ret) = exec_stmt(body, env)? {
+                    env.remove_new(&outer_keys);
+                    return Ok(Some(ret));
+                }
+
+                // `update` runs after the body and before the condition is
+                // re-tested (e.g. `i = i + 1`).
+                if let Some(update_stmt) = update {
+                    if let Some(ret) = exec_stmt(update_stmt, env)? {
+                        env.remove_new(&outer_keys);
+                        return Ok(Some(ret));
+                    }
+                }
+            }
+
+            // Normal loop exit: discard the loop variable so it is no longer
+            // visible to code that follows the `for`.
+            env.remove_new(&outer_keys);
+            Ok(None)
+        }
+
         // --- Return ---
         Statement::Return(Some(expr)) => {
             let val = eval_expr(expr, env)?;
