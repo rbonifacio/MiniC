@@ -79,7 +79,7 @@ impl std::error::Error for TypeError {}
 /// Type-check a program. Returns `Ok(CheckedProgram)` if well-typed, `Err(TypeError)` on first error.
 /// Requires a `main` function with signature `void main()`.
 pub fn type_check(program: &UncheckedProgram) -> Result<CheckedProgram, TypeError> {
-    let main_fn = program.functions.iter().find(|f| f.name == "main");
+    let main_fn = program.main_function();
     match main_fn {
         None => return Err(TypeError::new("program must have a main function")),
         Some(f) => {
