@@ -60,10 +60,20 @@ use crate::stdlib::NativeRegistry;
 
 use eval_expr::eval_call;
 use value::{FnValue, RuntimeError, Value};
+use crate::ir::ast::Statement;
+use crate::interpreter::eval_expr::eval_expr;
 
 /// Interpret a type-checked MiniC program, starting execution at `main`.
 pub fn interpret(program: &CheckedProgram) -> Result<(), RuntimeError> {
     let mut env = Environment::<Value>::new();
+
+    for constant in &program.constants {
+        if let Statement::ConstDecl { name, init, .. } = &constant.stmt {
+            // Evaluate the initializer expression to a value
+            let value = eval_expr(init, &mut env)?; 
+            env.declare(name.clone(), value);
+        }
+    }
 
     // Register native stdlib functions as Value::Fn(FnValue::Native) bindings.
     let registry = NativeRegistry::default();
