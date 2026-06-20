@@ -1,0 +1,17 @@
+# --tac prints TAC for the aggregate type fixture
+$ ./target/debug/mini_c --tac tests/fixtures/aggregate_types.minic
+main:
+p = 0
+p.valid = true
+param p.valid
+call print, 1
+k = 0
+v = 2
+param v
+call print, 1
+>=0
+
+# --tac on a type-error program fails before TAC generation
+$ ./target/debug/mini_c --tac tests/fixtures/cli_type_mismatch.minic
+>2 /Type error/
+>=1

@@ -141,13 +141,4 @@ fn test_aggregate_types_fixture_generates_tac() {
             Instruction::Call(None, "print".to_string(), 1),
         ]
     );
-// main:
-// p = 0
-// p.valid = true
-// param p.valid
-// call print, 1
-// k = 0
-// v = 2
-// param v
-// call print, 1
 }
