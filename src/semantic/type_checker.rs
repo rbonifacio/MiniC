@@ -96,7 +96,7 @@ pub fn type_check(program: &UncheckedProgram) -> Result<CheckedProgram, TypeErro
     check_type_decls_unique(&program.type_declarations)?;
     let type_map = build_type_decl_map(&program.type_declarations);
 
-    let main_fn = program.functions.iter().find(|f| f.name == "main");
+    let main_fn = program.main_function();
     match main_fn {
         None => return Err(TypeError::new("program must have a main function")),
         Some(f) => {

@@ -1,5 +1,6 @@
 //! MiniC library: IR, parser, semantic analysis, environment, interpreter, and stdlib.
 
+pub mod codegen;
 pub mod environment;
 pub mod interpreter;
 pub mod ir;
