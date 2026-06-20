@@ -1,0 +1,20 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug MiniC --tac aggregate_types",
+      "type": "lldb",
+      "request": "launch",
+      "cargo": {
+        "args": ["build", "--bin", "mini_c"],
+        "filter": {
+          "name": "mini_c",
+          "kind": "bin"
+        }
+      },
+      "args": ["--tac", "tests/fixtures/aggregate_types.minic"],
+      "cwd": "${workspaceFolder}",
+      "stopOnEntry": false
+    }
+  ]
+}
