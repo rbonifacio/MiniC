@@ -87,6 +87,8 @@ pub enum Literal {
 }
 
 /// Expression with type decoration.
+pub type Name = String;
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct ExprD<Ty> {
     pub exp: Expr<Ty>,
@@ -209,6 +211,12 @@ pub struct FunDecl<Ty> {
 pub struct Program<Ty> {
     pub type_declarations: Vec<AggregateTypeDecl>,
     pub functions: Vec<FunDecl<Ty>>,
+}
+
+impl<Ty> Program<Ty> {
+    pub fn main_function(&self) -> Option<&FunDecl<Ty>> {
+        self.functions.iter().find(|f| f.name == "main")
+    }
 }
 
 // Type synonyms for checked and unchecked phases.
