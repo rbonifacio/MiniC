@@ -1,5 +1,6 @@
 use crate::ir::ast::{
-    CheckedExpr, CheckedFunDecl, CheckedProgram, CheckedStmt, Expr, ExprD, Literal, Statement, Type,
+    AggregateTypeDecl, AgtTypeMember, AgtTypeSpecifier, CheckedExpr, CheckedFunDecl,
+    CheckedProgram, CheckedStmt, Expr, ExprD, Literal, Statement, Type,
 };
 use crate::ir::tac::{Address, Instruction, Operator, TACProgram};
 
@@ -7,6 +8,7 @@ use crate::ir::tac::{Address, Instruction, Operator, TACProgram};
 pub struct Environment {
     current_label: usize,
     current_temporary: usize,
+    type_declarations: Vec<AggregateTypeDecl>,
 }
 
 impl Environment {
@@ -14,7 +16,12 @@ impl Environment {
         Self {
             current_label: 0,
             current_temporary: 0,
+            type_declarations: Vec::new(),
         }
+    }
+
+    fn register_type_declarations(&mut self, type_declarations: Vec<AggregateTypeDecl>) {
+        self.type_declarations = type_declarations;
     }
 
     fn new_label(&mut self) -> String {
@@ -26,9 +33,31 @@ impl Environment {
         self.current_temporary += 1;
         format!("temp{}", self.current_temporary)
     }
+
+    fn enum_member_value(&self, identifier: &str, member: &str) -> i64 {
+        let decl = self
+            .type_declarations
+            .iter()
+            .find(|decl| decl.specifier == AgtTypeSpecifier::Enum && decl.identifier == identifier)
+            .unwrap_or_else(|| unreachable!("checked enum type must be declared"));
+
+        let mut next_value = 0;
+        for entry in &decl.members {
+            if let AgtTypeMember::Enumerator { name, value } = entry {
+                let resolved = value.unwrap_or(next_value);
+                if name == member {
+                    return resolved;
+                }
+                next_value = resolved + 1;
+            }
+        }
+
+        unreachable!("checked enum member must exist")
+    }
 }
 
 pub fn translate_program(program: CheckedProgram, env: &mut Environment) -> TACProgram {
+    env.register_type_declarations(program.type_declarations.clone());
     let main_fn = program.main_function();
     match main_fn {
         None => unreachable!("[Impossible] program must have a main function"),
@@ -57,17 +86,21 @@ pub fn translate_statement(statement: CheckedStmt, env: &mut Environment) -> Vec
             .into_iter()
             .flat_map(|s| translate_statement(s, env))
             .collect::<Vec<_>>(),
+        Statement::Decl { name, ty, init } => {
+            let (expression_address, instructions) = translate_expression(*init, env);
+            res.extend(instructions);
+            res.push(Instruction::CopyAssignment(
+                Address::Variable(name, ty),
+                expression_address,
+            ));
+            res
+        }
         Statement::Assign { target, value } => {
-            if let Expr::Ident(name) = &target.exp {
-                let var_type = target.ty.clone();
-                let var_address = Address::Variable(name.to_string(), var_type);
-                let (expression_address, instructions) = translate_expression(*value, env);
-                res.extend(instructions);
-                res.push(Instruction::CopyAssignment(var_address, expression_address));
-                res
-            } else {
-                todo!()
-            }
+            let var_address = translate_lvalue(*target, env);
+            let (expression_address, instructions) = translate_expression(*value, env);
+            res.extend(instructions);
+            res.push(Instruction::CopyAssignment(var_address, expression_address));
+            res
         }
         Statement::Call { name, args } => {
             // addresses_and_instructions :: [(Address, [Instruction])]
@@ -110,6 +143,43 @@ pub fn translate_statement(statement: CheckedStmt, env: &mut Environment) -> Vec
             instructions.push(Instruction::Label(label_end_if));
             instructions
         }
+        _ => todo!(),
+    }
+}
+
+fn translate_lvalue(target: CheckedExpr, env: &mut Environment) -> Address {
+    match target.exp {
+        Expr::Ident(name) => Address::Variable(name, target.ty),
+        Expr::Member { base, member } => translate_member_address(*base, member, target.ty, env),
+        _ => todo!(),
+    }
+}
+
+fn translate_member_address(
+    base: CheckedExpr,
+    member: String,
+    member_ty: Type,
+    env: &mut Environment,
+) -> Address {
+    match &base.ty {
+        Type::Aggregate {
+            specifier: AgtTypeSpecifier::Enum,
+            identifier,
+        } => Address::Constant(
+            Literal::Int(env.enum_member_value(identifier, &member)),
+            Type::Int,
+        ),
+        _ => Address::Variable(format!("{}.{}", member_base_name(base), member), member_ty),
+    }
+}
+
+fn member_base_name(base: CheckedExpr) -> String {
+    match base.exp {
+        Expr::Ident(name) => name,
+        Expr::Member {
+            base: nested_base,
+            member,
+        } => format!("{}.{}", member_base_name(*nested_base), member),
         _ => todo!(),
     }
 }
@@ -165,6 +235,10 @@ fn translate_expression(
     match expression.exp {
         Expr::Literal(value) => (Address::Constant(value, expression.ty), vec![]),
         Expr::Ident(name) => (Address::Variable(name.to_string(), expression.ty), vec![]),
+        Expr::Member { base, member } => (
+            translate_member_address(*base, member, expression.ty, env),
+            vec![],
+        ),
         // Boolean Expressions. 'and' and 'or' implement a short circuit semantics.
         Expr::Not(exp) => {
             let (addr, mut instructions) = translate_expression(*exp, env);

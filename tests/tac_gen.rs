@@ -1,8 +1,14 @@
 //! Integration tests for the MiniC TAC code generator.
 
-use mini_c::codegen::tac_code_gen::{translate_statement, Environment};
-use mini_c::ir::ast::{CheckedExpr, CheckedStmt, Expr, ExprD, Statement, StatementD, Type};
+use mini_c::codegen::tac_code_gen::{translate_program, translate_statement, Environment};
+use mini_c::ir::ast::{
+    AgtTypeSpecifier, CheckedExpr, CheckedStmt, Expr, ExprD, Literal, Statement, StatementD, Type,
+};
 use mini_c::ir::tac::{Address, Instruction, Operator};
+use mini_c::parser::program;
+use mini_c::semantic::type_check;
+use nom::combinator::all_consuming;
+use std::path::Path;
 
 // --- Helpers to build type-annotated AST nodes ---
 
@@ -38,6 +44,10 @@ fn assign(name: &str, value: CheckedExpr) -> CheckedStmt {
         },
         ty: Type::Unit,
     }
+}
+
+fn fixtures_dir() -> std::path::PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures")
 }
 
 // Fixture: if (x < y) { z = x + y; } else { z = x; }
@@ -86,4 +96,58 @@ fn test_if_else_with_relational_condition() {
             Instruction::Label("Label2:".to_string()),
         ]
     );
+}
+
+#[test]
+fn test_aggregate_types_fixture_generates_tac() {
+    let source = std::fs::read_to_string(fixtures_dir().join("aggregate_types.minic"))
+        .expect("aggregate fixture should exist");
+    let (_, unchecked) = all_consuming(program)(source.trim())
+        .map_err(|e| e.map_input(String::from))
+        .expect("aggregate fixture should parse");
+    let checked = type_check(&unchecked).expect("aggregate fixture should type-check");
+
+    let mut env = Environment::new();
+    let instructions = translate_program(checked, &mut env);
+
+    let point_ty = Type::Aggregate {
+        specifier: AgtTypeSpecifier::Struct,
+        identifier: "Point".to_string(),
+    };
+    let kind_ty = Type::Aggregate {
+        specifier: AgtTypeSpecifier::Enum,
+        identifier: "Kind".to_string(),
+    };
+
+    let p = Address::Variable("p".to_string(), point_ty);
+    let p_valid = Address::Variable("p.valid".to_string(), Type::Bool);
+    let k = Address::Variable("k".to_string(), kind_ty);
+    let v = Address::Variable("v".to_string(), Type::Int);
+
+    assert_eq!(
+        instructions,
+        vec![
+            Instruction::Label("main".to_string()),
+            Instruction::CopyAssignment(p, Address::Constant(Literal::Int(0), Type::Int)),
+            Instruction::CopyAssignment(
+                p_valid.clone(),
+                Address::Constant(Literal::Bool(true), Type::Bool),
+            ),
+            Instruction::Param(p_valid),
+            Instruction::Call(None, "print".to_string(), 1),
+            Instruction::CopyAssignment(k, Address::Constant(Literal::Int(0), Type::Int)),
+            Instruction::CopyAssignment(v.clone(), Address::Constant(Literal::Int(2), Type::Int),),
+            Instruction::Param(v),
+            Instruction::Call(None, "print".to_string(), 1),
+        ]
+    );
+// main:
+// p = 0
+// p.valid = true
+// param p.valid
+// call print, 1
+// k = 0
+// v = 2
+// param v
+// call print, 1
 }
