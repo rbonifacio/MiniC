@@ -2,11 +2,12 @@
 
 use mini_c::codegen::tac_code_gen::{translate_program, translate_statement, Environment};
 use mini_c::ir::ast::{
-    AgtTypeSpecifier, CheckedExpr, CheckedStmt, Expr, ExprD, Literal, Statement, StatementD, Type,
+    AgtTypeSpecifier, CheckedExpr, CheckedProgram, CheckedStmt, Expr, ExprD, Literal, Statement,
+    StatementD, Type, UncheckedProgram,
 };
 use mini_c::ir::tac::{Address, Instruction, Operator};
 use mini_c::parser::program;
-use mini_c::semantic::type_check;
+use mini_c::semantic::{type_check, TypeError};
 use nom::combinator::all_consuming;
 use std::path::Path;
 
@@ -48,6 +49,18 @@ fn assign(name: &str, value: CheckedExpr) -> CheckedStmt {
 
 fn fixtures_dir() -> std::path::PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures")
+}
+
+fn parse_fixture(name: &str) -> UncheckedProgram {
+    let source = std::fs::read_to_string(fixtures_dir().join(name)).expect("fixture should exist");
+    let result = all_consuming(program)(source.trim())
+        .map_err(|e| e.map_input(String::from))
+        .expect("fixture should parse");
+    result.1
+}
+
+fn type_check_fixture(name: &str) -> Result<CheckedProgram, TypeError> {
+    type_check(&parse_fixture(name))
 }
 
 // Fixture: if (x < y) { z = x + y; } else { z = x; }
@@ -100,12 +113,8 @@ fn test_if_else_with_relational_condition() {
 
 #[test]
 fn test_aggregate_types_fixture_generates_tac() {
-    let source = std::fs::read_to_string(fixtures_dir().join("aggregate_types.minic"))
-        .expect("aggregate fixture should exist");
-    let (_, unchecked) = all_consuming(program)(source.trim())
-        .map_err(|e| e.map_input(String::from))
-        .expect("aggregate fixture should parse");
-    let checked = type_check(&unchecked).expect("aggregate fixture should type-check");
+    let checked =
+        type_check_fixture("aggregate_types.minic").expect("aggregate fixture should type-check");
 
     let mut env = Environment::new();
     let instructions = translate_program(checked, &mut env);
@@ -140,5 +149,52 @@ fn test_aggregate_types_fixture_generates_tac() {
             Instruction::Param(v),
             Instruction::Call(None, "print".to_string(), 1),
         ]
+    );
+}
+
+#[test]
+fn test_aggregate_struct_member_fixture_generates_tac() {
+    let checked = type_check_fixture("aggregate_struct_member_success.minic")
+        .expect("aggregate struct member fixture should type-check");
+
+    let mut env = Environment::new();
+    let instructions = translate_program(checked, &mut env);
+
+    let flag_ty = Type::Aggregate {
+        specifier: AgtTypeSpecifier::Struct,
+        identifier: "Flag".to_string(),
+    };
+    let flag = Address::Variable("flag".to_string(), flag_ty);
+    let flag_enabled = Address::Variable("flag.enabled".to_string(), Type::Bool);
+
+    assert_eq!(
+        instructions,
+        vec![
+            Instruction::Label("main".to_string()),
+            Instruction::CopyAssignment(flag, Address::Constant(Literal::Int(0), Type::Int)),
+            Instruction::CopyAssignment(
+                flag_enabled.clone(),
+                Address::Constant(Literal::Bool(true), Type::Bool),
+            ),
+            Instruction::Param(flag_enabled),
+            Instruction::Call(None, "print".to_string(), 1),
+        ]
+    );
+}
+
+#[test]
+fn test_aggregate_unknown_struct_fixture_fails_type_check() {
+    let err = type_check_fixture("aggregate_unknown_struct_fail.minic")
+        .expect_err("unknown struct fixture should fail type-checking");
+
+    assert!(
+        err.message.contains("unknown aggregate type"),
+        "expected unknown aggregate type error, got: {}",
+        err.message
+    );
+    assert!(
+        err.message.contains("Missing"),
+        "expected missing struct name in error, got: {}",
+        err.message
     );
 }
