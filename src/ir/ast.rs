@@ -130,6 +130,12 @@ pub enum Statement<Ty> {
         ty: Type,
         init: Box<ExprD<Ty>>,
     },
+    /// Constant declaration with initialization: `const int x = expr`.
+    ConstDecl {
+        name: String,
+        ty: Type,
+        init: Box<ExprD<Ty>>,
+    },
     Assign {
         target: Box<ExprD<Ty>>,
         value: Box<ExprD<Ty>>,
@@ -171,6 +177,7 @@ pub struct FunDecl<Ty> {
 #[derive(Debug, Clone, PartialEq)]
 pub struct Program<Ty> {
     pub functions: Vec<FunDecl<Ty>>,
+    pub constants: Vec<StatementD<Ty>>,
 }
 
 impl<Ty> Program<Ty> {

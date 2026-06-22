@@ -66,4 +66,4 @@ pub use functions::fun_decl;
 pub use identifiers::identifier;
 pub use literals::{literal, Literal};
 pub use program::program;
-pub use statements::{assignment, statement};
+pub use statements::{assignment, const_statement, statement};
