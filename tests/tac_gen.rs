@@ -18,6 +18,42 @@ fn lt(left: CheckedExpr, right: CheckedExpr) -> CheckedExpr {
     ExprD { exp: Expr::Lt(Box::new(left), Box::new(right)), ty: Type::Bool }
 }
 
+fn mul(left: CheckedExpr, right: CheckedExpr) -> CheckedExpr {
+    ExprD { exp: Expr::Mul(Box::new(left), Box::new(right)), ty: Type::Int }
+}
+
+fn int_lit(value: i64) -> CheckedExpr {
+    ExprD { exp: Expr::Literal(Literal::Int(value)), ty: Type::Int }
+}
+
+fn fn_int_int() -> Type {
+    Type::Fun(vec![Type::Int], Box::new(Type::Int))
+}
+
+fn return_stmt(expr: CheckedExpr) -> CheckedStmt {
+    StatementD { stmt: Statement::Return(Some(Box::new(expr))), ty: Type::Int }
+}
+
+fn lambda_double() -> CheckedExpr {
+    let param_name = "x".to_string();
+    let body = StatementD {
+        stmt: Statement::Return(Some(Box::new(mul(int_var(&param_name), int_lit(2)))),),
+        ty: Type::Int,
+    };
+    ExprD {
+        exp: Expr::Lambda {
+            params: vec![(param_name, Type::Int)],
+            return_tipo: Type::Int,
+            crp: Box::new(body),
+        },
+        ty: fn_int_int(),
+    }
+}
+
+fn call_expr(callee: CheckedExpr, args: Vec<CheckedExpr>, ty: Type) -> CheckedExpr {
+    ExprD { exp: Expr::CallExpr { chmd: Box::new(callee), args }, ty }
+}
+
 fn assign(name: &str, value: CheckedExpr) -> CheckedStmt {
     StatementD {
         stmt: Statement::Assign {
@@ -65,5 +101,47 @@ fn test_if_else_with_relational_condition() {
         Instruction::Label("Label1:".to_string()),
         Instruction::CopyAssignment(z, x),
         Instruction::Label("Label2:".to_string()),
+    ]);
+}
+
+#[test]
+fn test_lambda_assignment_and_indirect_call() {
+    let double_ty = fn_int_int();
+    let stmt = StatementD {
+        stmt: Statement::Block {
+            seq: vec![
+                StatementD {
+                    stmt: Statement::Assign {
+                        target: Box::new(ExprD { exp: Expr::Ident("double".to_string()), ty: double_ty.clone() }),
+                        value: Box::new(lambda_double()),
+                    },
+                    ty: Type::Unit,
+                },
+                StatementD {
+                    stmt: Statement::Assign {
+                        target: Box::new(ExprD { exp: Expr::Ident("result".to_string()), ty: Type::Int }),
+                        value: Box::new(call_expr(ExprD { exp: Expr::Ident("double".to_string()), ty: double_ty.clone() }, vec![int_lit(21)], Type::Int)),
+                    },
+                    ty: Type::Unit,
+                },
+            ],
+        },
+        ty: Type::Unit,
+    };
+
+    let mut env = Environment::new();
+    let instructions = translate_statement(stmt, &mut env);
+
+    assert_eq!(instructions, vec![
+        Instruction::JMP("Label1:".to_string()),
+        Instruction::Label("lambda_1".to_string()),
+        Instruction::BinaryAssignment(Operator::Mul, Address::Temporary("temp1".to_string(), Type::Int), Address::Variable("x".to_string(), Type::Int), Address::Constant(Literal::Int(2), Type::Int)),
+        Instruction::Return(Some(Address::Temporary("temp1".to_string(), Type::Int))),
+        Instruction::Label("Label1:".to_string()),
+        Instruction::CopyAssignment(Address::Variable("double".to_string(), double_ty.clone()), Address::FunctionLabel("lambda_1".to_string())),
+        Instruction::Param(Address::Variable("double".to_string(), double_ty.clone())),
+        Instruction::Param(Address::Constant(Literal::Int(21), Type::Int)),
+        Instruction::CallIndirect(Some(Address::Temporary("temp2".to_string(), Type::Int)), Address::Variable("double".to_string(), double_ty), 1),
+        Instruction::CopyAssignment(Address::Variable("result".to_string(), Type::Int), Address::Temporary("temp2".to_string(), Type::Int)),
     ]);
 }
