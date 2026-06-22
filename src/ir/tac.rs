@@ -9,6 +9,7 @@ pub enum Address {
     Variable(Name, Type),
     Constant(Literal, Type),
     Temporary(Name, Type),
+    FunctionLabel(Name),
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -23,6 +24,7 @@ pub enum Instruction {
     ConditionalJMPRelational(Operator, Address, Address, Label),
     Param(Address),
     Call(Option<Address>, Name, usize),   // It is either 'call p, n' or 'y = call p, n'
+    CallIndirect(Option<Address>, Address, usize),
     Store(Address, Address, Address),     // x[i] = y
     Load(Address, Address, Address),      // x = y[i]
     Return(Option<Address>),

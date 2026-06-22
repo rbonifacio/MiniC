@@ -6,13 +6,15 @@ use crate::ir::tac::{TACProgram, Instruction, Address, Operator};
 pub struct Environment {
     current_label : usize,
     current_temporary: usize
+    ,current_lambda: usize
 }
 
 impl Environment {
     pub fn new() -> Self {
         Self {
             current_label: 0,
-            current_temporary: 0
+            current_temporary: 0,
+            current_lambda: 0,
         }
     }
 
@@ -25,15 +27,19 @@ impl Environment {
         self.current_temporary += 1;
         format!("temp{}", self.current_temporary)
     }
+
+    fn new_function_label(&mut self) -> String {
+        self.current_lambda += 1;
+        format!("lambda_{}", self.current_lambda)
+    }
 }
 
-fn translate_program(program: CheckedProgram, env: &mut Environment) -> TACProgram {
-    let main_fn = program.main_function();
-    match main_fn {
-        None => unreachable!("[Impossible] program must have a main function"),
-        Some(f) => translate_function(f.clone(), env),
-    }
-
+pub fn translate_program(program: CheckedProgram, env: &mut Environment) -> TACProgram {
+    program
+        .functions
+        .into_iter()
+        .flat_map(|function| translate_function(function, env))
+        .collect()
 }
 
 fn translate_function(function: CheckedFunDecl, env: &mut Environment) -> TACProgram {
@@ -68,17 +74,7 @@ pub fn translate_statement(statement: CheckedStmt, env: &mut Environment) -> Vec
             }
         },
         Statement::Call{name, args} => {
-            // addresses_and_instructions :: [(Address, [Instruction])]
-            let addresses_and_instructions = args.into_iter().map(|expr| translate_expression(expr, env)).collect::<Vec<_>>();
-            let mut instructions = addresses_and_instructions.iter().fold(vec![], |mut acc, (_, inst)| {acc.extend(inst.clone()); acc});
-
-            // includes a 'param' instruction to the
-            // every addresses built from the arguments.
-            for (addr, _) in &addresses_and_instructions {
-                instructions.push(Instruction::Param(addr.clone()));
-            }
-            instructions.push(Instruction::Call(None, name, addresses_and_instructions.len()));
-            instructions
+            translate_named_call(name, args, None, env)
         }
         Statement::If{cond, then_branch: then_body, else_branch: Some(else_body)} => {
             let label_then = env.new_label();
@@ -92,6 +88,26 @@ pub fn translate_statement(statement: CheckedStmt, env: &mut Environment) -> Vec
             instructions.extend(translate_statement(*else_body, env));
             instructions.push(Instruction::Label(label_end_if));
             instructions
+        },
+        Statement::If{cond, then_branch: then_body, else_branch: None} => {
+            let label_then = env.new_label();
+            let label_end_if = env.new_label();
+            let mut instructions = translate_conditional(*cond, env, label_then.clone(), label_end_if.clone());
+            instructions.push(Instruction::Label(label_then));
+            instructions.extend(translate_statement(*then_body, env));
+            instructions.push(Instruction::Label(label_end_if));
+            instructions
+        },
+        Statement::Return(value) => {
+            match value {
+                Some(expr) => {
+                    let (address, instructions) = translate_expression(*expr, env);
+                    res.extend(instructions);
+                    res.push(Instruction::Return(Some(address)));
+                    res
+                }
+                None => vec![Instruction::Return(None)],
+            }
         },
         _ => todo!()
     }
@@ -165,8 +181,53 @@ fn translate_expression(expression: CheckedExpr, env: &mut Environment) -> (Addr
             instructions.push(Instruction::BinaryAssignment(Operator::Add, temp.clone(), l_addr, r_addr));
             (temp, instructions)
         }
+        Expr::CallExpr { chmd, args } => {
+            let (callee_address, mut instructions) = translate_expression(*chmd, env);
+            let (arguments, argument_instructions) = translate_call_arguments(args, env);
+            instructions.extend(argument_instructions);
+            for address in &arguments {
+                instructions.push(Instruction::Param(address.clone()));
+            }
+
+            let result = Address::Temporary(env.new_temporary(), expression.ty);
+            match callee_address {
+                Address::FunctionLabel(name) => {
+                    instructions.push(Instruction::Call(Some(result.clone()), name, arguments.len()));
+                }
+                other => {
+                    instructions.push(Instruction::CallIndirect(Some(result.clone()), other, arguments.len()));
+                }
+            }
+
+            (result, instructions)
+        }
+        Expr::Lambda { params: _, return_tipo: _, crp } => {
+            let lambda_label = env.new_function_label();
+            let exit_label = env.new_label();
+            let mut instructions = vec![Instruction::JMP(exit_label.clone())];
+            instructions.push(Instruction::Label(lambda_label.clone()));
+            instructions.extend(translate_statement(*crp, env));
+            instructions.push(Instruction::Label(exit_label));
+            (Address::FunctionLabel(lambda_label), instructions)
+        }
         _ => todo!()
     }
+}
+
+fn translate_call_arguments(args: Vec<CheckedExpr>, env: &mut Environment) -> (Vec<Address>, Vec<Instruction>) {
+    let addresses_and_instructions = args.into_iter().map(|expr| translate_expression(expr, env)).collect::<Vec<_>>();
+    let mut instructions = addresses_and_instructions.iter().fold(vec![], |mut acc, (_, inst)| {acc.extend(inst.clone()); acc});
+    let addresses = addresses_and_instructions.into_iter().map(|(addr, _)| addr).collect::<Vec<_>>();
+    (addresses, instructions)
+}
+
+fn translate_named_call(name: String, args: Vec<CheckedExpr>, return_target: Option<Address>, env: &mut Environment) -> Vec<Instruction> {
+    let (addresses, mut instructions) = translate_call_arguments(args, env);
+    for address in &addresses {
+        instructions.push(Instruction::Param(address.clone()));
+    }
+    instructions.push(Instruction::Call(return_target, name, addresses.len()));
+    instructions
 }
 
 fn translate_conditional(expression: CheckedExpr, env: &mut Environment, true_label: String, false_label: String) -> Vec<Instruction> {

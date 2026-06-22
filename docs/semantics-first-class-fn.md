@@ -75,3 +75,43 @@ Testes obrigatórios (mínimos) — mapeados
 
 - Pessoa 5 (Closures):
   - `int y = 10; fn(int)->int f = fn(int x)->int { return x + y; }; y = 20; print(f(1));` → saída `11` (captura por snapshot)
+
+---
+
+# TAC: contrato do Milestone 3
+
+Objetivo
+- Fechar a representação de funções de primeira classe no TAC sem misturar chamada direta, valor funcional e chamada indireta.
+
+Novos Address
+- `Address::FunctionLabel(String)` para representar o código de uma função/lambda como valor.
+
+Novas instruções
+- `Instruction::CallIndirect(Option<Address>, Address, usize)` para chamadas via variável ou expressão que produza um valor funcional.
+
+Decisão de geração
+- `Expr::Lambda` gera uma função interna com nome único, por exemplo `lambda_1`.
+- O valor da lambda é `Address::FunctionLabel("lambda_1")`.
+- `Expr::CallExpr` usa `CallIndirect` quando o callee não é um nome direto de função.
+- Chamada direta continua usando `Instruction::Call`.
+
+Exemplos TAC
+```text
+fn(int) -> int double = fn(int x) -> int { return x * 2; }
+
+JMP Label1:
+Label lambda_1:
+  temp1 = x * 2
+  return temp1
+Label1:
+  double = lambda_1
+
+double(21)
+
+param 21
+call_indirect double
+```
+
+Integração
+- A Pessoa 1 valida consistência entre AST, type checker, interpreter e TAC.
+- A Pessoa 1 também revisa PRs para garantir que o modelo de `FunctionLabel` e `CallIndirect` permaneça único em todo o grupo.
