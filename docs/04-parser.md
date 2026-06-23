@@ -33,6 +33,15 @@ Here is roughly what happens, step by step:
 The same recursive logic handles arbitrarily complex expressions like
 `a * (b + c) - sqrt(d)`.
 
+In addition to generic function calls, MiniC also parses two dedicated
+expression forms with function-like syntax:
+
+- `len(expr)`
+- `contains(expr, expr)`
+
+Even though they look like calls, they are mapped to dedicated AST nodes
+(`Expr::len` and `Expr::contains`) instead of `Expr::Call`.
+
 ---
 
 ## What is a Parser Combinator?
@@ -103,12 +112,16 @@ expression
           └── logical_and   (and)
                 └── logical_not   (!)
                       └── relational   (==  !=  <  <=  >  >=)
-                            └── additive     (+  -)
+                            └── additive     (+  - ++)
                                   └── multiplicative   (*  /)
                                         └── unary      (unary -)
                                               └── primary   (atoms + indexing)
                                                     └── atom
 ```
+
+At the `atom` level, the parser gives dedicated precedence to `len(...)`
+and `contains(...)` before the generic call parser, so these two constructs
+always become core expression nodes.
 
 When `additive` needs its right operand, it calls `multiplicative`. So `*`
 always groups before `+` — naturally, without any precedence table.

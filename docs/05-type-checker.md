@@ -144,6 +144,20 @@ pass type checking.
 `Type::Any` is never inferred for a variable or expression — it only appears
 in the registry as a parameter type for built-in functions.
 
+### `len` and `contains` as expression forms
+
+`len` and `contains` are no longer validated through stdlib function
+signatures. They are checked as dedicated expression nodes:
+
+- `len(expr)`
+: `expr` must be `str` or `array`, result type is `int`.
+- `contains(container, item)`
+: if `container` is `str`, `item` must be `str`; if `container` is
+  `array(T)`, `item` must be compatible with `T`; result type is `bool`.
+
+This moves type errors for those constructs to their specific expression
+rules, instead of generic call-argument validation.
+
 ---
 
 ## Key Design Decision: Fail on the First Error
