@@ -256,3 +256,59 @@ fn test_stdlib_pow_float_args() {
     "#;
     assert!(run(src).is_ok(), "{}", run(src).unwrap_err());
 }
+
+// ---------------------------------------------------------------------------
+// Pointers (Value::Ptr in a single bindings map)
+// ---------------------------------------------------------------------------
+#[test]
+fn test_pointer_addr_of_and_deref_read() {
+    let src = r#"
+        void main() {
+            int x = 10;
+            int* p = &x;
+            int y = *p;
+        }
+    "#;
+    assert!(run(src).is_ok(), "{}", run(src).unwrap_err());
+}
+
+#[test]
+fn test_pointer_deref_assign() {
+    let src = r#"
+        void increment(int* p) {
+            *p = *p + 1;
+        }
+        void main() {
+            int x = 10;
+            increment(&x);
+        }
+    "#;
+    assert!(run(src).is_ok(), "{}", run(src).unwrap_err());
+}
+
+#[test]
+fn test_pointer_rebind() {
+    let src = r#"
+        void main() {
+            int x = 10;
+            int y = 5;
+            int* x_ref = &x;
+            int* y_ref = &y;
+            x_ref = y_ref;
+        }
+    "#;
+    assert!(run(src).is_ok(), "{}", run(src).unwrap_err());
+}
+
+#[test]
+fn test_pointer_return() {
+    let src = r#"
+        int* pick(int* a, int* b) { return a; }
+        void main() {
+            int x = 1;
+            int y = 2;
+            int* p = pick(&x, &y);
+        }
+    "#;
+    assert!(run(src).is_ok(), "{}", run(src).unwrap_err());
+}

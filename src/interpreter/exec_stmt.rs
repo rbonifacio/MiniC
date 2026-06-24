@@ -36,7 +36,7 @@
 use crate::environment::Environment;
 use crate::ir::ast::{CheckedExpr, CheckedStmt, Expr, Statement};
 
-use super::eval_expr::{eval_call, eval_expr};
+use super::eval_expr::{eval_call, eval_expr, ptr_target, write_through};
 use super::value::{RuntimeError, Value};
 
 /// `None` = normal fall-through; `Some(v)` = early return with value.
@@ -157,6 +157,10 @@ fn assign_lvalue(
                 }
             };
             assign_index(base, idx, val, env)
+        }
+        Expr::Deref(inner) => {
+            let target = ptr_target(eval_expr(inner, env)?)?;
+            write_through(env, &target, val)
         }
         _ => Err(RuntimeError::new("invalid assignment target".to_string())),
     }

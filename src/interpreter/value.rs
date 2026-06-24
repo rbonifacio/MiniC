@@ -28,6 +28,7 @@
 //! Value::Array([...])     — a list of Values
 //! Value::Void             — no value (returned by void functions)
 //! Value::Fn(FnValue::...) — a callable function
+//! Value::Ptr("x")       — pointer to variable `x` (name-based indirection)
 //! ```
 //!
 //! This is the idiomatic Rust approach to *tagged unions* — a value that can
@@ -103,6 +104,8 @@ pub enum Value {
     Array(Vec<Value>),
     Void,
     Fn(FnValue),
+    /// Pointer: holds the name of the target variable in the environment.
+    Ptr(String),
 }
 
 impl fmt::Display for Value {
@@ -124,6 +127,7 @@ impl fmt::Display for Value {
                 write!(f, "]")
             }
             Value::Fn(_) => write!(f, "<function>"),
+            Value::Ptr(target) => write!(f, "&{}", target),
         }
     }
 }

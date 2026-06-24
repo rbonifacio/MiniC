@@ -314,6 +314,43 @@ fn type_check_assign_target(
             }
             Ok(())
         }
+        Expr::Deref(inner) => {
+            let inner_ty = type_check_expr(inner, env)?;
+            match inner_ty {
+                Type::Pointer(base_ty) => {
+                    if !types_compatible(value_ty, &base_ty) {
+                        return Err(TypeError::new(format!(
+                            "assignment through pointer: expected {:?}, got {:?}",
+                            base_ty,
+                            value_ty
+                        )));
+                    }
+                    Ok(())
+                }
+                other => Err(TypeError::new(format!(
+                    "cannot dereference non-pointer type: {:?}",
+                    other
+                ))),
+            }
+        },
+        Expr::AddrOf(inner) => {
+            let inner_ty = type_check_expr(inner, env)?;
+            match &inner.exp {
+                Expr::Ident(_) => {
+                    if !types_compatible(&Type::Pointer(Box::new(inner_ty.clone())), value_ty) {
+                        return Err(TypeError::new(format!(
+                            "assignment to address-of: expected {:?}, got {:?}",
+                            Type::Pointer(Box::new(inner_ty)),
+                            value_ty
+                        )));
+                    }
+                    Ok(())
+                }
+                _ => Err(TypeError::new(
+                    "can only take address of variables"
+                )),
+            }
+        },
         Expr::Index { base, index } => {
             let index_ty = type_check_expr(index, env)?;
             if index_ty != Type::Int {
@@ -416,6 +453,8 @@ fn type_check_expr_inner(
             base: Box::new(type_check_expr_to_typed(base, env)?),
             index: Box::new(type_check_expr_to_typed(index, env)?),
         }),
+        Expr::AddrOf(elem) => Ok(Expr::AddrOf(Box::new(type_check_expr_to_typed(elem, env)?))),
+        Expr::Deref(elem) => Ok(Expr::Deref(Box::new(type_check_expr_to_typed(elem, env)?))),
     }
 }
 
@@ -543,6 +582,27 @@ fn type_check_expr(
                 Err(TypeError::new("indexed expression must be array"))
             }
         }
+        Expr::AddrOf(elem) => {
+            let inner_ty = type_check_expr(elem, env)?;
+            match &elem.exp {
+                Expr::Ident(_) => {
+                    Ok(Type::Pointer(Box::new(inner_ty)))
+                }
+                _ => Err(TypeError::new(
+                    "can only take address of variables"
+                )),
+            }
+        },
+        Expr::Deref(elem) => {
+            let inner_ty = type_check_expr(elem, env)?;
+            match inner_ty {
+                Type::Pointer(base_ty) => Ok(*base_ty),
+                other => Err(TypeError::new(format!(
+                    "cannot dereference non-pointer type: {:?}",
+                    other
+                ))),
+            }
+        },
     }
 }
 
@@ -579,6 +639,7 @@ fn types_compatible(a: &Type, b: &Type) -> bool {
         | (Type::Str, Type::Str)
         | (Type::Unit, Type::Unit) => true,
         (Type::Int, Type::Float) | (Type::Float, Type::Int) => true,
+        (Type::Pointer(a), Type::Pointer(b)) => {types_compatible(a, b)},
         (Type::Array(a), Type::Array(b)) => types_compatible(a, b),
         _ => false,
     }
