@@ -11,6 +11,8 @@
 //! * [`set`](Environment::set) — update an existing binding.
 //! * [`snapshot`](Environment::snapshot) / [`restore`](Environment::restore)
 //!   — save and restore the entire map (used for scoping).
+//! * [`aggregate_type`](Environment::aggregate_type) — look up an aggregate
+//!   type declaration from the shared type-declaration table.
 //!
 //! Additionally, [`names`](Environment::names) and
 //! [`remove_new`](Environment::remove_new) support block-exit cleanup.
@@ -54,18 +56,55 @@
 //! acceptable at MiniC's scale.
 
 use std::collections::{HashMap, HashSet};
+use std::rc::Rc;
+
+use crate::ir::ast::{AggregateTypeDecl, AgtTypeSpecifier};
+
+pub type TypeDeclKey = (AgtTypeSpecifier, String);
+pub type TypeDeclMap = HashMap<TypeDeclKey, AggregateTypeDecl>;
+
+pub fn build_type_decl_map(decls: &[AggregateTypeDecl]) -> TypeDeclMap {
+    let mut type_map = TypeDeclMap::new();
+    for decl in decls {
+        let key = (decl.specifier.clone(), decl.identifier.clone());
+        type_map.insert(key, decl.clone());
+    }
+    type_map
+}
 
 /// Unified parametric environment: maps names to values of type `V`.
 /// Both variable bindings and function bindings are stored in the same map.
 pub struct Environment<V> {
     bindings: HashMap<String, V>,
+    type_decls: Rc<TypeDeclMap>,
 }
 
 impl<V: Clone> Environment<V> {
     pub fn new() -> Self {
         Self {
             bindings: HashMap::new(),
+            type_decls: Rc::new(TypeDeclMap::new()),
         }
+    }
+
+    pub fn with_type_decls(type_decls: TypeDeclMap) -> Self {
+        Self {
+            bindings: HashMap::new(),
+            type_decls: Rc::new(type_decls),
+        }
+    }
+
+    pub fn aggregate_type(
+        &self,
+        specifier: &AgtTypeSpecifier,
+        identifier: &str,
+    ) -> Option<&AggregateTypeDecl> {
+        self.type_decls
+            .get(&(specifier.clone(), identifier.to_string()))
+    }
+
+    pub fn has_aggregate_type(&self, specifier: &AgtTypeSpecifier, identifier: &str) -> bool {
+        self.aggregate_type(specifier, identifier).is_some()
     }
 
     /// Bind `name` to `value`, overwriting any existing binding.

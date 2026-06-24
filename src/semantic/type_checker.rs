@@ -44,13 +44,13 @@
 //! Centralising compatibility logic here means all callers (declaration,
 //! assignment, call-argument checking) share one consistent definition.
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
-use crate::environment::Environment;
+use crate::environment::{build_type_decl_map, Environment};
 use crate::ir::ast::{
-    CheckedExpr, CheckedFunDecl, CheckedProgram, CheckedStmt, Expr, ExprD, FunDecl, Literal,
-    Program, Statement, StatementD, Type, UncheckedExpr, UncheckedFunDecl, UncheckedProgram,
-    UncheckedStmt,
+    AggregateTypeDecl, AgtTypeMember, AgtTypeSpecifier, CheckedExpr, CheckedFunDecl,
+    CheckedProgram, CheckedStmt, Expr, ExprD, FunDecl, Literal, Program, Statement, StatementD,
+    Type, UncheckedExpr, UncheckedFunDecl, UncheckedProgram, UncheckedStmt,
 };
 use crate::stdlib::NativeRegistry;
 
@@ -76,9 +76,26 @@ impl std::fmt::Display for TypeError {
 
 impl std::error::Error for TypeError {}
 
+fn check_type_decls_unique(decls: &[AggregateTypeDecl]) -> Result<(), TypeError> {
+    let mut seen = HashSet::new();
+    for decl in decls {
+        let key = (decl.specifier.clone(), decl.identifier.clone());
+        if !seen.insert(key) {
+            return Err(TypeError::new(format!(
+                "duplicate type declaration: {:?} {}",
+                decl.specifier, decl.identifier
+            )));
+        }
+    }
+    Ok(())
+}
+
 /// Type-check a program. Returns `Ok(CheckedProgram)` if well-typed, `Err(TypeError)` on first error.
 /// Requires a `main` function with signature `void main()`.
 pub fn type_check(program: &UncheckedProgram) -> Result<CheckedProgram, TypeError> {
+    check_type_decls_unique(&program.type_declarations)?;
+    let type_map = build_type_decl_map(&program.type_declarations);
+
     let main_fn = program.main_function();
     match main_fn {
         None => return Err(TypeError::new("program must have a main function")),
@@ -92,21 +109,30 @@ pub fn type_check(program: &UncheckedProgram) -> Result<CheckedProgram, TypeErro
         }
     }
 
-    let mut env = Environment::<Type>::new();
+    let mut env = Environment::with_type_decls(type_map);
 
-    // Register native stdlib functions as Type::Fun bindings.
+    // Register native stdlib functions as Type::Function bindings.
     let registry = NativeRegistry::default();
     for (name, entry) in registry.iter() {
         env.declare(
             name.clone(),
-            Type::Fun(entry.params.clone(), Box::new(entry.return_type.clone())),
+            Type::Function {
+                params: entry.params.clone(),
+                return_type: Box::new(entry.return_type.clone()),
+            },
         );
     }
 
-    // Register user-defined function signatures as Type::Fun bindings.
+    // Register user-defined function signatures as Type::Function bindings.
     for f in &program.functions {
-        let param_tys = f.params.iter().map(|(_, ty)| ty.clone()).collect();
-        env.declare(f.name.clone(), Type::Fun(param_tys, Box::new(f.return_type.clone())));
+        let param_tys = f.params.iter().map(|param| param.ty.clone()).collect();
+        env.declare(
+            f.name.clone(),
+            Type::Function {
+                params: param_tys,
+                return_type: Box::new(f.return_type.clone()),
+            },
+        );
     }
 
     // Clean snapshot: only function bindings, no variable bindings.
@@ -117,7 +143,10 @@ pub fn type_check(program: &UncheckedProgram) -> Result<CheckedProgram, TypeErro
         let checked = type_check_fun_decl(f, &mut env, &fn_snapshot)?;
         functions.push(checked);
     }
-    Ok(Program { functions })
+    Ok(Program {
+        type_declarations: program.type_declarations.clone(),
+        functions,
+    })
 }
 
 fn type_check_fun_decl(
@@ -127,8 +156,8 @@ fn type_check_fun_decl(
 ) -> Result<CheckedFunDecl, TypeError> {
     // Restore to clean function-only state, then add parameters.
     env.restore(fn_snapshot.clone());
-    for (name, ty) in &f.params {
-        env.declare(name.clone(), ty.clone());
+    for param in &f.params {
+        env.declare(param.name.clone(), param.ty.clone());
     }
     let body = type_check_stmt(&f.body, env, &f.return_type)?;
     Ok(FunDecl {
@@ -149,11 +178,32 @@ fn type_check_stmt(
             if ty == &Type::Unit {
                 return Err(TypeError::new("cannot declare variable of type void"));
             }
+            if let Type::Aggregate {
+                specifier,
+                identifier,
+            } = ty
+            {
+                if !env.has_aggregate_type(specifier, identifier) {
+                    return Err(TypeError::new(format!(
+                        "unknown aggregate type: {:?} {}",
+                        specifier, identifier
+                    )));
+                }
+            }
             if env.get(name).is_some() {
-                return Err(TypeError::new(format!("redeclaration of variable: {}", name)));
+                return Err(TypeError::new(format!(
+                    "redeclaration of variable: {}",
+                    name
+                )));
             }
             let init_checked = type_check_expr_to_typed(init, env)?;
-            if !types_compatible(&init_checked.ty, ty) {
+            if matches!(ty, Type::Aggregate { .. }) {
+                if init_checked.ty != Type::Int {
+                    return Err(TypeError::new(
+                        "aggregate-typed variable declarations currently require integer placeholder initializer",
+                    ));
+                }
+            } else if !types_compatible(&init_checked.ty, ty) {
                 return Err(TypeError::new(format!(
                     "declaration of {}: expected {:?}, got {:?}",
                     name, ty, init_checked.ty
@@ -263,13 +313,11 @@ fn type_check_stmt(
     })
 }
 
-fn check_call(
-    name: &str,
-    args: &[CheckedExpr],
-    env: &Environment<Type>,
-) -> Result<(), TypeError> {
+fn check_call(name: &str, args: &[CheckedExpr], env: &Environment<Type>) -> Result<(), TypeError> {
     match env.get(name) {
-        Some(Type::Fun(param_tys, _)) => {
+        Some(Type::Function {
+            params: param_tys, ..
+        }) => {
             if args.len() != param_tys.len() {
                 return Err(TypeError::new(format!(
                     "function '{}' expects {} arguments, got {}",
@@ -329,6 +377,57 @@ fn type_check_assign_target(
             }
             Ok(())
         }
+        Expr::Member { base, member } => {
+            let base_ty = type_check_expr(base, env)?;
+            match base_ty {
+                Type::Aggregate {
+                    specifier,
+                    identifier,
+                } => {
+                    let decl = env.aggregate_type(&specifier, &identifier).ok_or_else(|| {
+                        TypeError::new(format!(
+                            "unknown aggregate type in member assignment: {:?} {}",
+                            specifier, identifier
+                        ))
+                    })?;
+
+                    match specifier {
+                        AgtTypeSpecifier::Struct | AgtTypeSpecifier::Union => {
+                            let field_ty = decl
+                                .members
+                                .iter()
+                                .find_map(|m| match m {
+                                    AgtTypeMember::Field(decl) if decl.name == *member => {
+                                        Some(decl.ty.clone())
+                                    }
+                                    _ => None,
+                                })
+                                .ok_or_else(|| {
+                                    TypeError::new(format!(
+                                        "unknown member '{}' on {:?} {}",
+                                        member, specifier, identifier
+                                    ))
+                                })?;
+
+                            if !types_compatible(value_ty, &field_ty) {
+                                return Err(TypeError::new(format!(
+                                    "assignment to {}.{}: expected {:?}, got {:?}",
+                                    identifier, member, field_ty, value_ty
+                                )));
+                            }
+                            Ok(())
+                        }
+                        AgtTypeSpecifier::Enum => {
+                            Err(TypeError::new("cannot assign to enum members"))
+                        }
+                    }
+                }
+                other => Err(TypeError::new(format!(
+                    "member assignment requires aggregate base type, got {:?}",
+                    other
+                ))),
+            }
+        }
         _ => Err(TypeError::new("invalid assignment target")),
     }
 }
@@ -342,10 +441,7 @@ fn type_check_expr_to_typed(
     Ok(ExprD { exp, ty })
 }
 
-fn type_check_expr_inner(
-    e: &Expr<()>,
-    env: &Environment<Type>,
-) -> Result<Expr<Type>, TypeError> {
+fn type_check_expr_inner(e: &Expr<()>, env: &Environment<Type>) -> Result<Expr<Type>, TypeError> {
     match e {
         Expr::Literal(l) => Ok(Expr::Literal(l.clone())),
         Expr::Ident(name) => Ok(Expr::Ident(name.clone())),
@@ -400,33 +496,38 @@ fn type_check_expr_inner(
             Box::new(type_check_expr_to_typed(r, env)?),
         )),
         Expr::Call { name, args } => {
-            let args_checked: Result<Vec<_>, _> =
-                args.iter().map(|a| type_check_expr_to_typed(a, env)).collect();
+            let args_checked: Result<Vec<_>, _> = args
+                .iter()
+                .map(|a| type_check_expr_to_typed(a, env))
+                .collect();
             Ok(Expr::Call {
                 name: name.clone(),
                 args: args_checked?,
             })
         }
         Expr::ArrayLit(elems) => {
-            let elems_checked: Result<Vec<_>, _> =
-                elems.iter().map(|e| type_check_expr_to_typed(e, env)).collect();
+            let elems_checked: Result<Vec<_>, _> = elems
+                .iter()
+                .map(|e| type_check_expr_to_typed(e, env))
+                .collect();
             Ok(Expr::ArrayLit(elems_checked?))
         }
         Expr::Index { base, index } => Ok(Expr::Index {
             base: Box::new(type_check_expr_to_typed(base, env)?),
             index: Box::new(type_check_expr_to_typed(index, env)?),
         }),
+        Expr::Member { base, member } => Ok(Expr::Member {
+            base: Box::new(type_check_expr_to_typed(base, env)?),
+            member: member.clone(),
+        }),
     }
 }
 
-fn type_check_expr(
-    e: &UncheckedExpr,
-    env: &Environment<Type>,
-) -> Result<Type, TypeError> {
+fn type_check_expr(e: &UncheckedExpr, env: &Environment<Type>) -> Result<Type, TypeError> {
     match &e.exp {
         Expr::Literal(l) => Ok(literal_type(l)),
         Expr::Ident(name) => match env.get(name) {
-            Some(Type::Fun(_, _)) => Err(TypeError::new(format!(
+            Some(Type::Function { .. }) => Err(TypeError::new(format!(
                 "cannot use function '{}' as a value",
                 name
             ))),
@@ -486,11 +587,16 @@ fn type_check_expr(
             }
         }
         Expr::Call { name, args } => {
-            let args_checked: Result<Vec<_>, _> =
-                args.iter().map(|a| type_check_expr_to_typed(a, env)).collect();
+            let args_checked: Result<Vec<_>, _> = args
+                .iter()
+                .map(|a| type_check_expr_to_typed(a, env))
+                .collect();
             let args_checked = args_checked?;
             match env.get(name) {
-                Some(Type::Fun(param_tys, return_ty)) => {
+                Some(Type::Function {
+                    params: param_tys,
+                    return_type,
+                }) => {
                     if args_checked.len() != param_tys.len() {
                         return Err(TypeError::new(format!(
                             "function '{}' expects {} arguments, got {}",
@@ -512,7 +618,7 @@ fn type_check_expr(
                             )));
                         }
                     }
-                    Ok((**return_ty).clone())
+                    Ok((**return_type).clone())
                 }
                 Some(_) => Err(TypeError::new(format!("'{}' is not a function", name))),
                 None => Err(TypeError::new(format!("undefined function: {}", name))),
@@ -541,6 +647,58 @@ fn type_check_expr(
                 Ok(*elem)
             } else {
                 Err(TypeError::new("indexed expression must be array"))
+            }
+        }
+        Expr::Member { base, member } => {
+            let base_ty = type_check_expr(base, env)?;
+            match base_ty {
+                Type::Aggregate {
+                    specifier,
+                    identifier,
+                } => {
+                    let decl = env.aggregate_type(&specifier, &identifier).ok_or_else(|| {
+                        TypeError::new(format!(
+                            "unknown aggregate type in member access: {:?} {}",
+                            specifier, identifier
+                        ))
+                    })?;
+
+                    match specifier {
+                        AgtTypeSpecifier::Struct | AgtTypeSpecifier::Union => decl
+                            .members
+                            .iter()
+                            .find_map(|m| match m {
+                                AgtTypeMember::Field(decl) if decl.name == *member => {
+                                    Some(decl.ty.clone())
+                                }
+                                _ => None,
+                            })
+                            .ok_or_else(|| {
+                                TypeError::new(format!(
+                                    "unknown member '{}' on {:?} {}",
+                                    member, specifier, identifier
+                                ))
+                            }),
+                        AgtTypeSpecifier::Enum => {
+                            let exists = decl.members.iter().any(|m| match m {
+                                AgtTypeMember::Enumerator { name, .. } => name == member,
+                                _ => false,
+                            });
+                            if exists {
+                                Ok(Type::Int)
+                            } else {
+                                Err(TypeError::new(format!(
+                                    "unknown enumerator '{}' on enum {}",
+                                    member, identifier
+                                )))
+                            }
+                        }
+                    }
+                }
+                other => Err(TypeError::new(format!(
+                    "member access requires aggregate base type, got {:?}",
+                    other
+                ))),
             }
         }
     }
@@ -580,6 +738,16 @@ fn types_compatible(a: &Type, b: &Type) -> bool {
         | (Type::Unit, Type::Unit) => true,
         (Type::Int, Type::Float) | (Type::Float, Type::Int) => true,
         (Type::Array(a), Type::Array(b)) => types_compatible(a, b),
+        (
+            Type::Aggregate {
+                specifier: a_kind,
+                identifier: a_name,
+            },
+            Type::Aggregate {
+                specifier: b_kind,
+                identifier: b_name,
+            },
+        ) => a_kind == b_kind && a_name == b_name,
         _ => false,
     }
 }

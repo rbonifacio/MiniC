@@ -34,10 +34,14 @@
 //! This gives MiniC correct lexical block scoping without a scope stack.
 
 use crate::environment::Environment;
-use crate::ir::ast::{CheckedExpr, CheckedStmt, Expr, Statement};
+use crate::ir::ast::{
+    AgtTypeMember, AgtTypeSpecifier, CheckedExpr, CheckedStmt, Expr, Statement, Type,
+};
 
 use super::eval_expr::{eval_call, eval_expr};
 use super::value::{RuntimeError, Value};
+
+use std::collections::HashMap;
 
 /// `None` = normal fall-through; `Some(v)` = early return with value.
 pub type ExecResult = Result<Option<Value>, RuntimeError>;
@@ -46,9 +50,16 @@ pub type ExecResult = Result<Option<Value>, RuntimeError>;
 pub fn exec_stmt(stmt: &CheckedStmt, env: &mut Environment<Value>) -> ExecResult {
     match &stmt.stmt {
         // --- Variable declaration ---
-        Statement::Decl { name, init, .. } => {
-            let val = eval_expr(init, env)?;
-            env.declare(name.clone(), val);
+        Statement::Decl { name, ty, init } => {
+            let init_val = eval_expr(init, env)?;
+            let stored = match ty {
+                Type::Aggregate {
+                    specifier,
+                    identifier,
+                } => build_aggregate_value(specifier, identifier, init_val, env)?,
+                _ => init_val,
+            };
+            env.declare(name.clone(), stored);
             Ok(None)
         }
 
@@ -158,6 +169,7 @@ fn assign_lvalue(
             };
             assign_index(base, idx, val, env)
         }
+        Expr::Member { base, member } => assign_member(base, member, val, env),
         _ => Err(RuntimeError::new("invalid assignment target".to_string())),
     }
 }
@@ -249,6 +261,146 @@ fn assign_index(
             }
         }
         _ => Err(RuntimeError::new("invalid assignment target".to_string())),
+    }
+}
+
+fn assign_member(
+    base: &CheckedExpr,
+    member: &str,
+    val: Value,
+    env: &mut Environment<Value>,
+) -> Result<(), RuntimeError> {
+    match &base.exp {
+        Expr::Ident(name) => {
+            let current = env
+                .get(name)
+                .cloned()
+                .ok_or_else(|| RuntimeError::new(format!("undefined variable '{}'", name)))?;
+            let updated = match current {
+                Value::Struct {
+                    identifier,
+                    mut fields,
+                } => {
+                    fields.insert(member.to_string(), val);
+                    Value::Struct { identifier, fields }
+                }
+                Value::Union { identifier, .. } => Value::Union {
+                    identifier,
+                    active_field: member.to_string(),
+                    value: Box::new(val),
+                },
+                other => {
+                    return Err(RuntimeError::new(format!(
+                        "cannot assign member on non-aggregate value: {}",
+                        other
+                    )))
+                }
+            };
+            env.set(name, updated);
+            Ok(())
+        }
+        _ => Err(RuntimeError::new(
+            "member assignment currently requires a simple variable base".to_string(),
+        )),
+    }
+}
+
+fn build_aggregate_value(
+    specifier: &AgtTypeSpecifier,
+    identifier: &str,
+    init_val: Value,
+    env: &Environment<Value>,
+) -> Result<Value, RuntimeError> {
+    let decl = env.aggregate_type(specifier, identifier).ok_or_else(|| {
+        RuntimeError::new(format!(
+            "unknown aggregate type at runtime: {:?} {}",
+            specifier, identifier
+        ))
+    })?;
+
+    match specifier {
+        AgtTypeSpecifier::Struct => {
+            let mut fields = HashMap::new();
+            for member in &decl.members {
+                if let AgtTypeMember::Field(field) = member {
+                    fields.insert(field.name.clone(), default_value_for_type(&field.ty, env)?);
+                }
+            }
+            Ok(Value::Struct {
+                identifier: identifier.to_string(),
+                fields,
+            })
+        }
+        AgtTypeSpecifier::Union => {
+            let first_field = decl
+                .members
+                .iter()
+                .find_map(|member| match member {
+                    AgtTypeMember::Field(field) => Some(field),
+                    _ => None,
+                })
+                .ok_or_else(|| {
+                    RuntimeError::new(format!("union {} has no fields at runtime", identifier))
+                })?;
+
+            let coerced = coerce_value_to_type(init_val, &first_field.ty)?;
+            Ok(Value::Union {
+                identifier: identifier.to_string(),
+                active_field: first_field.name.clone(),
+                value: Box::new(coerced),
+            })
+        }
+        AgtTypeSpecifier::Enum => {
+            let numeric = match init_val {
+                Value::Int(n) => n,
+                other => {
+                    return Err(RuntimeError::new(format!(
+                        "enum initializer must be integer, got {}",
+                        other
+                    )))
+                }
+            };
+
+            Ok(Value::Enum {
+                identifier: identifier.to_string(),
+                value: numeric,
+            })
+        }
+    }
+}
+
+fn default_value_for_type(ty: &Type, env: &Environment<Value>) -> Result<Value, RuntimeError> {
+    match ty {
+        Type::Unit => Ok(Value::Void),
+        Type::Int => Ok(Value::Int(0)),
+        Type::Float => Ok(Value::Float(0.0)),
+        Type::Bool => Ok(Value::Bool(false)),
+        Type::Str => Ok(Value::Str(String::new())),
+        Type::Array(_) => Ok(Value::Array(vec![])),
+        Type::Aggregate {
+            specifier,
+            identifier,
+        } => build_aggregate_value(specifier, identifier, Value::Int(0), env),
+        Type::Function { .. } | Type::Any => Err(RuntimeError::new(
+            "cannot create default runtime value for this type",
+        )),
+    }
+}
+
+fn coerce_value_to_type(val: Value, ty: &Type) -> Result<Value, RuntimeError> {
+    match (val, ty) {
+        (Value::Int(n), Type::Int) => Ok(Value::Int(n)),
+        (Value::Int(n), Type::Float) => Ok(Value::Float(n as f64)),
+        (Value::Int(n), Type::Bool) => Ok(Value::Bool(n != 0)),
+        (Value::Int(n), Type::Str) => Ok(Value::Str(n.to_string())),
+        (Value::Float(x), Type::Float) => Ok(Value::Float(x)),
+        (Value::Float(x), Type::Int) => Ok(Value::Int(x as i64)),
+        (Value::Bool(b), Type::Bool) => Ok(Value::Bool(b)),
+        (Value::Str(s), Type::Str) => Ok(Value::Str(s)),
+        (other, _) => Err(RuntimeError::new(format!(
+            "cannot coerce value {} to required type {:?}",
+            other, ty
+        ))),
     }
 }
 

@@ -48,6 +48,14 @@
 //! compatibility check (`types_compatible`) treats `Any` as matching
 //! everything, keeping the special case local to one function.
 
+/// Aggregate types: struct, union, enum
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum AgtTypeSpecifier {
+    Struct,
+    Union,
+    Enum,
+}
+
 /// MiniC types: scalar, array, function, and Any (for polymorphic native params).
 #[derive(Debug, Clone, PartialEq)]
 pub enum Type {
@@ -57,7 +65,14 @@ pub enum Type {
     Bool,
     Str,
     Array(Box<Type>),
-    Fun(Vec<Type>, Box<Type>),
+    Aggregate {
+        specifier: AgtTypeSpecifier,
+        identifier: String,
+    },
+    Function {
+        params: Vec<Type>,
+        return_type: Box<Type>,
+    },
     /// Matches any type. Only used as a parameter type in native stdlib registrations.
     Any,
 }
@@ -112,6 +127,11 @@ pub enum Expr<Ty> {
         base: Box<ExprD<Ty>>,
         index: Box<ExprD<Ty>>,
     },
+    /// Member access: `base.member`
+    Member {
+        base: Box<ExprD<Ty>>,
+        member: String,
+    },
 }
 
 /// Statement with type decoration.
@@ -155,21 +175,41 @@ pub enum Statement<Ty> {
     Return(Option<Box<ExprD<Ty>>>),
 }
 
-/// A typed parameter: (name, type).
-pub type Param = (String, Type);
+/// An identifier with a declared type.
+#[derive(Debug, Clone, PartialEq)]
+pub struct IdentifierDecl {
+    pub name: String,
+    pub ty: Type,
+}
+
+/// A field or enumerator inside an aggregate type declaration.
+#[derive(Debug, Clone, PartialEq)]
+pub enum AgtTypeMember {
+    Field(IdentifierDecl),
+    Enumerator { name: String, value: Option<i64> },
+}
+
+/// An aggregate type declaration: struct, union, or enum.
+#[derive(Debug, Clone, PartialEq)]
+pub struct AggregateTypeDecl {
+    pub specifier: AgtTypeSpecifier,
+    pub identifier: String,
+    pub members: Vec<AgtTypeMember>,
+}
 
 /// A function declaration.
 #[derive(Debug, Clone, PartialEq)]
 pub struct FunDecl<Ty> {
     pub name: String,
-    pub params: Vec<Param>,
+    pub params: Vec<IdentifierDecl>,
     pub return_type: Type,
     pub body: Box<StatementD<Ty>>,
 }
 
-/// A complete MiniC program: function declarations only. Execution starts at `main`.
+/// A complete MiniC program: top-level type declarations and function declarations.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Program<Ty> {
+    pub type_declarations: Vec<AggregateTypeDecl>,
     pub functions: Vec<FunDecl<Ty>>,
 }
 

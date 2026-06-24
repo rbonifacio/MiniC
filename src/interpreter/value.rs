@@ -101,6 +101,19 @@ pub enum Value {
     Bool(bool),
     Str(String),
     Array(Vec<Value>),
+    Struct {
+        identifier: String,
+        fields: std::collections::HashMap<String, Value>,
+    },
+    Union {
+        identifier: String,
+        active_field: String,
+        value: Box<Value>,
+    },
+    Enum {
+        identifier: String,
+        value: i64,
+    },
     Void,
     Fn(FnValue),
 }
@@ -123,6 +136,13 @@ impl fmt::Display for Value {
                 }
                 write!(f, "]")
             }
+            Value::Struct { identifier, .. } => write!(f, "<struct {}>", identifier),
+            Value::Union {
+                identifier,
+                active_field,
+                ..
+            } => write!(f, "<union {} active:{}>", identifier, active_field),
+            Value::Enum { identifier, value } => write!(f, "<enum {}={}>", identifier, value),
             Value::Fn(_) => write!(f, "<function>"),
         }
     }

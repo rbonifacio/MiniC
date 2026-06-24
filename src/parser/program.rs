@@ -26,12 +26,38 @@
 //! `main` is a semantic constraint checked in the next pipeline stage, not
 //! a syntactic one enforced here.
 
-use crate::ir::ast::{Program, UncheckedProgram};
+use crate::ir::ast::{AggregateTypeDecl, Program, UncheckedProgram};
 use crate::parser::functions::fun_decl;
-use nom::{combinator::map, multi::many0, IResult};
+use crate::parser::types::aggregate_type_decl;
+use nom::{branch::alt, combinator::map, multi::many0, IResult};
 
-/// Parse a complete MiniC program: zero or more function declarations.
+/// Parse a complete MiniC program: zero or more struct or function declarations.
 /// Execution starts at the `main` function (validated by the type checker).
 pub fn program(input: &str) -> IResult<&str, UncheckedProgram> {
-    map(many0(fun_decl), |functions| Program { functions })(input)
+    let (rest, items) = many0(alt((
+        map(aggregate_type_decl, |decl| Item::TypeDecl(decl)),
+        map(fun_decl, |f| Item::Function(f)),
+    )))(input)?;
+
+    let mut type_declarations = Vec::new();
+    let mut functions = Vec::new();
+    for item in items {
+        match item {
+            Item::TypeDecl(decl) => type_declarations.push(decl),
+            Item::Function(f) => functions.push(f),
+        }
+    }
+
+    Ok((
+        rest,
+        Program {
+            type_declarations,
+            functions,
+        },
+    ))
+}
+
+enum Item {
+    TypeDecl(AggregateTypeDecl),
+    Function(crate::ir::ast::FunDecl<()>),
 }
