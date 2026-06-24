@@ -105,6 +105,25 @@ pub enum Expr<Ty> {
         name: String,
         args: Vec<ExprD<Ty>>,
     },
+
+    /// Chamada de função por expressão: chmd(args)
+    /// apenas para não mexer em Call, mas depois podemos mesclar os dois (Call pode ser um caso especial de CallExpr onde callee é um Ident).
+    /// Ex.: 'f(42)', '(funçãolambda)(42)', etc.)
+    CallExpr {
+        chmd: Box<ExprD<Ty>>,
+        args: Vec<ExprD<Ty>>,
+    },
+
+    /// Função Lambda: `fn(params) -> return_tipo { crp }`
+    /// regra pra não ficar ambiguo:
+    /// 'fn(...) -> ...' é tipo, ou seja 'Type::Fun'
+    /// 'fn(...) -> ... { ... }' é expressão, ou seja 'Expr::Lambda'
+    Lambda {
+        params: Vec<Param>,
+        return_tipo: Type,
+        crp: Box<StatementD<Ty>>,
+    },
+
     /// Array literal: [ expr, expr, ... ]
     ArrayLit(Vec<ExprD<Ty>>),
     /// Index expression: `base[index]`
@@ -128,7 +147,8 @@ pub enum Statement<Ty> {
     Decl {
         name: String,
         ty: Type,
-        init: Box<ExprD<Ty>>,
+        /// Adicionado para suportar algo como 'fn(int) -> int f;'
+        init: Option<Box<ExprD<Ty>>>, 
     },
     Assign {
         target: Box<ExprD<Ty>>,

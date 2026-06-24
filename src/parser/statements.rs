@@ -82,21 +82,27 @@ fn return_statement(input: &str) -> IResult<&str, UncheckedStmt> {
     Ok((rest, wrap(Statement::Return(expr.map(Box::new)))))
 }
 
-/// Parse a variable declaration: `Type ident = expr ;`. Must come before assignment.
+/// Parse a variable declaration: `Type ident [= expr] ;`.
+/// Must come before assignment.
 fn decl_statement(input: &str) -> IResult<&str, UncheckedStmt> {
     map(
         tuple((
             type_name,
             preceded(nom::character::complete::multispace1, identifier),
-            preceded(multispace0, nom::bytes::complete::tag("=")),
-            preceded(multispace0, expression),
+            opt(preceded(
+                multispace0,
+                preceded(
+                    nom::bytes::complete::tag("="),
+                    preceded(multispace0, expression),
+                ),
+            )),
             preceded(multispace0, char(';')),
         )),
-        |(ty, name, _, init, _)| {
+        |(ty, name, init, _)| {
             wrap(Statement::Decl {
                 name: name.to_string(),
                 ty,
-                init: Box::new(init),
+                init: init.map(Box::new),
             })
         },
     )(input)
@@ -104,7 +110,7 @@ fn decl_statement(input: &str) -> IResult<&str, UncheckedStmt> {
 
 /// Parse a block statement: `{ stmt* }`.
 /// Each statement inside the block carries its own terminator (`;` or `}`).
-fn block_statement(input: &str) -> IResult<&str, UncheckedStmt> {
+pub(crate) fn block_statement(input: &str) -> IResult<&str, UncheckedStmt> {
     map(
         delimited(
             preceded(multispace0, char('{')),

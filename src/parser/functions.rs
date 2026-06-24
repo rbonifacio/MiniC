@@ -39,6 +39,7 @@ pub fn type_name(input: &str) -> IResult<&str, Type> {
     preceded(
         multispace0,
         alt((
+            fun_type,
             // 2D arrays must be tried before 1D (longer prefix first)
             map(tag("int[][]"), |_| Type::Array(Box::new(Type::Array(Box::new(Type::Int))))),
             map(tag("float[][]"), |_| Type::Array(Box::new(Type::Array(Box::new(Type::Float))))),
@@ -55,6 +56,36 @@ pub fn type_name(input: &str) -> IResult<&str, Type> {
             map(tag("void"), |_| Type::Unit),
         )),
     )(input)
+}
+
+/// Parse a function type: `fn(T1, T2, ...) -> Ret`.
+///
+/// This parser must reject lambdas like:
+/// `fn(int x) -> int { return x; }`
+fn fun_type(input: &str) -> IResult<&str, Type> {
+    let (rest, _) = preceded(multispace0, tag("fn"))(input)?;
+
+    let (rest, params) = delimited(
+        preceded(multispace0, tag("(")),
+        separated_list0(
+            preceded(multispace0, tag(",")),
+            preceded(multispace0, type_name),
+        ),
+        preceded(multispace0, tag(")")),
+    )(rest)?;
+
+    let (rest, _) = preceded(multispace0, tag("->"))(rest)?;
+    let (rest, ret) = preceded(multispace0, type_name)(rest)?;
+
+    // avoid confusing function types with lambdas
+    if rest.trim_start().starts_with("{") {
+        return Err(nom::Err::Error(nom::error::Error::new(
+            rest,
+            nom::error::ErrorKind::Tag,
+        )));
+    }
+
+    Ok((rest, Type::Fun(params, Box::new(ret))))
 }
 
 /// Parse a typed parameter (C-style): `Type name`.
@@ -79,6 +110,7 @@ pub fn fun_decl(input: &str) -> IResult<&str, UncheckedFunDecl> {
         preceded(multispace0, tag(")")),
     )(rest)?;
     let (rest, body) = preceded(multispace0, statement)(rest)?;
+
     Ok((
         rest,
         FunDecl {
