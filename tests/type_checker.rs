@@ -202,3 +202,141 @@ fn test_type_check_print_wrong_arity() {
     let result = parse_and_type_check("void main() { print(1, 2); }");
     assert!(result.is_err(), "expected arity error for print(1, 2)");
 }
+
+// ---------------------------------------------------------------------------
+// 7.4 Switch Statement
+// ---------------------------------------------------------------------------
+#[test]
+fn test_type_check_switch_int_ok() {
+    let src = r#"
+        void main() {
+            int x = 1;
+            int y = 0;
+            switch x {
+                case 1: y = 2;
+                case 2: y = 3;
+                default: y = 4;
+            }
+        }
+    "#;
+    assert!(parse_and_type_check(src.trim()).is_ok());
+}
+
+#[test]
+fn test_type_check_switch_bool_ok() {
+    let src = r#"
+        void main() {
+            bool x = true;
+            int y = 0;
+            switch x {
+                case true: y = 1;
+                case false: y = 2;
+                default: y = 3;
+            }
+        }
+    "#;
+    assert!(parse_and_type_check(src.trim()).is_ok());
+}
+
+#[test]
+fn test_type_check_switch_mismatched_case_type() {
+    let src = r#"
+        void main() {
+            int x = 1;
+            int y = 0;
+            switch x {
+                case true: y = 1;
+                default: y = 0;
+            }
+        }
+    "#;
+    let result = parse_and_type_check(src.trim());
+    assert!(result.is_err());
+    assert!(result.unwrap_err().message.contains("mismatch"));
+}
+
+#[test]
+fn test_type_check_switch_unsupported_target_type() {
+    let src = r#"
+        void main() {
+            float x = 1.0;
+            int y = 0;
+            switch x {
+                case 1: y = 1;
+                default: y = 0;
+            }
+        }
+    "#;
+    let result = parse_and_type_check(src.trim());
+    assert!(result.is_err());
+    assert!(result.unwrap_err().message.contains("must be Int or Bool"));
+}
+
+#[test]
+fn test_type_check_switch_duplicate_case_labels() {
+    let src = r#"
+        void main() {
+            int x = 1;
+            int y = 0;
+            switch x {
+                case 1: y = 2;
+                case 1: y = 3;
+                default: y = 4;
+            }
+        }
+    "#;
+    let result = parse_and_type_check(src.trim());
+    assert!(result.is_err());
+    assert!(result.unwrap_err().message.contains("duplicate case label"));
+}
+
+#[test]
+fn test_type_check_switch_cross_branch_pollution_err() {
+    let src = r#"
+        void main() {
+            int x = 1;
+            switch x {
+                case 1: int y = 10;
+                case 2: y = 20;
+                default: int z = 30;
+            }
+        }
+    "#;
+    let result = parse_and_type_check(src.trim());
+    assert!(result.is_err());
+    assert!(result.unwrap_err().message.contains("undeclared variable"));
+}
+
+#[test]
+fn test_type_check_switch_independent_branches_ok() {
+    let src = r#"
+        void main() {
+            int x = 1;
+            switch x {
+                case 1: int y = 10;
+                case 2: int y = 20;
+                default: int y = 30;
+            }
+        }
+    "#;
+    let result = parse_and_type_check(src.trim());
+    assert!(result.is_ok());
+}
+
+#[test]
+fn test_type_check_switch_scope_leak_err() {
+    let src = r#"
+        void main() {
+            int x = 1;
+            switch x {
+                case 1: int y = 10;
+                default: int z = 30;
+            }
+            y = 20;
+        }
+    "#;
+    let result = parse_and_type_check(src.trim());
+    assert!(result.is_err());
+    assert!(result.unwrap_err().message.contains("undeclared variable"));
+}
+
