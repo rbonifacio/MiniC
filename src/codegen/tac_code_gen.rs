@@ -1,4 +1,4 @@
-use crate::ir::ast::{CheckedProgram, CheckedFunDecl, CheckedStmt, Statement, Expr, CheckedExpr, Literal, Type};
+use crate::ir::ast::{CheckedProgram, CheckedFunDecl, CheckedStmt, Statement, Expr, CheckedExpr, Literal, Type, ExprD};
 use crate::ir::tac::{TACProgram, Instruction, Address, Operator};
 
 
@@ -179,6 +179,50 @@ fn translate_expression(expression: CheckedExpr, env: &mut Environment) -> (Addr
             let mut instructions = [l_instructions, r_instructions].concat();
             let temp = Address::Temporary(env.new_temporary(), expression.ty);
             instructions.push(Instruction::BinaryAssignment(Operator::Add, temp.clone(), l_addr, r_addr));
+            (temp, instructions)
+        }
+        Expr::Sub(left, right) => {
+            let (l_addr, l_instructions) = translate_expression(*left, env);
+            let (r_addr, r_instructions) = translate_expression(*right, env);
+            let mut instructions = [l_instructions, r_instructions].concat();
+            let temp = Address::Temporary(env.new_temporary(), expression.ty);
+            instructions.push(Instruction::BinaryAssignment(Operator::Sub, temp.clone(), l_addr, r_addr));
+            (temp, instructions)
+        }
+        Expr::Mul(left, right) => {
+            let (l_addr, l_instructions) = translate_expression(*left, env);
+            let (r_addr, r_instructions) = translate_expression(*right, env);
+            let mut instructions = [l_instructions, r_instructions].concat();
+            let temp = Address::Temporary(env.new_temporary(), expression.ty);
+            instructions.push(Instruction::BinaryAssignment(Operator::Mul, temp.clone(), l_addr, r_addr));
+            (temp, instructions)
+        }
+        Expr::Div(left, right) => {
+            let (l_addr, l_instructions) = translate_expression(*left, env);
+            let (r_addr, r_instructions) = translate_expression(*right, env);
+            let mut instructions = [l_instructions, r_instructions].concat();
+            let temp = Address::Temporary(env.new_temporary(), expression.ty);
+            instructions.push(Instruction::BinaryAssignment(Operator::Div, temp.clone(), l_addr, r_addr));
+            (temp, instructions)
+        }
+        Expr::Neg(exp) => {
+            let (addr, mut instructions) = translate_expression(*exp, env);
+            let temp = Address::Temporary(env.new_temporary(), expression.ty);
+            instructions.push(Instruction::UnaryAssignment(Operator::Neg, temp.clone(), addr));
+            (temp, instructions)
+        }
+        Expr::Lt(_, _) | Expr::Le(_, _) | Expr::Gt(_, _) | Expr::Ge(_, _) | Expr::Eq(_, _) | Expr::Ne(_, _) => {
+            let label_true = env.new_label();
+            let label_false = env.new_label();
+            let label_exit = env.new_label();
+            let temp = Address::Temporary(env.new_temporary(), Type::Bool);
+            let mut instructions = translate_conditional(ExprD { exp: expression.exp, ty: Type::Bool }, env, label_true.clone(), label_false.clone());
+            instructions.push(Instruction::Label(label_true));
+            instructions.push(Instruction::CopyAssignment(temp.clone(), Address::Constant(Literal::Bool(true), Type::Bool)));
+            instructions.push(Instruction::JMP(label_exit.clone()));
+            instructions.push(Instruction::Label(label_false));
+            instructions.push(Instruction::CopyAssignment(temp.clone(), Address::Constant(Literal::Bool(false), Type::Bool)));
+            instructions.push(Instruction::Label(label_exit));
             (temp, instructions)
         }
         Expr::CallExpr { chmd, args } => {

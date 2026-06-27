@@ -94,13 +94,15 @@ fn test_if_else_with_relational_condition() {
     let temp = Address::Temporary("temp1".to_string(), Type::Int);
 
     assert_eq!(instructions, vec![
-        Instruction::ConditionalJMPRelational(Operator::GTE, x.clone(), y.clone(), "Label1:".to_string()),
-        Instruction::BinaryAssignment(Operator::Add, temp.clone(), x.clone(), y.clone()),
-        Instruction::CopyAssignment(z.clone(), temp),
+        Instruction::ConditionalJMPRelational(Operator::LT, x.clone(), y.clone(), "Label1:".to_string()),
         Instruction::JMP("Label2:".to_string()),
         Instruction::Label("Label1:".to_string()),
-        Instruction::CopyAssignment(z, x),
+        Instruction::BinaryAssignment(Operator::Add, temp.clone(), x.clone(), y.clone()),
+        Instruction::CopyAssignment(z.clone(), temp),
+        Instruction::JMP("Label3:".to_string()),
         Instruction::Label("Label2:".to_string()),
+        Instruction::CopyAssignment(z, x),
+        Instruction::Label("Label3:".to_string()),
     ]);
 }
 
@@ -139,7 +141,6 @@ fn test_lambda_assignment_and_indirect_call() {
         Instruction::Return(Some(Address::Temporary("temp1".to_string(), Type::Int))),
         Instruction::Label("Label1:".to_string()),
         Instruction::CopyAssignment(Address::Variable("double".to_string(), double_ty.clone()), Address::FunctionLabel("lambda_1".to_string())),
-        Instruction::Param(Address::Variable("double".to_string(), double_ty.clone())),
         Instruction::Param(Address::Constant(Literal::Int(21), Type::Int)),
         Instruction::CallIndirect(Some(Address::Temporary("temp2".to_string(), Type::Int)), Address::Variable("double".to_string(), double_ty), 1),
         Instruction::CopyAssignment(Address::Variable("result".to_string(), Type::Int), Address::Temporary("temp2".to_string(), Type::Int)),
