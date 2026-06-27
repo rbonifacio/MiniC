@@ -208,6 +208,7 @@ fn test_lambda_assignment_and_indirect_call() {
     );
 }
 
+#[test]
 fn test_lambda_declaration_generates_function_label_and_body() {
     let double_ty = fn_int_int();
 
