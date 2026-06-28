@@ -2,12 +2,14 @@ use crate::ir::ast::{
     CheckedExpr, CheckedFunDecl, CheckedProgram, CheckedStmt, Expr, ExprD, Literal, Statement, Type,
 };
 use crate::ir::tac::{Address, Instruction, Operator, TACProgram};
+use std::collections::HashSet;
 
 #[derive(Clone)]
 pub struct Environment {
     current_label: usize,
     current_temporary: usize,
     current_lambda: usize,
+    global_functions: HashSet<String>,
 }
 
 impl Environment {
@@ -16,6 +18,7 @@ impl Environment {
             current_label: 0,
             current_temporary: 0,
             current_lambda: 0,
+            global_functions: HashSet::new(),
         }
     }
 
@@ -34,9 +37,24 @@ impl Environment {
         self.current_lambda += 1;
         label
     }
+
+    fn set_global_functions(&mut self, global_functions: HashSet<String>) {
+        self.global_functions = global_functions;
+    }
+
+    fn is_global_function(&self, name: &str) -> bool {
+        self.global_functions.contains(name)
+    }
 }
 
 pub fn translate_program(program: CheckedProgram, env: &mut Environment) -> TACProgram {
+    let global_functions = program
+        .functions
+        .iter()
+        .map(|function| function.name.clone())
+        .collect::<HashSet<_>>();
+    env.set_global_functions(global_functions);
+
     program
         .functions
         .into_iter()
@@ -398,12 +416,31 @@ fn translate_named_call(
     return_target: Option<Address>,
     env: &mut Environment,
 ) -> Vec<Instruction> {
+    let arg_types = args.iter().map(|arg| arg.ty.clone()).collect::<Vec<_>>();
     let (addresses, mut instructions) = translate_call_arguments(args, env);
     for address in &addresses {
         instructions.push(Instruction::Param(address.clone()));
     }
-    instructions.push(Instruction::Call(return_target, name, addresses.len()));
+    if env.is_global_function(&name) {
+        instructions.push(Instruction::Call(return_target, name, addresses.len()));
+    } else {
+        let return_type = return_target
+            .as_ref()
+            .and_then(address_type)
+            .unwrap_or(Type::Any);
+        let callee = Address::Variable(name, Type::Fun(arg_types, Box::new(return_type)));
+        instructions.push(Instruction::CallIndirect(return_target, callee, addresses.len()));
+    }
     instructions
+}
+
+fn address_type(address: &Address) -> Option<Type> {
+    match address {
+        Address::Variable(_, ty) => Some(ty.clone()),
+        Address::Constant(_, ty) => Some(ty.clone()),
+        Address::Temporary(_, ty) => Some(ty.clone()),
+        Address::FunctionLabel(_) => None,
+    }
 }
 
 fn translate_conditional(
