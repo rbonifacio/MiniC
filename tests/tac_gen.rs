@@ -86,16 +86,6 @@ fn assign(name: &str, value: CheckedExpr) -> CheckedStmt {
     }
 }
 
-// Fixture: if (x < y) { z = x + y; } else { z = x; }
-//
-// Expected TAC:
-//   if x >= y goto Label1:    <- negated relational jumps to else
-//   temp1 = x + y
-//   z = temp1
-//   goto Label2:
-//   Label1:
-//   z = x
-//   Label2:
 #[test]
 fn test_if_else_with_relational_condition() {
     let stmt = StatementD {
@@ -240,6 +230,35 @@ fn test_lambda_declaration_generates_function_label_and_body() {
             Instruction::CopyAssignment(
                 Address::Variable("double".to_string(), double_ty),
                 Address::FunctionLabel("lambda_0".to_string()),
+            ),
+        ]
+    );
+}
+
+#[test]
+fn test_named_call_fallback_to_indirect_call() {
+    let stmt = StatementD {
+        stmt: Statement::Call {
+            name: "local_func".to_string(),
+            args: vec![int_lit(5)],
+        },
+        ty: Type::Unit,
+    };
+
+    let mut env = Environment::new();
+    let instructions = translate_statement(stmt, &mut env);
+
+    assert_eq!(
+        instructions,
+        vec![
+            Instruction::Param(Address::Constant(Literal::Int(5), Type::Int)),
+            Instruction::CallIndirect(
+                None,
+                Address::Variable(
+                    "local_func".to_string(),
+                    Type::Fun(vec![Type::Int], Box::new(Type::Any))
+                ),
+                1
             ),
         ]
     );
