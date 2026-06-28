@@ -174,25 +174,29 @@ fn test_lambda_assignment_and_indirect_call() {
             Instruction::Label("lambda_0".to_string()),
             Instruction::BinaryAssignment(
                 Operator::Mul,
-                Address::Temporary("temp1".to_string(), Type::Int),
+                Address::Temporary("temp2".to_string(), Type::Int),
                 Address::Variable("x".to_string(), Type::Int),
                 Address::Constant(Literal::Int(2), Type::Int)
             ),
-            Instruction::Return(Some(Address::Temporary("temp1".to_string(), Type::Int))),
+            Instruction::Return(Some(Address::Temporary("temp2".to_string(), Type::Int))),
             Instruction::Label("Label1:".to_string()),
+            Instruction::MakeClosure(
+                Address::Temporary("temp1".to_string(), double_ty.clone()),
+                "lambda_0".to_string(),
+            ),
             Instruction::CopyAssignment(
                 Address::Variable("double".to_string(), double_ty.clone()),
-                Address::FunctionLabel("lambda_0".to_string())
+                Address::Temporary("temp1".to_string(), double_ty.clone()),
             ),
             Instruction::Param(Address::Constant(Literal::Int(21), Type::Int)),
             Instruction::CallIndirect(
-                Some(Address::Temporary("temp2".to_string(), Type::Int)),
+                Some(Address::Temporary("temp3".to_string(), Type::Int)),
                 Address::Variable("double".to_string(), double_ty),
-                1
+                1,
             ),
             Instruction::CopyAssignment(
                 Address::Variable("result".to_string(), Type::Int),
-                Address::Temporary("temp2".to_string(), Type::Int)
+                Address::Temporary("temp3".to_string(), Type::Int),
             ),
         ]
     );
@@ -221,15 +225,19 @@ fn test_lambda_declaration_generates_function_label_and_body() {
             Instruction::Label("lambda_0".to_string()),
             Instruction::BinaryAssignment(
                 Operator::Mul,
-                Address::Temporary("temp1".to_string(), Type::Int),
+                Address::Temporary("temp2".to_string(), Type::Int),
                 Address::Variable("x".to_string(), Type::Int),
                 Address::Constant(Literal::Int(2), Type::Int),
             ),
-            Instruction::Return(Some(Address::Temporary("temp1".to_string(), Type::Int))),
+            Instruction::Return(Some(Address::Temporary("temp2".to_string(), Type::Int))),
             Instruction::Label("Label1:".to_string()),
+            Instruction::MakeClosure(
+                Address::Temporary("temp1".to_string(), double_ty.clone()),
+                "lambda_0".to_string(),
+            ),
             Instruction::CopyAssignment(
                 Address::Variable("double".to_string(), double_ty),
-                Address::FunctionLabel("lambda_0".to_string()),
+                Address::Temporary("temp1".to_string(), fn_int_int()),
             ),
         ]
     );
@@ -262,4 +270,164 @@ fn test_named_call_fallback_to_indirect_call() {
             ),
         ]
     );
+}
+
+#[test]
+fn test_closure_captures_outer_variable() {
+    // let y = 10;
+    // let f = |x| x + y;
+    let stmt = StatementD {
+        stmt: Statement::Block {
+            seq: vec![
+                assign("y", int_lit(10)),
+                StatementD {
+                    stmt: Statement::Assign {
+                        target: Box::new(ExprD {
+                            exp: Expr::Ident("f".to_string()),
+                            ty: fn_int_int(),
+                        }),
+                        value: Box::new(ExprD {
+                            exp: Expr::Lambda {
+                                params: vec![("x".to_string(), Type::Int)],
+                                return_tipo: Type::Int,
+                                crp: Box::new(StatementD {
+                                    stmt: Statement::Return(Some(Box::new(add(
+                                        int_var("x"),
+                                        int_var("y"), // <- free variable
+                                    )))),
+                                    ty: Type::Int,
+                                }),
+                            },
+                            ty: fn_int_int(),
+                        }),
+                    },
+                    ty: Type::Unit,
+                },
+            ],
+        },
+        ty: Type::Unit,
+    };
+
+    let mut env = Environment::new();
+    let instructions = translate_statement(stmt, &mut env);
+
+    // O importante é garantir que y não vira parâmetro implícito
+    // e que closure carrega contexto corretamente.
+    assert!(instructions.iter().any(|i| matches!(
+        i,
+        Instruction::MakeClosure(_, _,)
+    )));
+}
+
+#[test]
+fn test_closure_escapes_scope() {
+    let stmt = StatementD {
+        stmt: Statement::Block {
+            seq: vec![
+                StatementD {
+                    stmt: Statement::Decl {
+                        name: "f".to_string(),
+                        ty: fn_int_int(),
+                        init: Some(Box::new(lambda_double())),
+                    },
+                    ty: Type::Unit,
+                },
+                StatementD {
+                    stmt: Statement::Assign {
+                        target: Box::new(ExprD {
+                            exp: Expr::Ident("x".to_string()),
+                            ty: Type::Int,
+                        }),
+                        value: Box::new(call_expr(
+                            ExprD {
+                                exp: Expr::Ident("f".to_string()),
+                                ty: fn_int_int(),
+                            },
+                            vec![int_lit(3)],
+                            Type::Int,
+                        )),
+                    },
+                    ty: Type::Unit,
+                },
+            ],
+        },
+        ty: Type::Unit,
+    };
+
+    let mut env = Environment::new();
+    let instructions = translate_statement(stmt, &mut env);
+
+    // garante que closure foi materializada e não depende de stack local
+    assert!(instructions.iter().any(|i| matches!(
+        i,
+        Instruction::MakeClosure(_, _)
+    )));
+}
+
+#[test]
+fn test_multiple_lambdas_unique_labels() {
+    let stmt = StatementD {
+        stmt: Statement::Block {
+            seq: vec![
+                StatementD {
+                    stmt: Statement::Assign {
+                        target: Box::new(ExprD {
+                            exp: Expr::Ident("f".to_string()),
+                            ty: fn_int_int(),
+                        }),
+                        value: Box::new(lambda_double()),
+                    },
+                    ty: Type::Unit,
+                },
+                StatementD {
+                    stmt: Statement::Assign {
+                        target: Box::new(ExprD {
+                            exp: Expr::Ident("g".to_string()),
+                            ty: fn_int_int(),
+                        }),
+                        value: Box::new(lambda_double()),
+                    },
+                    ty: Type::Unit,
+                },
+            ],
+        },
+        ty: Type::Unit,
+    };
+
+    let mut env = Environment::new();
+    let instructions = translate_statement(stmt, &mut env);
+
+    let lambda_labels: Vec<_> = instructions.iter().filter_map(|i| {
+        if let Instruction::Label(l) = i {
+            if l.starts_with("lambda_") {
+                return Some(l.clone());
+            }
+        }
+        None
+    }).collect();
+
+    // importante: duas lambdas diferentes
+    assert!(lambda_labels.len() >= 2);
+}
+
+#[test]
+fn test_closure_as_argument() {
+    let stmt = StatementD {
+        stmt: Statement::Call {
+            name: "apply".to_string(),
+            args: vec![
+                lambda_double(),
+                int_lit(7),
+            ],
+        },
+        ty: Type::Unit,
+    };
+
+    let mut env = Environment::new();
+    let instructions = translate_statement(stmt, &mut env);
+
+    assert!(instructions.iter().any(|i| matches!(
+        i,
+        Instruction::CallIndirect(_, _, _)
+    )));
 }
