@@ -377,13 +377,47 @@ fn translate_expression(
             return_tipo: _,
             crp,
         } => {
+            // Nome da função gerada
             let lambda_label = env.new_function_label();
+
+            // Label para continuar a execução
             let exit_label = env.new_label();
-            let mut instructions = vec![Instruction::JMP(exit_label.clone())];
+
+            // Valor produzido pela expressão lambda
+            let closure =
+                Address::Temporary(env.new_temporary(), expression.ty.clone());
+
+            let mut instructions = Vec::new();
+
+            // pula o corpo da lambda
+            instructions.push(Instruction::JMP(exit_label.clone()));
+
+            // início da função
             instructions.push(Instruction::Label(lambda_label.clone()));
+
+            // traduz normalmente o corpo
             instructions.extend(translate_statement(*crp, env));
+
+            // caso o usuário esqueça do return
+            if !matches!(
+                instructions.last(),
+                Some(Instruction::Return(_))
+            ) {
+                instructions.push(Instruction::Return(None));
+            }
+
+            // continua a execução
             instructions.push(Instruction::Label(exit_label));
-            (Address::FunctionLabel(lambda_label), instructions)
+
+            // cria a closure capturando o ambiente atual
+            instructions.push(
+                Instruction::MakeClosure(
+                    closure.clone(),
+                    lambda_label,
+                )
+            );
+
+            (closure, instructions)
         }
         _ => todo!(),
     }

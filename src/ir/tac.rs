@@ -26,6 +26,7 @@ pub enum Instruction {
     Param(Address),
     Call(Option<Address>, Name, usize),   // It is either 'call p, n' or 'y = call p, n'
     CallIndirect(Option<Address>, Address, usize),
+    MakeClosure(Address, Name),
     Store(Address, Address, Address),     // x[i] = y
     Load(Address, Address, Address),      // x = y[i]
     Return(Option<Address>),
@@ -174,6 +175,9 @@ impl fmt::Display for Instruction {
                 } else {
                     write!(f, "call_indirect {}, {}", callee, arity)
                 }
+            }
+            Instruction::MakeClosure(dst, label) => {
+                write!(f, "{} = make_closure {}", dst, label)
             }
             Instruction::Store(arr, idx, val) => {
                 write!(f, "{}[{}] = {}", arr, idx, val)
@@ -449,6 +453,9 @@ fn serialize_instruction(inst: &Instruction) -> String {
         Instruction::CallIndirect(dst, callee, arity) => {
             format!("CallIndirect|{}|{}|{}", serialize_opt_address(dst), serialize_address(callee), arity)
         }
+        Instruction::MakeClosure(dst, label) => {
+            format!("MakeClosure|{}|{}", serialize_address(dst), hex_encode(label),)
+        }
         Instruction::Store(arr, idx, val) => {
             format!("Store|{}|{}|{}", serialize_address(arr), serialize_address(idx), serialize_address(val))
         }
@@ -559,6 +566,16 @@ fn deserialize_instruction(line: &str) -> Result<Instruction, String> {
             let arity = parts[3].parse::<usize>().map_err(|e| format!("CallIndirect arity parse error: {}", e))?;
             Ok(Instruction::CallIndirect(dst, callee, arity))
         }
+        "MakeClosure" => {
+            if parts.len() != 3 {
+                return Err("Invalid MakeClosure instruction format".to_string());
+            }
+            
+            let dst = deserialize_address(parts[1])?;
+            let label = hex_decode(parts[2])?;
+        
+            Ok(Instruction::MakeClosure(dst, label))
+        }
         "Store" => {
             if parts.len() != 4 {
                 return Err("Invalid Store instruction format".to_string());
@@ -650,6 +667,19 @@ mod tests {
 
         let label = Instruction::Label("lambda_0".to_string());
         assert_eq!(format!("{}", label), "Label lambda_0");
+
+        let mk = Instruction::MakeClosure(
+            Address::Temporary(
+                "temp0".to_string(),
+                Type::Fun(vec![Type::Int], Box::new(Type::Int)),
+            ),
+            "lambda_0".to_string(),
+        );
+
+        assert_eq!(
+            format!("{}", mk),
+            "temp0 = make_closure lambda_0"
+        );
     }
 
     #[test]
@@ -673,7 +703,14 @@ mod tests {
                 Some(Address::Temporary("temp2".to_string(), Type::Int)),
                 Address::Variable("double".to_string(), Type::Fun(vec![Type::Int], Box::new(Type::Int))),
                 1
-            )
+            ),
+            Instruction::MakeClosure(
+                Address::Temporary(
+                    "temp0".to_string(),
+                    Type::Fun(vec![Type::Int], Box::new(Type::Int)),
+                ),
+                "lambda_0".to_string(),
+            ),
         ];
 
         let serialized = serialize_tac(&prog);
