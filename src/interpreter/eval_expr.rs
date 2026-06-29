@@ -45,7 +45,6 @@ use crate::ir::ast::{CheckedExpr, Expr, Literal};
 use super::exec_stmt::exec_stmt;
 use super::value::{FnValue, RuntimeError, Value};
 
-/// Evaluate a checked expression to a runtime value.
 pub fn eval_expr(expr: &CheckedExpr, env: &mut Environment<Value>) -> Result<Value, RuntimeError> {
     match &expr.exp {
         Expr::Literal(lit) => Ok(eval_literal(lit)),
@@ -145,12 +144,36 @@ pub fn eval_expr(expr: &CheckedExpr, env: &mut Environment<Value>) -> Result<Val
         Expr::Call { name, args } => {
             let arg_vals: Result<Vec<Value>, RuntimeError> =
                 args.iter().map(|a| eval_expr(a, env)).collect();
-            eval_call(name, arg_vals?, env)
+
+            let callee = env
+                .get(name)
+                .cloned()
+                .ok_or_else(|| RuntimeError::new(format!("undefined function '{}'", name)))?;
+
+            eval_call_value(callee, arg_vals?, env, Some(name))
+        }
+
+        Expr::CallExpr { chmd, args } => {
+            let callee_val = eval_expr(chmd, env)?;
+            let arg_vals: Result<Vec<Value>, RuntimeError> =
+                args.iter().map(|a| eval_expr(a, env)).collect();
+
+            eval_call_value(callee_val, arg_vals?, env, None)
+        }
+
+        Expr::Lambda { params, return_tipo, crp } => {
+            let captured = env.snapshot();
+            let decl = crate::ir::ast::CheckedFunDecl {
+                name: "<lambda>".to_string(),
+                params: params.clone(),
+                return_type: return_tipo.clone(),
+                body: crp.clone(),
+            };
+            Ok(Value::Fn(FnValue::Closure { decl, captured }))
         }
     }
 }
 
-/// Dispatch a function call via the unified environment.
 pub fn eval_call(
     name: &str,
     args: Vec<Value>,
@@ -171,12 +194,88 @@ pub fn eval_call(
             for ((param_name, _), val) in decl.params.iter().zip(args.into_iter()) {
                 env.declare(param_name.clone(), val);
             }
-            let result = exec_stmt(&decl.body, env)?;
+
+            let result = exec_stmt(&decl.body, env);
             env.restore(snapshot);
-            Ok(result.unwrap_or(Value::Void))
+
+            match result {
+                Ok(result) => Ok(result.unwrap_or(Value::Void)),
+                Err(err) => Err(err),
+            }
         }
+
         Some(_) => Err(RuntimeError::new(format!("'{}' is not a function", name))),
         None => Err(RuntimeError::new(format!("undefined function '{}'", name))),
+    }
+}
+
+fn eval_call_value(
+    callee: Value,
+    args: Vec<Value>,
+    env: &mut Environment<Value>,
+    callee_name: Option<&str>,
+) -> Result<Value, RuntimeError> {
+    match callee {
+        Value::Fn(FnValue::Native(f)) => (f)(args),
+
+        Value::Fn(FnValue::UserDefined(decl)) => {
+            if args.len() != decl.params.len() {
+                return Err(RuntimeError::new(format!(
+                    "function '{}' expects {} arguments, got {}",
+                    decl.name,
+                    decl.params.len(),
+                    args.len()
+                )));
+            }
+
+            let snapshot = env.snapshot();
+            for ((param_name, _), val) in decl.params.iter().zip(args.into_iter()) {
+                env.declare(param_name.clone(), val);
+            }
+
+            let result = exec_stmt(&decl.body, env);
+            env.restore(snapshot);
+
+            match result {
+                Ok(result) => Ok(result.unwrap_or(Value::Void)),
+                Err(err) => Err(err),
+            }
+        }
+
+        Value::Fn(FnValue::Closure { decl, captured }) => {
+            if args.len() != decl.params.len() {
+                return Err(RuntimeError::new(format!(
+                    "function '{}' expects {} arguments, got {}",
+                    decl.name,
+                    decl.params.len(),
+                    args.len()
+                )));
+            }
+
+            let caller_snapshot = env.snapshot();
+
+            env.restore(captured);
+
+            for ((param_name, _), val) in decl.params.iter().zip(args.into_iter()) {
+                env.declare(param_name.clone(), val);
+            }
+
+            let result = exec_stmt(&decl.body, env);
+            env.restore(caller_snapshot);
+
+            match result {
+                Ok(result) => Ok(result.unwrap_or(Value::Void)),
+                Err(err) => Err(err),
+            }
+        }
+
+        other => {
+            if let Some(name) = callee_name {
+                Err(RuntimeError::new(format!("'{}' is not a function", name)))
+            } else {
+                Err(RuntimeError::new(format!("value is not callable: {}", other)))
+            }
+        }
     }
 }
 

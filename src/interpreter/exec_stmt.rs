@@ -47,7 +47,11 @@ pub fn exec_stmt(stmt: &CheckedStmt, env: &mut Environment<Value>) -> ExecResult
     match &stmt.stmt {
         // --- Variable declaration ---
         Statement::Decl { name, init, .. } => {
-            let val = eval_expr(init, env)?;
+            let val = if let Some(init_expr) = init {
+                eval_expr(init_expr, env)?
+            } else {
+                Value::Void
+            };
             env.declare(name.clone(), val);
             Ok(None)
         }

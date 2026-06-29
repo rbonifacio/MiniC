@@ -340,6 +340,7 @@ fn test_decl_statement() {
     assert!(matches!(result.stmt, Statement::Decl { ref name, ref ty, .. }
         if name == "x" && ty == &Type::Int));
     if let Statement::Decl { ref init, .. } = result.stmt {
+        let init = init.as_ref().expect("Decl init should be present");
         assert_eq!(init.exp, Expr::Literal(Literal::Int(42)));
     }
 
@@ -658,7 +659,7 @@ fn test_multidimensional_indexed_assignment() {
 #[test]
 fn test_nested_index() {
     let result = expression("arr[i][j]").unwrap().1;
-    assert!(matches!(result.exp, Expr::Index { ref base, ref index }
+    assert!(matches!(result.exp, Expr::Index { base: _, ref index }
         if matches!(index.exp, Expr::Ident(ref s) if s == "j")));
     if let Expr::Index { ref base, .. } = result.exp {
         assert!(matches!(base.exp, Expr::Index { ref base, ref index }
