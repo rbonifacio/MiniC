@@ -67,3 +67,43 @@ fn test_if_else_with_relational_condition() {
         Instruction::Label("Label2:".to_string()),
     ]);
 }
+
+#[test]
+fn test_pointer_assignment() {
+
+    let p_deref = ExprD {
+        exp: Expr::Deref(Box::new(ExprD { exp: Expr::Ident("p".to_string()), ty: Type::Pointer(Box::new(Type::Int)) })),
+        ty: Type::Int,
+    };
+    
+    let one = ExprD {
+        exp: Expr::Literal(Literal::Int(1)),
+        ty: Type::Int,
+    };
+    
+    let add_expr = ExprD {
+        exp: Expr::Add(Box::new(p_deref.clone()), Box::new(one)),
+        ty: Type::Int,
+    };
+    
+    let stmt = StatementD {
+        stmt: Statement::Assign {
+            target: Box::new(p_deref),
+            value: Box::new(add_expr),
+        },
+        ty: Type::Unit,
+    };
+    
+    let mut env = Environment::new();
+    let instructions = translate_statement(stmt, &mut env);
+    
+    let p = Address::Variable("p".to_string(), Type::Pointer(Box::new(Type::Int)));
+    let temp1 = Address::Temporary("temp1".to_string(), Type::Int);
+    let temp2 = Address::Temporary("temp2".to_string(), Type::Int);
+    
+    assert_eq!(instructions, vec![
+        Instruction::DerefRead(temp1.clone(), p.clone()),
+        Instruction::BinaryAssignment(Operator::Add, temp2.clone(), temp1, Address::Constant(Literal::Int(1), Type::Int)),
+        Instruction::DerefWrite(p, temp2),
+    ]);
+}
