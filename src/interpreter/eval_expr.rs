@@ -217,12 +217,24 @@ pub fn eval_call(
                     args.len()
                 )));
             }
+            
             let snapshot = env.snapshot();
+            let outer_keys = env.names(); 
+            
             for ((param_name, _), val) in decl.params.iter().zip(args.into_iter()) {
                 env.declare(param_name.clone(), val);
             }
+            
             let result = exec_stmt(&decl.body, env)?;
-            env.restore(snapshot);
+            
+            env.remove_new(&outer_keys);
+            
+            for (param_name, _) in decl.params.iter() {
+                if let Some(old_val) = snapshot.get(param_name) {
+                    env.declare(param_name.clone(), old_val.clone()); 
+                }
+            }
+            
             Ok(result.unwrap_or(Value::Void))
         }
         Some(_) => Err(RuntimeError::new(format!("'{}' is not a function", name))),

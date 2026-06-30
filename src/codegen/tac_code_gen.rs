@@ -55,16 +55,24 @@ pub fn translate_statement(statement: CheckedStmt, env: &mut Environment) -> Vec
             seq.into_iter().flat_map(|s| translate_statement(s, env)).collect::<Vec<_>>()
         },
         Statement::Assign { target, value } => {
-            if let Expr::Ident(name) = &target.exp {
-                let var_type = target.ty.clone();
-                let var_address = Address::Variable(name.to_string(), var_type);
-                let (expression_address, instructions) = translate_expression(*value, env);
-                res.extend(instructions);
-                res.push(Instruction::CopyAssignment(var_address, expression_address));
-                res
-            }
-            else {
-                todo!()
+            match target.exp {
+                Expr::Ident(name) => {
+                    let var_addr = Address::Variable(name.to_string(), target.ty);
+                    let (val_addr, instrs) = translate_expression(*value, env);
+                    res.extend(instrs);
+                    res.push(Instruction::CopyAssignment(var_addr, val_addr));
+                    res
+                },
+                Expr::Deref(inner) => {
+                    let (ptr_addr, ptr_instrs) = translate_expression(*inner, env);
+                    let (val_addr, val_instrs) = translate_expression(*value, env);
+                    res.extend(ptr_instrs);
+                    res.extend(val_instrs);
+                    res.push(Instruction::DerefWrite(ptr_addr, val_addr)); 
+                    res
+                },
+
+                _ => todo!() 
             }
         },
         Statement::Call{name, args} => {
@@ -164,7 +172,19 @@ fn translate_expression(expression: CheckedExpr, env: &mut Environment) -> (Addr
             let temp = Address::Temporary(env.new_temporary(), expression.ty);
             instructions.push(Instruction::BinaryAssignment(Operator::Add, temp.clone(), l_addr, r_addr));
             (temp, instructions)
-        }
+        },
+        Expr::AddrOf(inner) => {
+            let (inner_addr, mut instructions) = translate_expression(*inner, env);
+            let temp = Address::Temporary(env.new_temporary(), expression.ty);
+            instructions.push(Instruction::AddressOf(temp.clone(), inner_addr));
+            (temp, instructions)
+        },
+        Expr::Deref(inner) => {
+            let (inner_addr, mut instructions) = translate_expression(*inner, env);
+            let temp = Address::Temporary(env.new_temporary(), expression.ty);
+            instructions.push(Instruction::DerefRead(temp.clone(), inner_addr));
+            (temp, instructions)
+        },
         _ => todo!()
     }
 }
