@@ -107,3 +107,38 @@ fn test_pointer_assignment() {
         Instruction::DerefWrite(p, temp2),
     ]);
 }
+
+#[test]
+fn test_pointer_address_of() {
+
+    let addr_of_expr = ExprD {
+        exp: Expr::AddrOf(Box::new(ExprD { 
+            exp: Expr::Ident("x".to_string()), 
+            ty: Type::Int 
+        })),
+        ty: Type::Pointer(Box::new(Type::Int)),
+    };
+    
+    let stmt = StatementD {
+        stmt: Statement::Assign {
+            target: Box::new(ExprD { 
+                exp: Expr::Ident("y".to_string()), 
+                ty: Type::Pointer(Box::new(Type::Int)) 
+            }),
+            value: Box::new(addr_of_expr),
+        },
+        ty: Type::Unit,
+    };
+    
+    let mut env = Environment::new();
+    let instructions = translate_statement(stmt, &mut env);
+    
+    let x = Address::Variable("x".to_string(), Type::Int);
+    let y = Address::Variable("y".to_string(), Type::Pointer(Box::new(Type::Int)));
+    let temp1 = Address::Temporary("temp1".to_string(), Type::Pointer(Box::new(Type::Int)));
+    
+    assert_eq!(instructions, vec![
+        Instruction::AddressOf(temp1.clone(), x),
+        Instruction::CopyAssignment(y, temp1),
+    ]);
+}
