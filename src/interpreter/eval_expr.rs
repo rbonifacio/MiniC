@@ -147,6 +147,56 @@ pub fn eval_expr(expr: &CheckedExpr, env: &mut Environment<Value>) -> Result<Val
                 args.iter().map(|a| eval_expr(a, env)).collect();
             eval_call(name, arg_vals?, env)
         }
+        Expr::AddrOf(elem) => eval_addr_of(elem, env),
+        Expr::Deref(elem) => eval_deref(elem, env),
+    }
+}
+
+fn eval_addr_of(elem: &CheckedExpr, env: &Environment<Value>) -> Result<Value, RuntimeError> {
+    match &elem.exp {
+        Expr::Ident(name) => {
+            if env.get(name).is_none() {
+                return Err(RuntimeError::new(format!("undefined variable '{}'", name)));
+            }
+            Ok(Value::Ptr(name.clone()))
+        }
+        _ => Err(RuntimeError::new("can only take address of variables")),
+    }
+}
+
+fn eval_deref(elem: &CheckedExpr, env: &mut Environment<Value>) -> Result<Value, RuntimeError> {
+    let target = ptr_target(eval_expr(elem, env)?)?;
+    read_through(env, &target)
+}
+
+/// Extract the target variable name from a pointer value.
+pub(crate) fn ptr_target(val: Value) -> Result<String, RuntimeError> {
+    match val {
+        Value::Ptr(target) => Ok(target),
+        v => Err(RuntimeError::new(format!("expected pointer, got: {}", v))),
+    }
+}
+
+/// Read the value stored at the variable named by a pointer.
+pub(crate) fn read_through(env: &Environment<Value>, target: &str) -> Result<Value, RuntimeError> {
+    env.get(target)
+        .cloned()
+        .ok_or_else(|| RuntimeError::new(format!("dereference of invalid target '{}'", target)))
+}
+
+/// Write `val` into the variable named by a pointer.
+pub(crate) fn write_through(
+    env: &mut Environment<Value>,
+    target: &str,
+    val: Value,
+) -> Result<(), RuntimeError> {
+    if env.set(target, val) {
+        Ok(())
+    } else {
+        Err(RuntimeError::new(format!(
+            "dereference of invalid target '{}'",
+            target
+        )))
     }
 }
 
@@ -167,12 +217,24 @@ pub fn eval_call(
                     args.len()
                 )));
             }
+            
             let snapshot = env.snapshot();
+            let outer_keys = env.names(); 
+            
             for ((param_name, _), val) in decl.params.iter().zip(args.into_iter()) {
                 env.declare(param_name.clone(), val);
             }
+            
             let result = exec_stmt(&decl.body, env)?;
-            env.restore(snapshot);
+            
+            env.remove_new(&outer_keys);
+            
+            for (param_name, _) in decl.params.iter() {
+                if let Some(old_val) = snapshot.get(param_name) {
+                    env.declare(param_name.clone(), old_val.clone()); 
+                }
+            }
+            
             Ok(result.unwrap_or(Value::Void))
         }
         Some(_) => Err(RuntimeError::new(format!("'{}' is not a function", name))),
@@ -235,6 +297,7 @@ fn values_equal(a: &Value, b: &Value) -> bool {
         (Value::Float(x), Value::Int(y)) => *x == (*y as f64),
         (Value::Bool(x), Value::Bool(y)) => x == y,
         (Value::Str(x), Value::Str(y)) => x == y,
+        (Value::Ptr(x), Value::Ptr(y)) => x == y,
         _ => false,
     }
 }

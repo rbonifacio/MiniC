@@ -1,4 +1,16 @@
-use mini_c::{interpreter::interpret, parser::program, semantic::type_check};
+use mini_c::{
+    environment::Environment,
+    interpreter::{
+        eval_expr::eval_call,
+        exec_stmt::exec_stmt,
+        value::{FnValue, Value},
+    },
+    ir::ast::{CheckedProgram, CheckedStmt, Statement},
+    parser::program,
+    semantic::type_check,
+    stdlib::NativeRegistry,
+};
+use mini_c::interpreter::interpret;
 
 /// Parse, type-check, and interpret a MiniC source string.
 fn run(src: &str) -> Result<(), String> {
@@ -7,6 +19,52 @@ fn run(src: &str) -> Result<(), String> {
         .map(|(_, p)| p)?;
     let checked = type_check(&unchecked).map_err(|e| format!("type error: {}", e.message))?;
     interpret(&checked).map_err(|e| format!("runtime error: {}", e.message))
+}
+
+fn checked_program(src: &str) -> Result<CheckedProgram, String> {
+    let unchecked = program(src)
+        .map_err(|e| format!("parse error: {:?}", e))
+        .map(|(_, p)| p)?;
+    type_check(&unchecked).map_err(|e| format!("type error: {}", e.message))
+}
+
+fn exec_stmt_sequence(seq: &[CheckedStmt], env: &mut Environment<Value>) -> Result<(), String> {
+    for stmt in seq {
+        match exec_stmt(stmt, env).map_err(|e| format!("runtime error: {}", e.message))? {
+            Some(Value::Void) => continue,
+            Some(v) => return Err(format!("unexpected return value: {:?}", v)),
+            None => continue,
+        }
+    }
+    Ok(())
+}
+
+fn main_body_sequence(program: &CheckedProgram) -> Result<&[CheckedStmt], String> {
+    let main = program
+        .main_function()
+        .ok_or_else(|| "missing main function".to_string())?;
+    match &main.body.stmt {
+        Statement::Block { seq } => Ok(seq),
+        _ => Err("main body is not a block".to_string()),
+    }
+}
+
+fn build_program_env(program: &CheckedProgram) -> Environment<Value> {
+    let mut env = Environment::new();
+
+    // Register stdlib native functions like the interpreter does.
+    let registry = NativeRegistry::default();
+    for (name, entry) in registry.iter() {
+        env.declare(name.clone(), Value::Fn(FnValue::Native(entry.func)));
+    }
+
+    for fun in &program.functions {
+        env.declare(
+            fun.name.clone(),
+            Value::Fn(FnValue::UserDefined(fun.clone())),
+        );
+    }
+    env
 }
 
 // ---------------------------------------------------------------------------
@@ -255,4 +313,181 @@ fn test_stdlib_pow_float_args() {
         void main() { float r = pow(2.0, 3.0); }
     "#;
     assert!(run(src).is_ok(), "{}", run(src).unwrap_err());
+}
+
+// ---------------------------------------------------------------------------
+// Pointers (Value::Ptr in a single bindings map)
+// ---------------------------------------------------------------------------
+#[test]
+fn test_pointer_addr_of_and_deref_read() {
+    let src = r#"
+        void main() {
+            int x = 10;
+            int* p = &x;
+            int y = *p;
+        }
+    "#;
+    assert!(run(src).is_ok(), "{}", run(src).unwrap_err());
+}
+
+#[test]
+fn test_pointer_deref_assign() {
+    let src = r#"
+        void increment(int* p) {
+            *p = *p + 1;
+        }
+        void main() {
+            int x = 10;
+            increment(&x);
+        }
+    "#;
+    assert!(run(src).is_ok(), "{}", run(src).unwrap_err());
+}
+
+#[test]
+fn test_pointer_rebind() {
+    let src = r#"
+        void main() {
+            int x = 10;
+            int y = 5;
+            int* x_ref = &x;
+            int* y_ref = &y;
+            x_ref = y_ref;
+        }
+    "#;
+    assert!(run(src).is_ok(), "{}", run(src).unwrap_err());
+}
+
+#[test]
+fn test_pointer_return() {
+    let src = r#"
+        int* pick(int* a, int* b) { return a; }
+        void main() {
+            int x = 1;
+            int y = 2;
+            int* p = pick(&x, &y);
+        }
+    "#;
+    assert!(run(src).is_ok(), "{}", run(src).unwrap_err());
+}
+
+#[test]
+fn test_pointer_deref_returns_original_value() {
+    let program = checked_program(
+        r#"
+            void main() {
+                int x = 10;
+                int* p = &x;
+                int y = *p;
+            }
+        "#,
+    )
+    .unwrap();
+
+    let mut env = Environment::new();
+    exec_stmt_sequence(main_body_sequence(&program).unwrap(), &mut env).unwrap();
+
+    assert_eq!(env.get("y"), Some(&Value::Int(10)));
+}
+
+#[test]
+fn test_pointer_deref_assign_updates_target() {
+    let program = checked_program(
+        r#"
+            void main() {
+                int x = 10;
+                int* p = &x;
+                *p = *p + 1;
+            }
+        "#,
+    )
+    .unwrap();
+
+    let mut env = Environment::new();
+    exec_stmt_sequence(main_body_sequence(&program).unwrap(), &mut env).unwrap();
+
+    assert_eq!(env.get("x"), Some(&Value::Int(11)));
+}
+
+#[test]
+fn test_pointer_rebind_and_deref_new_target() {
+    let program = checked_program(
+        r#"
+            void main() {
+                int x = 10;
+                int y = 5;
+                int* p = &x;
+                p = &y;
+                *p = 99;
+            }
+        "#,
+    )
+    .unwrap();
+
+    let mut env = Environment::new();
+    exec_stmt_sequence(main_body_sequence(&program).unwrap(), &mut env).unwrap();
+
+    assert_eq!(env.get("x"), Some(&Value::Int(10)));
+    assert_eq!(env.get("y"), Some(&Value::Int(99)));
+}
+
+#[test]
+fn test_pointer_function_return_and_deref() {
+    let program = checked_program(
+        r#"
+            int* pick(int* a, int* b) { return b; }
+            void main() {
+                int x = 1;
+                int y = 2;
+                int* p = pick(&x, &y);
+                int z = *p;
+            }
+        "#,
+    )
+    .unwrap();
+
+    let mut env = build_program_env(&program);
+    exec_stmt_sequence(main_body_sequence(&program).unwrap(), &mut env).unwrap();
+
+    assert_eq!(env.get("z"), Some(&Value::Int(2)));
+}
+
+#[test]
+fn test_pointer_parameter_aliasing_updates_caller_variable() {
+    let program = checked_program(
+        r#"
+            void increment(int* p) {
+                *p = *p + 1;
+            }
+            void main() {
+                int x = 10;
+                increment(&x);
+            }
+        "#,
+    )
+    .unwrap();
+
+    let mut env = build_program_env(&program);
+    env.declare("x".to_string(), Value::Int(10));
+    eval_call("increment", vec![Value::Ptr("x".to_string())], &mut env)
+        .expect("pointer function call failed");
+
+    assert_eq!(env.get("x"), Some(&Value::Int(11)));
+}
+
+#[test]
+fn test_pointer_dangling_after_return_is_runtime_error() {
+    let src = r#"
+        int* leak(int x) {
+            return &x;
+        }
+        void main() {
+            int* p = leak(10);
+            int y = *p;
+        }
+    "#;
+
+    let result = run(src);
+    assert!(result.is_err(), "expected dangling pointer runtime error");
+    assert!(result.unwrap_err().contains("dereference of invalid target"));
 }
