@@ -93,6 +93,44 @@ pub fn translate_statement(statement: CheckedStmt, env: &mut Environment) -> Vec
             instructions.push(Instruction::Label(label_end_if));
             instructions
         },
+        Statement::Switch { target, cases, default } => {
+            let target_ty = target.ty.clone();
+            let (target_addr, mut instructions) = translate_expression(*target, env);
+            let label_default = env.new_label();
+            let label_end = env.new_label();
+            
+            let case_labels: Vec<String> = (0..cases.len())
+                .map(|_| env.new_label())
+                .collect();
+            
+            for (i, (lit, _)) in cases.iter().enumerate() {
+                let lit_addr = Address::Constant(lit.clone(), target_ty.clone());
+                instructions.push(Instruction::ConditionalJMPRelational(
+                    Operator::EQ,
+                    target_addr.clone(),
+                    lit_addr,
+                    case_labels[i].clone(),
+                ));
+            }
+            
+            instructions.push(Instruction::JMP(label_default.clone()));
+            
+            for (i, (_, body)) in cases.into_iter().enumerate() {
+                instructions.push(Instruction::Label(case_labels[i].clone()));
+                for stmt in body {
+                    instructions.extend(translate_statement(stmt, env));
+                }
+                instructions.push(Instruction::JMP(label_end.clone()));
+            }
+            
+            instructions.push(Instruction::Label(label_default));
+            for stmt in default {
+                instructions.extend(translate_statement(stmt, env));
+            }
+            
+            instructions.push(Instruction::Label(label_end));
+            instructions
+        },
         _ => todo!()
     }
 }

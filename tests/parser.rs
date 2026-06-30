@@ -672,3 +672,221 @@ fn test_array_in_expression() {
     assert!(matches!(result.exp, Expr::Index { ref base, ref index }
         if matches!(base.exp, Expr::ArrayLit(_)) && index.exp == Expr::Literal(Literal::Int(0))));
 }
+
+// --- Switch ---
+
+#[test]
+fn test_switch_statement() {
+    let result = statement("switch x { case 1: y = 1; default: y = 0; }").unwrap().1;
+    assert!(matches!(result.stmt, Statement::Switch { ref target, ref cases, ref default }
+        if matches!(target.exp, Expr::Ident(ref s) if s == "x") && cases.len() == 1 && default.len() == 1));
+    if let Statement::Switch { ref cases, ref default, .. } = result.stmt {
+        assert!(matches!(cases[0].0, Literal::Int(1)));
+        assert!(matches!(cases[0].1.len(), 1));
+        if let Statement::Assign { ref target, ref value } = cases[0].1[0].stmt {
+            assert!(matches!(target.exp, Expr::Ident(ref s) if s == "y"));
+            assert_eq!(value.exp, Expr::Literal(Literal::Int(1)));
+        }
+        assert!(matches!(default.len(), 1));
+        if let Statement::Assign { ref target, ref value } = default[0].stmt {
+            assert!(matches!(target.exp, Expr::Ident(ref s) if s == "y"));
+            assert_eq!(value.exp, Expr::Literal(Literal::Int(0)));
+        }
+    }
+}
+
+#[test]
+fn test_switch_multiple_cases() {
+    let result = statement("switch x { case 1: y = 1; case 2: y = 2; default: y = 0; }").unwrap().1;
+    assert!(matches!(result.stmt, Statement::Switch { ref target, ref cases, ref default }
+        if matches!(target.exp, Expr::Ident(ref s) if s == "x") && cases.len() == 2 && default.len() == 1));
+    if let Statement::Switch { ref cases, ref default, .. } = result.stmt {
+        assert!(matches!(cases[0].0, Literal::Int(1)));
+        assert!(matches!(cases[0].1.len(), 1));
+        if let Statement::Assign { ref target, ref value } = cases[0].1[0].stmt {
+            assert!(matches!(target.exp, Expr::Ident(ref s) if s == "y"));
+            assert_eq!(value.exp, Expr::Literal(Literal::Int(1)));
+        }
+        assert!(matches!(cases[1].0, Literal::Int(2)));
+        assert!(matches!(cases[1].1.len(), 1));
+        if let Statement::Assign { ref target, ref value } = cases[1].1[0].stmt {
+            assert!(matches!(target.exp, Expr::Ident(ref s) if s == "y"));
+            assert_eq!(value.exp, Expr::Literal(Literal::Int(2)));
+        }
+        assert!(matches!(default.len(), 1));
+        if let Statement::Assign { ref target, ref value } = default[0].stmt {
+            assert!(matches!(target.exp, Expr::Ident(ref s) if s == "y"));
+            assert_eq!(value.exp, Expr::Literal(Literal::Int(0)));
+        }
+    }
+}
+
+#[test]
+fn test_switch_multiple_statements() {
+    let result = statement("switch x { case 1: y = 1; z = 2; default: y = 0; z = 1; }").unwrap().1;
+    assert!(matches!(result.stmt, Statement::Switch { ref target, ref cases, ref default }
+        if matches!(target.exp, Expr::Ident(ref s) if s == "x") && cases.len() == 1 && default.len() == 2));
+    if let Statement::Switch { ref cases, ref default, .. } = result.stmt {
+        assert!(matches!(cases[0].0, Literal::Int(1)));
+        assert!(matches!(cases[0].1.len(), 2));
+        if let Statement::Assign { ref target, ref value } = cases[0].1[0].stmt {
+            assert!(matches!(target.exp, Expr::Ident(ref s) if s == "y"));
+            assert_eq!(value.exp, Expr::Literal(Literal::Int(1)));
+        }
+        if let Statement::Assign { ref target, ref value } = cases[0].1[1].stmt {
+            assert!(matches!(target.exp, Expr::Ident(ref s) if s == "z"));
+            assert_eq!(value.exp, Expr::Literal(Literal::Int(2)));
+        }
+        assert!(matches!(default.len(), 2));
+        if let Statement::Assign { ref target, ref value } = default[0].stmt {
+            assert!(matches!(target.exp, Expr::Ident(ref s) if s == "y"));
+            assert_eq!(value.exp, Expr::Literal(Literal::Int(0)));
+        }
+        if let Statement::Assign { ref target, ref value } = default[1].stmt {
+            assert!(matches!(target.exp, Expr::Ident(ref s) if s == "z"));
+            assert_eq!(value.exp, Expr::Literal(Literal::Int(1)));
+        }
+    }
+}
+
+#[test]
+fn test_switch_multiple_cases_and_statements() {
+    let result = statement("switch x { case 1: y = 1; z = 2; case 2: y = 2; z = 3; default: y = 0; z = 1; }").unwrap().1;
+    assert!(matches!(result.stmt, Statement::Switch { ref target, ref cases, ref default }
+        if matches!(target.exp, Expr::Ident(ref s) if s == "x") && cases.len() == 2 && default.len() == 2));
+    if let Statement::Switch { ref cases, ref default, .. } = result.stmt {
+        assert!(matches!(cases[0].0, Literal::Int(1)));
+        assert!(matches!(cases[0].1.len(), 2));
+        if let Statement::Assign { ref target, ref value } = cases[0].1[0].stmt {
+            assert!(matches!(target.exp, Expr::Ident(ref s) if s == "y"));
+            assert_eq!(value.exp, Expr::Literal(Literal::Int(1)));
+        }
+        if let Statement::Assign { ref target, ref value } = cases[0].1[1].stmt {
+            assert!(matches!(target.exp, Expr::Ident(ref s) if s == "z"));
+            assert_eq!(value.exp, Expr::Literal(Literal::Int(2)));
+        }
+        assert!(matches!(cases[1].0, Literal::Int(2)));
+        assert!(matches!(cases[1].1.len(), 2));
+        if let Statement::Assign { ref target, ref value } = cases[1].1[0].stmt {
+            assert!(matches!(target.exp, Expr::Ident(ref s) if s == "y"));
+            assert_eq!(value.exp, Expr::Literal(Literal::Int(2)));
+        }
+        if let Statement::Assign { ref target, ref value } = cases[1].1[1].stmt {
+            assert!(matches!(target.exp, Expr::Ident(ref s) if s == "z"));
+            assert_eq!(value.exp, Expr::Literal(Literal::Int(3)));
+        }
+        assert!(matches!(default.len(), 2));
+        if let Statement::Assign { ref target, ref value } = default[0].stmt {
+            assert!(matches!(target.exp, Expr::Ident(ref s) if s == "y"));
+            assert_eq!(value.exp, Expr::Literal(Literal::Int(0)));
+        }
+        if let Statement::Assign { ref target, ref value } = default[1].stmt {
+            assert!(matches!(target.exp, Expr::Ident(ref s) if s == "z"));
+            assert_eq!(value.exp, Expr::Literal(Literal::Int(1)));
+        }
+    }
+}
+
+#[test]
+fn test_switch_boolean_cases() {
+    let result = statement("switch x { case true: y = 1; case false: y = 0; default: y = 3; }").unwrap().1;
+    assert!(matches!(result.stmt, Statement::Switch { ref target, ref cases, ref default }
+        if matches!(target.exp, Expr::Ident(ref s) if s == "x") && cases.len() == 2 && default.len() == 1));
+    if let Statement::Switch { ref cases, ref default, .. } = result.stmt {
+        assert!(matches!(cases[0].0, Literal::Bool(true)));
+        assert!(matches!(cases[0].1.len(), 1));
+        if let Statement::Assign { ref target, ref value } = cases[0].1[0].stmt {
+            assert!(matches!(target.exp, Expr::Ident(ref s) if s == "y"));
+            assert_eq!(value.exp, Expr::Literal(Literal::Int(1)));
+        }
+        assert!(matches!(cases[1].0, Literal::Bool(false)));
+        assert!(matches!(cases[1].1.len(), 1));
+        if let Statement::Assign { ref target, ref value } = cases[1].1[0].stmt {
+            assert!(matches!(target.exp, Expr::Ident(ref s) if s == "y"));
+            assert_eq!(value.exp, Expr::Literal(Literal::Int(0)));
+        }
+        assert!(matches!(default.len(), 1));
+        if let Statement::Assign { ref target, ref value } = default[0].stmt {
+            assert!(matches!(target.exp, Expr::Ident(ref s) if s == "y"));
+            assert_eq!(value.exp, Expr::Literal(Literal::Int(3)));
+        }
+    }
+}
+
+#[test]
+fn test_switch_multiple_defaults_err() {
+    assert!(statement("switch x { case 1: y = 1; default: y = 0; default: z = 2; }").is_err());
+}
+
+#[test]
+fn test_switch_no_default_err() {
+    assert!(statement("switch x { case 1: y = 1; }").is_err());
+}
+
+#[test]
+fn test_switch_no_cases_err() {
+    assert!(statement("switch x { default: y = 0; }").is_err());
+}
+
+#[test]
+fn test_switch_non_expression_err() {
+    assert!(statement("switch { case 1: y = 1; default: y = 0; }").is_err());
+}
+
+#[test]
+fn test_switch_invalid_case_literal() {
+    assert!(statement("switch x { case y: y = 1; default: y = 0; }").is_err());
+    assert!(statement("switch x { case 1.5: y = 1; default: y = 0; }").is_err());
+    assert!(statement("switch x { case \"str\": y = 1; default: y = 0; }").is_err());
+}
+
+#[test]
+fn test_switch_invalid_syntax() {
+    assert!(statement("switch x { case 1 y = 1; default: y = 0; }").is_err());
+    assert!(statement("switch x { case 1: y = 1; default y = 0; }").is_err());
+    assert!(statement("switch x { case 1: y = 1; default: y = 0 ").is_err());
+    assert!(statement("switch x case 1: y = 1; default: y = 0; }").is_err());
+    assert!(statement("switch x { case 1: y = 1; default: y = 0;").is_err());
+}
+
+#[test]
+fn test_switch_whitespace() {
+    assert!(statement("switch x { case 1: y = 1; default: y = 0; }").is_ok());
+    assert!(statement("switch  x  { case  1 : y  =  1 ; default : y  =  0 ; }").is_ok());
+}
+
+#[test]
+fn test_switch_in_function() {
+    let result = fun_decl("void foo() { switch x { case 1: y = 1; default: y = 0; } }").unwrap().1;
+    assert!(matches!(result.body.stmt, Statement::Block { ref seq } if seq.len() == 1));
+    if let Statement::Block { ref seq } = result.body.stmt {
+        assert!(matches!(seq[0].stmt, Statement::Switch { ref target, ref cases, ref default }
+            if matches!(target.exp, Expr::Ident(ref s) if s == "x") && cases.len() == 1 && default.len() == 1));
+    }
+}
+
+#[test]
+fn test_switch_in_if() {
+    let result = statement("if x { switch y { case 1: z = 1; default: z = 0; } }").unwrap().1;
+    assert!(matches!(result.stmt, Statement::If { .. }));
+    if let Statement::If { ref then_branch, .. } = &result.stmt {
+        assert!(matches!(then_branch.stmt, Statement::Block { ref seq } if seq.len() == 1));
+        if let Statement::Block { ref seq } = &then_branch.stmt {
+            assert!(matches!(seq[0].stmt, Statement::Switch { ref target, ref cases, ref default }
+                if matches!(target.exp, Expr::Ident(ref s) if s == "y") && cases.len() == 1 && default.len() == 1));
+        }
+    }
+}
+
+#[test]
+fn test_switch_in_while() {
+    let result = statement("while x { switch y { case 1: z = 1; default: z = 0; } }").unwrap().1;
+    assert!(matches!(result.stmt, Statement::While { .. }));
+    if let Statement::While { ref body, .. } = &result.stmt {
+        assert!(matches!(body.stmt, Statement::Block { ref seq } if seq.len() == 1));
+        if let Statement::Block { ref seq } = &body.stmt {
+            assert!(matches!(seq[0].stmt, Statement::Switch { ref target, ref cases, ref default }
+                if matches!(target.exp, Expr::Ident(ref s) if s == "y") && cases.len() == 1 && default.len() == 1));
+        }
+    }
+}
