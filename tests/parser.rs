@@ -748,6 +748,12 @@ fn test_pointer_type_function() {
         .unwrap()
         .1;
     assert_eq!(result.name, "changeRef");
+
+    assert_eq!(
+        result.return_type,
+        Type::Pointer(Box::new(Type::Int))
+    );
+
     assert_eq!(
         result.params,
         vec![
