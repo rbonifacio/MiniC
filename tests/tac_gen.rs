@@ -1,8 +1,10 @@
 //! Integration tests for the MiniC TAC code generator.
 
-use mini_c::ir::ast::{CheckedExpr, CheckedStmt, ExprD, Expr, Literal, Statement, StatementD, Type};
+use mini_c::codegen::tac_code_gen::{translate_program, Environment, translate_statement};
+use mini_c::ir::ast::{CheckedExpr, CheckedStmt, Expr, ExprD, Literal, Statement, StatementD, Type};
 use mini_c::ir::tac::{Address, Instruction, Operator};
-use mini_c::codegen::tac_code_gen::{Environment, translate_statement};
+use mini_c::parser::program;
+use mini_c::semantic::type_check;
 
 // --- Helpers to build type-annotated AST nodes ---
 
@@ -180,4 +182,22 @@ fn test_for_infinite_loop() {
         Instruction::JMP("Label1:".to_string()),
         Instruction::Label("Label2:".to_string()),
     ]);
+}
+
+#[test]
+fn test_translate_program_from_source() {
+    let src = include_str!("fixtures/tac_simple.minic");
+    let (_, unchecked) = program(src).expect("parse");
+    let checked = type_check(&unchecked).expect("type-check");
+    let tac = translate_program(&checked);
+
+    assert_eq!(
+        tac.iter().map(|i| i.to_string()).collect::<Vec<_>>(),
+        vec![
+            "main".to_string(),
+            "x = 1".to_string(),
+            "temp1 = x + 2".to_string(),
+            "x = temp1".to_string(),
+        ]
+    );
 }

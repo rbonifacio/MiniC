@@ -27,13 +27,17 @@ impl Environment {
     }
 }
 
-fn translate_program(program: CheckedProgram, env: &mut Environment) -> TACProgram {
+pub fn translate_program(program: &CheckedProgram) -> TACProgram {
+    let mut env = Environment::new();
+    translate_program_with_env(program, &mut env)
+}
+
+fn translate_program_with_env(program: &CheckedProgram, env: &mut Environment) -> TACProgram {
     let main_fn = program.main_function();
     match main_fn {
         None => unreachable!("[Impossible] program must have a main function"),
         Some(f) => translate_function(f.clone(), env),
     }
-
 }
 
 fn translate_function(function: CheckedFunDecl, env: &mut Environment) -> TACProgram {
