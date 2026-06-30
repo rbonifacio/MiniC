@@ -80,6 +80,15 @@ pub fn translate_statement(statement: CheckedStmt, env: &mut Environment) -> Vec
             instructions.push(Instruction::Call(None, name, addresses_and_instructions.len()));
             instructions
         }
+        Statement::Decl { name, ty, init } => {
+            let (expression_address, instructions) = translate_expression(*init, env);
+            res.extend(instructions);
+            res.push(Instruction::CopyAssignment(
+                Address::Variable(name, ty),
+                expression_address,
+            ));
+            res
+        },
         Statement::If{cond, then_branch: then_body, else_branch: Some(else_body)} => {
             let label_then = env.new_label();
             let label_else = env.new_label();
@@ -91,6 +100,33 @@ pub fn translate_statement(statement: CheckedStmt, env: &mut Environment) -> Vec
             instructions.push(Instruction::Label(label_else));
             instructions.extend(translate_statement(*else_body, env));
             instructions.push(Instruction::Label(label_end_if));
+            instructions
+        },
+        Statement::For { init, cond, update, body } => {
+            let label_test = env.new_label();
+            let label_exit = env.new_label();
+            let mut instructions = Vec::new();
+
+            if let Some(init_stmt) = init {
+                instructions.extend(translate_statement(*init_stmt, env));
+            }
+
+            instructions.push(Instruction::Label(label_test.clone()));
+
+            if let Some(c) = cond {
+                let label_body = env.new_label();
+                instructions.extend(translate_conditional(*c, env, label_body.clone(), label_exit.clone()));
+                instructions.push(Instruction::Label(label_body));
+            }
+
+            instructions.extend(translate_statement(*body, env));
+
+            if let Some(u) = update {
+                instructions.extend(translate_statement(*u, env));
+            }
+
+            instructions.push(Instruction::JMP(label_test));
+            instructions.push(Instruction::Label(label_exit));
             instructions
         },
         _ => todo!()
