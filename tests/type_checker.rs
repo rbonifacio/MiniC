@@ -202,3 +202,36 @@ fn test_type_check_print_wrong_arity() {
     let result = parse_and_type_check("void main() { print(1, 2); }");
     assert!(result.is_err(), "expected arity error for print(1, 2)");
 }
+
+#[test]
+fn test_type_check_len_accepts_array() {
+    let result = parse_and_type_check("void main() { int n = len([1, 2, 3]); }");
+    assert!(result.is_ok());
+}
+
+#[test]
+fn test_type_check_contains_accepts_array_and_element() {
+    let result = parse_and_type_check("void main() { bool ok = contains([1, 2, 3], 2); }");
+    assert!(result.is_ok());
+}
+
+#[test]
+fn test_type_check_contains_returns_bool() {
+    let result = parse_and_type_check("void main() { int x = contains([1], 1); }");
+    assert!(result.is_err());
+    assert!(result.unwrap_err().message.contains("expected Int, got Bool"));
+}
+
+#[test]
+fn test_type_check_len_rejects_int_operand() {
+    let result = parse_and_type_check("void main() { int n = len(42); }");
+    assert!(result.is_err());
+    assert!(result.unwrap_err().message.contains("len requires a string or array operand"));
+}
+
+#[test]
+fn test_type_check_contains_rejects_string_and_int() {
+    let result = parse_and_type_check("void main() { bool ok = contains(\"abc\", 1); }");
+    assert!(result.is_err());
+    assert!(result.unwrap_err().message.contains("string container requires string item"));
+}

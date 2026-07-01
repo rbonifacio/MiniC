@@ -176,7 +176,7 @@ From highest (evaluated first) to lowest (evaluated last):
 | 1 (highest) | function call, array index `[]`, parentheses `()` |
 | 2 | unary minus `-`, logical not `!` |
 | 3 | `*`, `/` |
-| 4 | `+`, `-` |
+| 4 | `+`, `-`, `++`|
 | 5 | `==`, `!=`, `<`, `<=`, `>`, `>=` |
 | 6 | `and` |
 | 7 (lowest) | `or` |

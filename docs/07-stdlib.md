@@ -4,6 +4,10 @@ MiniC comes with a small set of built-in functions available to every
 program. This document describes them from a user perspective and then
 explains how they are implemented and how to add new ones.
 
+Note: `len(...)` and `contains(...)` are core language expressions in the
+parser/type-checker/interpreter pipeline. They are not registered as native
+functions in `NativeRegistry`.
+
 ---
 
 ## Built-in Functions

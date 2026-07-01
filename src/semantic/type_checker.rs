@@ -358,6 +358,10 @@ fn type_check_expr_inner(
             Box::new(type_check_expr_to_typed(l, env)?),
             Box::new(type_check_expr_to_typed(r, env)?),
         )),
+        Expr::Concat(l, r) => Ok(Expr::Concat(
+            Box::new(type_check_expr_to_typed(l, env)?),
+            Box::new(type_check_expr_to_typed(r, env)?),
+        )),
         Expr::Mul(l, r) => Ok(Expr::Mul(
             Box::new(type_check_expr_to_typed(l, env)?),
             Box::new(type_check_expr_to_typed(r, env)?),
@@ -398,6 +402,11 @@ fn type_check_expr_inner(
         Expr::Or(l, r) => Ok(Expr::Or(
             Box::new(type_check_expr_to_typed(l, env)?),
             Box::new(type_check_expr_to_typed(r, env)?),
+        )),
+        Expr::Len(arg) => Ok(Expr::Len(Box::new(type_check_expr_to_typed(arg, env)?))),
+        Expr::Contains(container, item) => Ok(Expr::Contains(
+                Box::new(type_check_expr_to_typed(container, env)?),
+                Box::new(type_check_expr_to_typed(item, env)?),
         )),
         Expr::Call { name, args } => {
             let args_checked: Result<Vec<_>, _> =
@@ -446,6 +455,11 @@ fn type_check_expr(
             let rt = type_check_expr(r, env)?;
             numeric_binop_result(&lt, &rt)
         }
+        Expr::Concat(l, r) => {
+            let lt = type_check_expr(l, env)?;
+            let rt = type_check_expr(r, env)?;
+            string_binop_result(&lt, &rt)
+        }
         Expr::Eq(l, r) | Expr::Ne(l, r) => {
             let lt = type_check_expr(l, env)?;
             let rt = type_check_expr(r, env)?;
@@ -483,6 +497,34 @@ fn type_check_expr(
                 Ok(Type::Bool)
             } else {
                 Err(TypeError::new("and/or require Bool operands"))
+            }
+        }
+        Expr::Len(arg) => {
+            let ty = type_check_expr(arg, env)?;
+            match ty {
+                Type::Str | Type::Array(_) => Ok(Type::Int),
+                _ => Err(TypeError::new("len requires a string or array operand")),
+            }
+        }
+        Expr::Contains(container, item) => {
+            let container_ty = type_check_expr(container, env)?;
+            let item_ty = type_check_expr(item, env)?;
+            match container_ty {
+                Type::Str => {
+                    if item_ty == Type::Str {
+                        Ok(Type::Bool)
+                    } else {
+                        Err(TypeError::new("contains: string container requires string item"))
+                    }
+                }
+                Type::Array(elem_ty) => {
+                    if types_compatible(&item_ty, &elem_ty) {
+                        Ok(Type::Bool)
+                    } else {
+                        Err(TypeError::new("contains: array item type mismatch"))
+                    }
+                }
+                _ => Err(TypeError::new("contains requires a string or array container")),
             }
         }
         Expr::Call { name, args } => {
@@ -562,6 +604,13 @@ fn numeric_binop_result(l: &Type, r: &Type) -> Result<Type, TypeError> {
             Ok(Type::Float)
         }
         _ => Err(TypeError::new("arithmetic operands must be Int or Float")),
+    }
+}
+
+fn string_binop_result(l: &Type, r: &Type) -> Result<Type, TypeError> {
+    match (l, r) {
+        (Type::Str, Type::Str) => Ok(Type::Str),
+        _ => Err(TypeError::new("string concatenation requires Str operands")),
     }
 }
 
