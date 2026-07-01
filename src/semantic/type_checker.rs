@@ -232,34 +232,23 @@ fn type_check_stmt(
                 body: Box::new(body_checked),
             }
         }
+        
         Statement::For {
             init,
             cond,
             update,
             body,
         } => {
-            // A `for` introduces a scope that is tighter than a plain block:
-            // a variable declared in `init` is visible to `cond`, `update`,
-            // and `body`, but must NOT remain in scope after the loop. We
-            // snapshot the environment before touching the header clauses and
-            // restore it once the whole loop has been checked, which discards
-            // any binding the `init` declaration may have added.
+            
             let snapshot = env.snapshot();
 
-            // `init` runs once before the loop. When present it is a
-            // declaration (`int i = 0`) or an assignment (`i = 0`); either
-            // form is validated by `type_check_stmt`, and a declaration adds
-            // the loop variable to the environment so the other clauses can
-            // refer to it.
+
             let init_checked = init
                 .as_ref()
                 .map(|s| type_check_stmt(s, env, expected_return))
                 .transpose()?;
 
-            // The loop guard, when present, must be a `Bool`: it is evaluated
-            // before each iteration to decide whether to continue. An omitted
-            // condition means "always true" (`for (;;)`), so there is nothing
-            // to check in that case.
+
             let cond_checked = cond
                 .as_ref()
                 .map(|c| type_check_expr_to_typed(c, env))
@@ -273,10 +262,7 @@ fn type_check_stmt(
                 }
             }
 
-            // `update` runs after every iteration. The grammar already limits
-            // it to an assignment, but we re-assert that here so the rule is
-            // explicit, and then type-check the assignment itself (its target
-            // must exist and the assigned value must be compatible).
+
             let update_checked = match update {
                 Some(u) => {
                     if !matches!(u.stmt, Statement::Assign { .. }) {
@@ -287,12 +273,10 @@ fn type_check_stmt(
                 None => None,
             };
 
-            // The body is a block; it is type-checked in the environment that
-            // still contains the loop variable.
+
             let body_checked = type_check_stmt(body, env, expected_return)?;
 
-            // Leaving the loop scope: drop the loop-local binding so it cannot
-            // be referenced after the `for`.
+
             env.restore(snapshot);
 
             Statement::For {
@@ -302,6 +286,7 @@ fn type_check_stmt(
                 body: Box::new(body_checked),
             }
         }
+
         Statement::Return(expr) => match expr {
             None => {
                 if *expected_return != Type::Unit {
