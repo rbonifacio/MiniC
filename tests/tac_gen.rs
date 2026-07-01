@@ -1,8 +1,8 @@
-//! Testes de integração do gerador de TAC do MiniC.
+//! Integration tests for the MiniC TAC generator.
 //!
-//! Dois estilos de teste:
-//! 1. Montar AST tipada manualmente (helpers) e chamar `translate_statement`.
-//! 2. Parse + type-check de um arquivo `.minic` e chamar `translate_program`.
+//! Two test styles:
+//! 1. Build a typed AST manually (helpers) and call `translate_statement`.
+//! 2. Parse + type-check a `.minic` file and call `translate_program`.
 
 use mini_c::codegen::tac_code_gen::{translate_program, Environment, translate_statement};
 use mini_c::ir::ast::{CheckedExpr, CheckedStmt, Expr, ExprD, Literal, Statement, StatementD, Type};
@@ -10,9 +10,9 @@ use mini_c::ir::tac::{Address, Instruction, Operator};
 use mini_c::parser::program;
 use mini_c::semantic::type_check;
 
-// --- Helpers: constroem nós da AST já tipada, sem passar pelo parser ---
+// --- Helpers: build typed AST nodes without going through the parser ---
 
-/// Expressão tipada: variável inteira (ex.: `x` com tipo `int`).
+/// Typed expression: integer variable (e.g. `x` with type `int`).
 fn int_var(name: &str) -> CheckedExpr {
     ExprD {
         exp: Expr::Ident(name.to_string()),
@@ -20,7 +20,7 @@ fn int_var(name: &str) -> CheckedExpr {
     }
 }
 
-/// Expressão tipada: soma de dois inteiros (`left + right`).
+/// Typed expression: sum of two integers (`left + right`).
 fn add(left: CheckedExpr, right: CheckedExpr) -> CheckedExpr {
     ExprD {
         exp: Expr::Add(Box::new(left), Box::new(right)),
@@ -28,7 +28,7 @@ fn add(left: CheckedExpr, right: CheckedExpr) -> CheckedExpr {
     }
 }
 
-/// Expressão tipada: comparação `left < right` (resultado `bool`).
+/// Typed expression: comparison `left < right` (result type `bool`).
 fn lt(left: CheckedExpr, right: CheckedExpr) -> CheckedExpr {
     ExprD {
         exp: Expr::Lt(Box::new(left), Box::new(right)),
@@ -36,7 +36,7 @@ fn lt(left: CheckedExpr, right: CheckedExpr) -> CheckedExpr {
     }
 }
 
-/// Expressão tipada: literal inteiro (ex.: `42`).
+/// Typed expression: integer literal (e.g. `42`).
 fn int_lit(n: i64) -> CheckedExpr {
     ExprD {
         exp: Expr::Literal(Literal::Int(n)),
@@ -44,7 +44,7 @@ fn int_lit(n: i64) -> CheckedExpr {
     }
 }
 
-/// Statement tipado: declaração `int name = init`.
+/// Typed statement: declaration `int name = init`.
 fn decl(name: &str, init: CheckedExpr) -> CheckedStmt {
     StatementD {
         stmt: Statement::Decl {
@@ -52,12 +52,12 @@ fn decl(name: &str, init: CheckedExpr) -> CheckedStmt {
             ty: Type::Int,
             init: Box::new(init),
         },
-        ty: Type::Unit, // declaração não produz valor
+        ty: Type::Unit, // declaration produces no value
     }
 }
 
-/// Statement tipado: loop `for (init; cond; update) body`.
-/// Cada parte do cabeçalho pode ser `None` (cláusula omitida).
+/// Typed statement: loop `for (init; cond; update) body`.
+/// Each header clause may be `None` (omitted).
 fn for_stmt(
     init: Option<CheckedStmt>,
     cond: Option<CheckedExpr>,
@@ -75,13 +75,13 @@ fn for_stmt(
     }
 }
 
-/// Statement tipado: atribuição `name = value`.
+/// Typed statement: assignment `name = value`.
 fn assign(name: &str, value: CheckedExpr) -> CheckedStmt {
     StatementD {
         stmt: Statement::Assign {
             target: Box::new(ExprD {
                 exp: Expr::Ident(name.to_string()),
-                ty: value.ty.clone(), // tipo do alvo = tipo da expressão
+                ty: value.ty.clone(), // target type = expression type
             }),
             value: Box::new(value),
         },
@@ -89,24 +89,24 @@ fn assign(name: &str, value: CheckedExpr) -> CheckedStmt {
     }
 }
 
-// --- Teste: if-else com condição relacional ---
+// --- Test: if-else with relational condition ---
 //
 // MiniC:
 //   if (x < y) { z = x + y; } else { z = x; }
 //
-// TAC esperado (labels separados para then / else / fim):
+// Expected TAC (separate labels for then / else / end):
 //   if x < y goto Label1:   ← then
 //   goto Label2:             ← else
 //   Label1:
 //   temp1 = x + y
 //   z = temp1
-//   goto Label3:             ← fim (pula o else)
+//   goto Label3:             ← end (skip else)
 //   Label2:
 //   z = x
 //   Label3:
 #[test]
 fn test_if_else_with_relational_condition() {
-    // Monta o nó `If` na AST tipada.
+    // Build the typed AST `If` node.
     let stmt = StatementD {
         stmt: Statement::If {
             cond: Box::new(lt(int_var("x"), int_var("y"))),
@@ -119,7 +119,7 @@ fn test_if_else_with_relational_condition() {
     let mut env = Environment::new();
     let instructions = translate_statement(stmt, &mut env);
 
-    // Endereços esperados nas instruções (para comparação exata).
+    // Expected addresses in instructions (for exact comparison).
     let x = Address::Variable("x".to_string(), Type::Int);
     let y = Address::Variable("y".to_string(), Type::Int);
     let z = Address::Variable("z".to_string(), Type::Int);
@@ -146,17 +146,17 @@ fn test_if_else_with_relational_condition() {
     );
 }
 
-// --- Teste: for canônico ---
+// --- Test: canonical for loop ---
 //
 // MiniC:
 //   for (int i = 0; i < 10; i = i + 1) { sum = sum + i; }
 //
-// TAC esperado:
+// Expected TAC:
 //   i = 0
-//   Label1:                  ← teste da condição
-//   if i < 10 goto Label3:   ← verdadeiro → corpo
-//   goto Label2:              ← falso → saída
-//   Label3:                   ← início do corpo
+//   Label1:                  ← condition test
+//   if i < 10 goto Label3:   ← true → body
+//   goto Label2:              ← false → exit
+//   Label3:                   ← body entry
 //   temp1 = sum + i
 //   sum = temp1
 //   temp2 = i + 1
@@ -201,18 +201,18 @@ fn test_for_canonical() {
     );
 }
 
-// --- Teste: for infinito (condição omitida) ---
+// --- Test: infinite for loop (omitted condition) ---
 //
 // MiniC:
 //   for (;;) { sum = sum + 1; }
 //
-// TAC esperado: loop sem teste de saída; só Label2 marca o fim estrutural.
+// Expected TAC: loop with no exit test; Label2 only marks structural end.
 #[test]
 fn test_for_infinite_loop() {
     let stmt = for_stmt(
-        None, // sem init
-        None, // sem cond → loop infinito
-        None, // sem update
+        None, // no init
+        None, // no cond → infinite loop
+        None, // no update
         assign("sum", add(int_var("sum"), int_lit(1))),
     );
 
@@ -235,9 +235,9 @@ fn test_for_infinite_loop() {
     );
 }
 
-// --- Teste end-to-end: arquivo .minic → parse → type-check → TAC ---
+// --- End-to-end test: .minic file → parse → type-check → TAC ---
 //
-// Usa `tests/fixtures/tac_simple.minic` e compara a saída textual (`Display`).
+// Uses `tests/fixtures/tac_simple.minic` and compares textual output (`Display`).
 #[test]
 fn test_translate_program_from_source() {
     let src = include_str!("fixtures/tac_simple.minic");

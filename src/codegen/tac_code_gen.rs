@@ -1,23 +1,23 @@
-//! Geração de Three-Address Code (TAC) a partir da AST tipada.
+//! Three-Address Code (TAC) generation from the typed AST.
 //!
-//! Cada função traduz um nível da árvore (programa → função → statement → expressão)
-//! e devolve instruções TAC lineares com saltos condicionais quando necessário.
+//! Each function translates one level of the tree (program → function → statement → expression)
+//! and produces linear TAC instructions with conditional jumps when needed.
 
-// Tipos da AST já verificada pelo type checker.
+// Types from the AST already verified by the type checker.
 use crate::ir::ast::{CheckedProgram, CheckedFunDecl, CheckedStmt, Statement, Expr, CheckedExpr, Literal, Type};
-// Representação das instruções TAC e dos endereços (variável, constante, temporário).
+// TAC instruction and address representation (variable, constant, temporary).
 use crate::ir::tac::{TACProgram, Instruction, Address, Operator};
 
-/// Estado compartilhado durante a tradução de uma função.
-/// Garante nomes únicos para labels de salto e variáveis temporárias.
+/// Shared state during function translation.
+/// Ensures unique names for jump labels and temporary variables.
 #[derive(Clone)]
 pub struct Environment {
-    current_label: usize,      // próximo número de label a alocar (Label1:, Label2:, ...)
-    current_temporary: usize,  // próximo número de temporário a alocar (temp1, temp2, ...)
+    current_label: usize,      // next label number to allocate (Label1:, Label2:, ...)
+    current_temporary: usize,  // next temporary number to allocate (temp1, temp2, ...)
 }
 
 impl Environment {
-    /// Inicia o ambiente com contadores zerados.
+    /// Creates an environment with zeroed counters.
     pub fn new() -> Self {
         Self {
             current_label: 0,
@@ -25,98 +25,98 @@ impl Environment {
         }
     }
 
-    /// Aloca um novo label de salto (ex.: `"Label3:"`).
+    /// Allocates a new jump label (e.g. `"Label3:"`).
     fn new_label(&mut self) -> String {
         self.current_label += 1;
         format!("Label{}:", self.current_label)
     }
 
-    /// Aloca um novo temporário (ex.: `"temp2"`).
+    /// Allocates a new temporary (e.g. `"temp2"`).
     fn new_temporary(&mut self) -> String {
         self.current_temporary += 1;
         format!("temp{}", self.current_temporary)
     }
 }
 
-/// Ponto de entrada público: traduz um programa inteiro em TAC.
-/// Hoje gera TAC apenas da função `main`.
+/// Public entry point: translates an entire program into TAC.
+/// Currently generates TAC for the `main` function only.
 pub fn translate_program(program: &CheckedProgram) -> TACProgram {
     let mut env = Environment::new();
     translate_program_with_env(program, &mut env)
 }
 
-/// Localiza `main` no programa e delega a tradução da função.
+/// Locates `main` in the program and delegates function translation.
 fn translate_program_with_env(program: &CheckedProgram, env: &mut Environment) -> TACProgram {
     let main_fn = program.main_function();
     match main_fn {
-        // O type checker já garante que `main` existe; este caso não deve ocorrer.
+        // The type checker already guarantees `main` exists; this case should not occur.
         None => unreachable!("[Impossible] program must have a main function"),
         Some(f) => translate_function(f.clone(), env),
     }
 }
 
-/// Traduz o corpo de uma função e prefixa um label com o nome da função.
+/// Translates a function body and prefixes a label with the function name.
 fn translate_function(function: CheckedFunDecl, env: &mut Environment) -> TACProgram {
     let mut instructions =
-        // Corpo costuma ser um bloco `{ stmt; stmt; ... }`.
+        // Body is usually a block `{ stmt; stmt; ... }`.
         if let Statement::Block { seq: stmts } = function.body.stmt {
-            // Traduz cada statement e concatena as listas de instruções.
+            // Translate each statement and concatenate instruction lists.
             stmts
                 .into_iter()
                 .flat_map(|stmt| translate_statement(stmt, env))
                 .collect::<Vec<_>>()
         } else {
-            // Gramática também permite um único statement sem chaves.
+            // Grammar also allows a single statement without braces.
             translate_statement(*function.body, env)
         };
-    // Marca o início da função (destino de `call` e saltos).
+    // Mark function entry (target of `call` and jumps).
     instructions.insert(0, Instruction::Label(function.name.clone()));
     instructions
 }
 
-/// Traduz um statement da AST em zero ou mais instruções TAC.
+/// Translates an AST statement into zero or more TAC instructions.
 pub fn translate_statement(statement: CheckedStmt, env: &mut Environment) -> Vec<Instruction> {
-    // Acumulador reutilizado nos casos que montam `res` incrementalmente.
+    // Accumulator reused in cases that build `res` incrementally.
     let mut res: Vec<Instruction> = Vec::new();
 
     match statement.stmt {
-        // `{ s1; s2; ... }` → traduz cada filho em sequência.
+        // `{ s1; s2; ... }` → translate each child in sequence.
         Statement::Block { seq } => seq
             .into_iter()
             .flat_map(|s| translate_statement(s, env))
             .collect::<Vec<_>>(),
 
-        // `x = expr` — por enquanto só atribuição a identificador simples.
+        // `x = expr` — simple identifier assignment only for now.
         Statement::Assign { target, value } => {
             if let Expr::Ident(name) = &target.exp {
                 let var_type = target.ty.clone();
                 let var_address = Address::Variable(name.to_string(), var_type);
-                // Primeiro avalia o lado direito; depois copia o resultado para `x`.
+                // Evaluate the right-hand side first; then copy the result to `x`.
                 let (expression_address, instructions) = translate_expression(*value, env);
                 res.extend(instructions);
                 res.push(Instruction::CopyAssignment(var_address, expression_address));
                 res
             } else {
-                // Atribuição indexada (`arr[i] = v`) ainda não implementada.
+                // Indexed assignment (`arr[i] = v`) not yet implemented.
                 todo!()
             }
         },
 
-        // Chamada como statement: `foo(a, b);` — descarta o retorno (`Call(None, ...)`).
+        // Call as statement: `foo(a, b);` — discard return value (`Call(None, ...)`).
         Statement::Call { name, args } => {
-            // Para cada argumento: endereço do valor + instruções para calculá-lo.
+            // For each argument: value address + instructions to compute it.
             let addresses_and_instructions = args
                 .into_iter()
                 .map(|expr| translate_expression(expr, env))
                 .collect::<Vec<_>>();
-            // Junta todas as instruções de avaliação dos argumentos.
+            // Concatenate all argument evaluation instructions.
             let mut instructions = addresses_and_instructions
                 .iter()
                 .fold(vec![], |mut acc, (_, inst)| {
                     acc.extend(inst.clone());
                     acc
                 });
-            // Convenção de chamada: um `param` por argumento, na ordem.
+            // Calling convention: one `param` per argument, in order.
             for (addr, _) in &addresses_and_instructions {
                 instructions.push(Instruction::Param(addr.clone()));
             }
@@ -128,7 +128,7 @@ pub fn translate_statement(statement: CheckedStmt, env: &mut Environment) -> Vec
             instructions
         },
 
-        // Declaração com init: `int x = expr;` → avalia `expr` e copia para `x`.
+        // Declaration with init: `int x = expr;` → evaluate `expr` and copy to `x`.
         Statement::Decl { name, ty, init } => {
             let (expression_address, instructions) = translate_expression(*init, env);
             res.extend(instructions);
@@ -139,7 +139,7 @@ pub fn translate_statement(statement: CheckedStmt, env: &mut Environment) -> Vec
             res
         },
 
-        // `if (cond) then else` — três labels: then, else e fim do if.
+        // `if (cond) then else` — three labels: then, else, and end of if.
         Statement::If {
             cond,
             then_branch: then_body,
@@ -148,12 +148,12 @@ pub fn translate_statement(statement: CheckedStmt, env: &mut Environment) -> Vec
             let label_then = env.new_label();
             let label_else = env.new_label();
             let label_end_if = env.new_label();
-            // Gera saltos conforme `cond`; verdadeiro → then, falso → else.
+            // Emit jumps according to `cond`; true → then, false → else.
             let mut instructions =
                 translate_conditional(*cond, env, label_then.clone(), label_else.clone());
             instructions.push(Instruction::Label(label_then));
             instructions.extend(translate_statement(*then_body, env));
-            instructions.push(Instruction::JMP(label_end_if.clone())); // pula o else
+            instructions.push(Instruction::JMP(label_end_if.clone())); // skip else
             instructions.push(Instruction::Label(label_else));
             instructions.extend(translate_statement(*else_body, env));
             instructions.push(Instruction::Label(label_end_if));
@@ -161,7 +161,7 @@ pub fn translate_statement(statement: CheckedStmt, env: &mut Environment) -> Vec
         },
 
         // `for (init; cond; update) body`
-        // vira em instructions do tipo:
+        // becomes instructions of the form:
         // Label1:
         // if cond goto Label2:
         // goto Label3:
@@ -176,19 +176,19 @@ pub fn translate_statement(statement: CheckedStmt, env: &mut Environment) -> Vec
             update,
             body,
         } => {
-            let label_test = env.new_label(); // topo do loop (teste de condição)
-            let label_exit = env.new_label(); // saída do loop
+            let label_test = env.new_label(); // loop head (condition test)
+            let label_exit = env.new_label(); // loop exit
             let mut instructions = Vec::new();
 
-            // Init roda uma única vez antes do loop.
+            // Init runs once before the loop.
             if let Some(init_stmt) = init {
                 instructions.extend(translate_statement(*init_stmt, env));
             }
 
-            // Label do topo do loop (teste de condição)
+            // Label at loop head (condition test)
             instructions.push(Instruction::Label(label_test.clone()));
 
-            // Se houver condição, falso salta para `label_exit`; verdadeiro cai no corpo.
+            // If there is a condition, false jumps to `label_exit`; true falls into body.
             if let Some(c) = cond {
                 let label_body = env.new_label();
                 instructions.extend(translate_conditional(
@@ -202,36 +202,36 @@ pub fn translate_statement(statement: CheckedStmt, env: &mut Environment) -> Vec
 
             instructions.extend(translate_statement(*body, env));
 
-            // Update roda após o corpo, antes de voltar ao teste.
+            // Update runs after the body, before jumping back to the test.
             if let Some(u) = update {
                 instructions.extend(translate_statement(*u, env));
             }
 
-            instructions.push(Instruction::JMP(label_test)); // próxima iteração
+            instructions.push(Instruction::JMP(label_test)); // next iteration
             instructions.push(Instruction::Label(label_exit));
             instructions
         },
 
-        // While, Return, If sem else, etc. — ainda não implementados.
+        // While, Return, If without else, etc. — not yet implemented.
         _ => todo!(),
     }
 }
 
-/// Traduz uma expressão.
-/// Retorna `(endereço_do_resultado, instruções_auxiliares)`.
-/// O endereço pode ser constante, variável ou temporário onde o valor ficou armazenado.
+/// Translates an expression.
+/// Returns `(result_address, auxiliary_instructions)`.
+/// The address may be a constant, variable, or temporary where the value was stored.
 fn translate_expression(
     expression: CheckedExpr,
     env: &mut Environment,
 ) -> (Address, Vec<Instruction>) {
     match expression.exp {
-        // Literal: endereço imediato, sem instruções extras.
+        // Literal: immediate address, no extra instructions.
         Expr::Literal(value) => (Address::Constant(value, expression.ty), vec![]),
 
-        // Variável: referência direta, sem instruções extras.
+        // Variable: direct reference, no extra instructions.
         Expr::Ident(name) => (Address::Variable(name.to_string(), expression.ty), vec![]),
 
-        // `!e` — avalia `e` como condição e materializa o booleano negado em um temp.
+        // `!e` — evaluate `e` as a condition and materialize the negated boolean in a temp.
         Expr::Not(exp) => {
             let (addr, mut instructions) = translate_expression(*exp, env);
             let label_false = env.new_label();
@@ -252,7 +252,7 @@ fn translate_expression(
             (temp, instructions)
         }
 
-        // `a || b` — short-circuit: se `a` é true, não avalia `b`.
+        // `a || b` — short-circuit: if `a` is true, do not evaluate `b`.
         Expr::Or(left, right) => {
             let (l_addr, l_instructions) = translate_expression(*left, env);
             let (r_addr, r_instructions) = translate_expression(*right, env);
@@ -262,7 +262,7 @@ fn translate_expression(
             let temp = Address::Temporary(env.new_temporary(), Type::Bool);
             let mut instructions = l_instructions;
             instructions.push(Instruction::ConditionalJMPFalse(l_addr, label_false.clone()));
-            instructions.push(Instruction::JMP(label_true.clone())); // `a` true → resultado true
+            instructions.push(Instruction::JMP(label_true.clone())); // `a` true → result true
             instructions.push(Instruction::Label(label_false));
             instructions.extend(r_instructions);
             instructions.push(Instruction::ConditionalJMP(r_addr, label_true.clone()));
@@ -280,7 +280,7 @@ fn translate_expression(
             (temp, instructions)
         }
 
-        // `a && b` — short-circuit: se `a` é false, não avalia `b`.
+        // `a && b` — short-circuit: if `a` is false, do not evaluate `b`.
         Expr::And(left, right) => {
             let (l_addr, l_instructions) = translate_expression(*left, env);
             let (r_addr, r_instructions) = translate_expression(*right, env);
@@ -305,7 +305,7 @@ fn translate_expression(
             (temp, instructions)
         }
 
-        // `a + b` — avalia operandos e grava a soma em um temporário.
+        // `a + b` — evaluate operands and store the sum in a temporary.
         Expr::Add(left, right) => {
             let (l_addr, l_instructions) = translate_expression(*left, env);
             let (r_addr, r_instructions) = translate_expression(*right, env);
@@ -320,14 +320,14 @@ fn translate_expression(
             (temp, instructions)
         }
 
-        // Sub, Mul, Call, Index, etc. — ainda não implementados.
+        // Sub, Mul, Call, Index, etc. — not yet implemented.
         _ => todo!(),
     }
 }
 
-/// Traduz uma expressão usada como *condição* de controle de fluxo.
-/// Emite saltos para `true_label` (condição verdadeira) ou `false_label` (falsa),
-/// em vez de materializar um booleano em temporário.
+/// Translates an expression used as a control-flow *condition*.
+/// Emits jumps to `true_label` (condition true) or `false_label` (false),
+/// instead of materializing a boolean in a temporary.
 fn translate_conditional(
     expression: CheckedExpr,
     env: &mut Environment,
@@ -335,11 +335,11 @@ fn translate_conditional(
     false_label: String,
 ) -> Vec<Instruction> {
     match expression.exp {
-        // Constantes booleanas: salto direto, sem código de teste.
+        // Boolean constants: direct jump, no test code.
         Expr::Literal(Literal::Bool(true)) => vec![Instruction::JMP(true_label)],
         Expr::Literal(Literal::Bool(false)) => vec![Instruction::JMP(false_label)],
 
-        // Variável bool: se true → true_label; senão cai no JMP para false_label.
+        // Boolean variable: if true → true_label; otherwise fall through to JMP false_label.
         Expr::Ident(name) => {
             let addr = Address::Variable(name.to_string(), expression.ty);
             vec![
@@ -348,7 +348,7 @@ fn translate_conditional(
             ]
         }
 
-        // `a && b`: se `a` falha vai direto para false; senão testa `b`.
+        // `a && b`: if `a` fails go directly to false; otherwise test `b`.
         Expr::And(left, right) => {
             let label_right = env.new_label();
             let mut instructions =
@@ -358,7 +358,7 @@ fn translate_conditional(
             instructions
         }
 
-        // `a || b`: se `a` passa vai direto para true; senão testa `b`.
+        // `a || b`: if `a` succeeds go directly to true; otherwise test `b`.
         Expr::Or(left, right) => {
             let label_right = env.new_label();
             let mut instructions =
@@ -368,10 +368,10 @@ fn translate_conditional(
             instructions
         }
 
-        // `!e` inverte os destinos true/false.
+        // `!e` swaps true/false destinations.
         Expr::Not(expr) => translate_conditional(*expr, env, false_label, true_label),
 
-        // Comparações: saltam para true_label se a relação vale; senão JMP false_label.
+        // Comparisons: jump to true_label if relation holds; otherwise JMP false_label.
         Expr::Lt(left, right) => {
             translate_relational(*left, *right, Operator::LT, true_label, false_label, env)
         }
@@ -391,7 +391,7 @@ fn translate_conditional(
             translate_relational(*left, *right, Operator::NE, true_label, false_label, env)
         }
 
-        // Expressão geral: avalia para um endereço e trata como truthy/falsy.
+        // General expression: evaluate to an address and treat as truthy/falsy.
         _ => {
             let (addr, mut instructions) = translate_expression(expression, env);
             instructions.push(Instruction::ConditionalJMP(addr, true_label));
@@ -401,8 +401,8 @@ fn translate_conditional(
     }
 }
 
-/// Avalia dois operandos e emite salto relacional:
-/// `if lhs op rhs goto true_label` seguido de `goto false_label`.
+/// Evaluates two operands and emits a relational jump:
+/// `if lhs op rhs goto true_label` followed by `goto false_label`.
 fn translate_relational(
     left: CheckedExpr,
     right: CheckedExpr,
