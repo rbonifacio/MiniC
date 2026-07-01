@@ -202,3 +202,108 @@ fn test_type_check_print_wrong_arity() {
     let result = parse_and_type_check("void main() { print(1, 2); }");
     assert!(result.is_err(), "expected arity error for print(1, 2)");
 }
+
+// ---------------------------------------------------------------------------
+// For statement (Milestone 2): the type checker scopes the `init` variable to
+// the loop, requires `cond` to be Bool, and validates the `update` assignment.
+// ---------------------------------------------------------------------------
+
+// A canonical, fully-formed `for` should type-check.
+#[test]
+fn test_type_check_for_well_typed() {
+    let result = parse_and_type_check(
+        "void main() { int sum = 0; for (int i = 0; i < 10; i = i + 1) { sum = sum + i; } }",
+    );
+    assert!(result.is_ok(), "{:?}", result.err());
+}
+
+// Every header clause may be omitted (`for (;;)`); an absent condition is
+// treated as "always true" and is therefore well-typed.
+#[test]
+fn test_type_check_for_all_clauses_omitted() {
+    let result = parse_and_type_check("void main() { for (;;) { return; } }");
+    assert!(result.is_ok(), "{:?}", result.err());
+}
+
+// `init` may be a bare assignment to an already-declared variable.
+#[test]
+fn test_type_check_for_assign_init() {
+    let result = parse_and_type_check(
+        "void main() { int i = 0; for (i = 0; i < 3; i = i + 1) { i = i; } }",
+    );
+    assert!(result.is_ok(), "{:?}", result.err());
+}
+
+// A non-boolean condition must be rejected.
+#[test]
+fn test_type_check_for_non_bool_condition() {
+    let result = parse_and_type_check(
+        "void main() { for (int i = 0; i + 1; i = i + 1) { i = i; } }",
+    );
+    assert!(result.is_err(), "expected non-bool condition to be rejected");
+    assert!(result.unwrap_err().message.contains("for condition must be Bool"));
+}
+
+// The variable introduced by `init` must not leak past the loop.
+#[test]
+fn test_type_check_for_init_var_scoped_to_loop() {
+    let result = parse_and_type_check(
+        "void main() { for (int i = 0; i < 3; i = i + 1) { i = i; } i = 5; }",
+    );
+    assert!(result.is_err(), "expected loop variable to be out of scope after the loop");
+    assert!(result.unwrap_err().message.contains("undeclared"));
+}
+
+// A type error inside the update assignment must be reported.
+#[test]
+fn test_type_check_for_bad_update() {
+    let result = parse_and_type_check(
+        "void main() { for (int i = 0; i < 3; i = true) { i = i; } }",
+    );
+    assert!(result.is_err(), "expected ill-typed update to be rejected");
+}
+
+// --- Optional header clauses (each omitted individually) ---
+
+#[test]
+fn test_type_check_for_omitted_init() {
+    let result = parse_and_type_check(
+        "void main() { int i = 0; for (; i < 3; i = i + 1) { i = i; } }",
+    );
+    assert!(result.is_ok(), "{:?}", result.err());
+}
+
+#[test]
+fn test_type_check_for_omitted_cond() {
+    let result = parse_and_type_check(
+        "void main() { for (int i = 0; ; i = i + 1) { if i >= 3 { return; } } }",
+    );
+    assert!(result.is_ok(), "{:?}", result.err());
+}
+
+#[test]
+fn test_type_check_for_omitted_update() {
+    let result = parse_and_type_check(
+        "void main() { for (int i = 0; i < 3; ) { i = i + 1; } }",
+    );
+    assert!(result.is_ok(), "{:?}", result.err());
+}
+
+// Assignment init requires the target to already exist in the enclosing scope.
+#[test]
+fn test_type_check_for_assign_init_undeclared() {
+    let result = parse_and_type_check(
+        "void main() { for (i = 0; i < 3; i = i + 1) { i = i; } }",
+    );
+    assert!(result.is_err(), "expected undeclared init assignment target");
+    assert!(result.unwrap_err().message.contains("undeclared"));
+}
+
+// The loop variable from a declaration init is visible in cond, body, and update.
+#[test]
+fn test_type_check_for_init_var_visible_in_header() {
+    let result = parse_and_type_check(
+        "void main() { for (int i = 0; i < i + 10; i = i + 1) { i = i; } }",
+    );
+    assert!(result.is_ok(), "{:?}", result.err());
+}

@@ -1,0 +1,12 @@
+# --tac emits TAC for a simple program
+$ ./target/debug/mini_c --tac tests/fixtures/tac_simple.minic
+main
+x = 1
+temp1 = x + 2
+x = temp1
+>=0
+
+# --tac on a type-error program fails before codegen
+$ ./target/debug/mini_c --tac tests/fixtures/cli_type_mismatch.minic
+>2 /Type error/
+>=1

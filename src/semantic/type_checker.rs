@@ -232,6 +232,61 @@ fn type_check_stmt(
                 body: Box::new(body_checked),
             }
         }
+        
+        Statement::For {
+            init,
+            cond,
+            update,
+            body,
+        } => {
+            
+            let snapshot = env.snapshot();
+
+
+            let init_checked = init
+                .as_ref()
+                .map(|s| type_check_stmt(s, env, expected_return))
+                .transpose()?;
+
+
+            let cond_checked = cond
+                .as_ref()
+                .map(|c| type_check_expr_to_typed(c, env))
+                .transpose()?;
+            if let Some(c) = &cond_checked {
+                if c.ty != Type::Bool {
+                    return Err(TypeError::new(format!(
+                        "for condition must be Bool, got {:?}",
+                        c.ty
+                    )));
+                }
+            }
+
+
+            let update_checked = match update {
+                Some(u) => {
+                    if !matches!(u.stmt, Statement::Assign { .. }) {
+                        return Err(TypeError::new("for update must be an assignment"));
+                    }
+                    Some(type_check_stmt(u, env, expected_return)?)
+                }
+                None => None,
+            };
+
+
+            let body_checked = type_check_stmt(body, env, expected_return)?;
+
+
+            env.restore(snapshot);
+
+            Statement::For {
+                init: init_checked.map(Box::new),
+                cond: cond_checked.map(Box::new),
+                update: update_checked.map(Box::new),
+                body: Box::new(body_checked),
+            }
+        }
+
         Statement::Return(expr) => match expr {
             None => {
                 if *expected_return != Type::Unit {
