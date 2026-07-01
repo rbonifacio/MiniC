@@ -22,7 +22,8 @@ pub enum Instruction {
     ConditionalJMPFalse(Address, Label),
     ConditionalJMPRelational(Operator, Address, Address, Label),
     Param(Address),
-    Call(Option<Address>, Name, usize),   // It is either 'call p, n' or 'y = call p, n'
+    Call(Option<Address>, Name, usize),        // It is either 'call p, n' or 'y = call p, n'
+    ExternCall(Option<Address>, Name, usize),  // y = extern_call p, n (native/stdlib function)
     Store(Address, Address, Address),     // x[i] = y
     Load(Address, Address, Address),      // x = y[i]
     Return(Option<Address>),
@@ -43,6 +44,9 @@ pub enum Operator {
     NE,                // a != b
     SL,                // shift left
     SR,                // shift right
+    Concat,            // a ++ b   (string concatenation)
+    Len,               // len(a)   (string or array length)
+    Contains,          // contains(a, b)
 }
 
 // do i = i + 1 while(a[i] < v);

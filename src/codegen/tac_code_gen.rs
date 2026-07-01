@@ -1,18 +1,31 @@
 use crate::ir::ast::{CheckedProgram, CheckedFunDecl, CheckedStmt, Statement, Expr, CheckedExpr, Literal, Type};
 use crate::ir::tac::{TACProgram, Instruction, Address, Operator};
+use crate::codegen::linker::Linker;
 
 
 #[derive(Clone)]
 pub struct Environment {
     current_label : usize,
-    current_temporary: usize
+    current_temporary: usize,
+    extern_names: std::collections::HashSet<String>,
 }
 
 impl Environment {
     pub fn new() -> Self {
         Self {
             current_label: 0,
-            current_temporary: 0
+            current_temporary: 0,
+            extern_names: std::collections::HashSet::new(),
+        }
+    }
+
+    /// Create an environment that is aware of which names are external (native stdlib).
+    /// The code generator uses this to emit ExternCall instead of Call for those names.
+    pub fn with_linker(linker: &Linker) -> Self {
+        Self {
+            current_label: 0,
+            current_temporary: 0,
+            extern_names: linker.extern_names().clone(),
         }
     }
 
@@ -24,6 +37,10 @@ impl Environment {
     fn new_temporary(&mut self) -> String {
         self.current_temporary += 1;
         format!("temp{}", self.current_temporary)
+    }
+
+    fn is_extern(&self, name: &str) -> bool {
+        self.extern_names.contains(name)
     }
 }
 
@@ -77,7 +94,12 @@ pub fn translate_statement(statement: CheckedStmt, env: &mut Environment) -> Vec
             for (addr, _) in &addresses_and_instructions {
                 instructions.push(Instruction::Param(addr.clone()));
             }
-            instructions.push(Instruction::Call(None, name, addresses_and_instructions.len()));
+            // Emit ExternCall for native stdlib functions, Call for user-defined functions.
+            if env.is_extern(&name) {
+                instructions.push(Instruction::ExternCall(None, name, addresses_and_instructions.len()));
+            } else {
+                instructions.push(Instruction::Call(None, name, addresses_and_instructions.len()));
+            }
             instructions
         }
         Statement::If{cond, then_branch: then_body, else_branch: Some(else_body)} => {
@@ -165,6 +187,57 @@ fn translate_expression(expression: CheckedExpr, env: &mut Environment) -> (Addr
             instructions.push(Instruction::BinaryAssignment(Operator::Add, temp.clone(), l_addr, r_addr));
             (temp, instructions)
         }
+        // String Expressions. 'concat', 'len' and 'contains' operate over Str and Array values.
+        Expr::Concat(left, right) => {
+            let (l_addr, l_instructions) = translate_expression(*left, env);
+            let (r_addr, r_instructions) = translate_expression(*right, env);
+            let mut instructions = [l_instructions, r_instructions].concat();
+            let temp = Address::Temporary(env.new_temporary(), expression.ty);
+            instructions.push(Instruction::BinaryAssignment(Operator::Concat, temp.clone(), l_addr, r_addr));
+            (temp, instructions)
+        },
+        Expr::Len(arg) => {
+            let (addr, mut instructions) = translate_expression(*arg, env);
+            let temp = Address::Temporary(env.new_temporary(), expression.ty);
+            instructions.push(Instruction::UnaryAssignment(Operator::Len, temp.clone(), addr));
+            (temp, instructions)
+        },
+        Expr::Contains(container, item) => {
+            let (cont_addr, cont_instructions) = translate_expression(*container, env);
+            let (item_addr, item_instructions) = translate_expression(*item, env);
+            let mut instructions = [cont_instructions, item_instructions].concat();
+            let temp = Address::Temporary(env.new_temporary(), expression.ty);
+            instructions.push(Instruction::BinaryAssignment(Operator::Contains, temp.clone(), cont_addr, item_addr));
+            (temp, instructions)
+        },
+        // Function Call Expressions. The result of the call is stored in a fresh temporary.
+        // The translation follows the same pattern as Statement::Call: first evaluate all
+        // arguments, then emit a 'param' instruction for each, then emit the call itself.
+        // If the function is a native stdlib function (registered in the linker), we emit
+        // ExternCall instead of Call. This allows a future executor or backend to distinguish
+        // between user-defined functions and external (native) functions.
+        //
+        // addresses_and_instructions :: [(Address, [Instruction])]
+        Expr::Call { name, args } => {
+            let addresses_and_instructions = args.into_iter()
+                .map(|expr| translate_expression(expr, env))
+                .collect::<Vec<_>>();
+            let mut instructions = addresses_and_instructions.iter()
+                .fold(vec![], |mut acc, (_, inst)| { acc.extend(inst.clone()); acc });
+
+            // includes a 'param' instruction for every address built from the arguments.
+            for (addr, _) in &addresses_and_instructions {
+                instructions.push(Instruction::Param(addr.clone()));
+            }
+            let temp = Address::Temporary(env.new_temporary(), expression.ty);
+            // Emit ExternCall for native stdlib functions, Call for user-defined functions.
+            if env.is_extern(&name) {
+                instructions.push(Instruction::ExternCall(Some(temp.clone()), name, addresses_and_instructions.len()));
+            } else {
+                instructions.push(Instruction::Call(Some(temp.clone()), name, addresses_and_instructions.len()));
+            }
+            (temp, instructions)
+        },
         _ => todo!()
     }
 }
