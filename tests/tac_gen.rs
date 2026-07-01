@@ -94,17 +94,16 @@ fn assign(name: &str, value: CheckedExpr) -> CheckedStmt {
 // MiniC:
 //   if (x < y) { z = x + y; } else { z = x; }
 //
-// TAC esperado (estrutura antiga com operador negado indo para o else):
-//   if x >= y goto Label1:
+// TAC esperado (labels separados para then / else / fim):
+//   if x < y goto Label1:   ← then
+//   goto Label2:             ← else
+//   Label1:
 //   temp1 = x + y
 //   z = temp1
-//   goto Label2:
-//   Label1:
-//   z = x
+//   goto Label3:             ← fim (pula o else)
 //   Label2:
-//
-// Nota: a implementação atual usa labels separados para then/else/end;
-// este teste documenta o comportamento esperado pela versão anterior.
+//   z = x
+//   Label3:
 #[test]
 fn test_if_else_with_relational_condition() {
     // Monta o nó `If` na AST tipada.
@@ -130,17 +129,19 @@ fn test_if_else_with_relational_condition() {
         instructions,
         vec![
             Instruction::ConditionalJMPRelational(
-                Operator::GTE,
+                Operator::LT,
                 x.clone(),
                 y.clone(),
                 "Label1:".to_string(),
             ),
-            Instruction::BinaryAssignment(Operator::Add, temp.clone(), x.clone(), y.clone()),
-            Instruction::CopyAssignment(z.clone(), temp),
             Instruction::JMP("Label2:".to_string()),
             Instruction::Label("Label1:".to_string()),
-            Instruction::CopyAssignment(z, x),
+            Instruction::BinaryAssignment(Operator::Add, temp.clone(), x.clone(), y.clone()),
+            Instruction::CopyAssignment(z.clone(), temp),
+            Instruction::JMP("Label3:".to_string()),
             Instruction::Label("Label2:".to_string()),
+            Instruction::CopyAssignment(z, x),
+            Instruction::Label("Label3:".to_string()),
         ]
     );
 }
