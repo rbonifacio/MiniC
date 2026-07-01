@@ -1,11 +1,17 @@
 use std::{env, fs, process};
 
-use mini_c::{interpreter::{interpret, run_tests}, parser::program, semantic::type_check};
+use mini_c::{
+    codegen::{format_program, tac_code_gen::generate_tac},
+    interpreter::{interpret, run_tests},
+    parser::program,
+    semantic::type_check,
+};
 
 fn usage() -> ! {
     eprintln!("Usage: minic --check <file.minic>");
     eprintln!("       minic --run   <file.minic>");
     eprintln!("       minic --test  <file.minic>");
+    eprintln!("       minic --tac   <file.minic>");
     process::exit(1);
 }
 
@@ -64,6 +70,11 @@ fn main() {
                 eprintln!("{}", e);
                 process::exit(1);
             }
+        }
+        // Milestone 3: --tac lowers the checked program to Three-Address Code
+        "--tac" => {
+            let tac = generate_tac(&checked);
+            println!("{}", format_program(&tac));
         }
         // Task 1.1: unknown flag
         _ => usage(),

@@ -63,6 +63,9 @@ pub enum Type {
     Any,
 }
 
+/// An identifier name (variable, function, or temporary).
+pub type Name = String;
+
 /// A literal value.
 #[derive(Debug, Clone, PartialEq)]
 pub enum Literal {
@@ -181,6 +184,13 @@ pub struct TestDecl<Ty> {
 pub struct Program<Ty> {
     pub functions: Vec<FunDecl<Ty>>,
     pub tests: Vec<TestDecl<Ty>>,
+}
+
+impl<Ty> Program<Ty> {
+    /// Returns the `main` function declaration, if the program defines one.
+    pub fn main_function(&self) -> Option<&FunDecl<Ty>> {
+        self.functions.iter().find(|f| f.name == "main")
+    }
 }
 
 // Type synonyms for checked and unchecked phases.

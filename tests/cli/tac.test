@@ -1,0 +1,21 @@
+# --tac lowers a function plus a Project 8 test block to Three-Address Code
+$ ./target/debug/mini_c --tac tests/fixtures/tac_simple.minic
+add:
+  temp1 := a + b
+  return temp1
+test_add_works:
+  param 1
+  param 2
+  temp2 := call add, 2
+  if temp2 == 3 goto L1
+  goto L2
+L2:
+  param "assertion failed"
+  call assert_fail, 1
+L1:
+>=0
+
+# --tac on a type-error program fails before code generation
+$ ./target/debug/mini_c --tac tests/fixtures/cli_type_mismatch.minic
+>2 /Type error/
+>=1
