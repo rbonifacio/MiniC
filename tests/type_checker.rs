@@ -202,3 +202,45 @@ fn test_type_check_print_wrong_arity() {
     let result = parse_and_type_check("void main() { print(1, 2); }");
     assert!(result.is_err(), "expected arity error for print(1, 2)");
 }
+
+// ---------------------------------------------------------------------------
+// 8. Built-in test framework
+// ---------------------------------------------------------------------------
+
+#[test]
+fn test_type_check_assert_bool_ok() {
+    assert!(parse_and_type_check("void main() { assert true; }").is_ok());
+}
+
+#[test]
+fn test_type_check_assert_non_bool_err() {
+    let result = parse_and_type_check("void main() { assert 42; }");
+    assert!(result.is_err());
+    assert!(result.unwrap_err().message.contains("Bool"));
+}
+
+#[test]
+fn test_type_check_test_block_ok() {
+    let result = parse_and_type_check(r#"test "t" { assert true; }"#);
+    assert!(result.is_ok());
+}
+
+#[test]
+fn test_type_check_test_block_no_main_required() {
+    // A file with only test blocks (no main) should pass type checking.
+    let result = parse_and_type_check(r#"test "t" { assert 1 == 1; }"#);
+    assert!(result.is_ok(), "{}", result.unwrap_err().message);
+}
+
+#[test]
+fn test_type_check_duplicate_test_name_err() {
+    let result = parse_and_type_check(r#"test "foo" { assert true; } test "foo" { assert false; }"#);
+    assert!(result.is_err());
+    assert!(result.unwrap_err().message.contains("duplicate"));
+}
+
+#[test]
+fn test_type_check_test_block_bad_assert_type() {
+    let result = parse_and_type_check(r#"test "t" { assert 1 + 1; }"#);
+    assert!(result.is_err());
+}

@@ -59,27 +59,78 @@ use crate::ir::ast::CheckedProgram;
 use crate::stdlib::NativeRegistry;
 
 use eval_expr::eval_call;
-use value::{FnValue, RuntimeError, Value};
+use value::{ErrorKind, FnValue, RuntimeError, Value};
 
-/// Interpret a type-checked MiniC program, starting execution at `main`.
-pub fn interpret(program: &CheckedProgram) -> Result<(), RuntimeError> {
+fn build_env(program: &CheckedProgram) -> Environment<Value> {
     let mut env = Environment::<Value>::new();
-
-    // Register native stdlib functions as Value::Fn(FnValue::Native) bindings.
     let registry = NativeRegistry::default();
     for (name, entry) in registry.iter() {
         env.declare(name.clone(), Value::Fn(FnValue::Native(entry.func)));
     }
-
-    // Register user-defined functions as Value::Fn(FnValue::UserDefined) bindings.
     for fun in &program.functions {
         env.declare(fun.name.clone(), Value::Fn(FnValue::UserDefined(fun.clone())));
     }
+    env
+}
 
+/// Interpret a type-checked MiniC program, starting execution at `main`.
+pub fn interpret(program: &CheckedProgram) -> Result<(), RuntimeError> {
+    let mut env = build_env(program);
     if env.get("main").is_none() {
         return Err(RuntimeError::new("no 'main' function found"));
     }
-
     eval_call("main", vec![], &mut env)?;
     Ok(())
+}
+
+/// Run all test blocks in a program. Prints one line per test and a summary.
+///
+/// Each test ends in one of three outcomes, distinguished by the
+/// [`ErrorKind`] carried by the error (not just its message):
+///
+/// * `PASS`  — the body ran to completion with no failed assertion.
+/// * `FAIL`  — an `assert` evaluated to `false` ([`ErrorKind::Assertion`]).
+/// * `ERROR` — a genuine runtime fault aborted the test before it could
+///   conclude ([`ErrorKind::Runtime`]): undefined variable, division by
+///   zero, out-of-bounds index, etc.
+///
+/// Returns `Ok(())` only if every test passed; otherwise `Err`.
+pub fn run_tests(program: &CheckedProgram) -> Result<(), RuntimeError> {
+    use exec_stmt::exec_stmt;
+
+    let mut passed = 0usize;
+    let mut failed = 0usize;
+    let mut errored = 0usize;
+
+    for test in &program.tests {
+        let mut env = build_env(program);
+        match exec_stmt(&test.body, &mut env) {
+            Ok(_) => {
+                println!("PASS  {}", test.name);
+                passed += 1;
+            }
+            Err(e) => match e.kind {
+                ErrorKind::Assertion => {
+                    println!("FAIL  {} — {}", test.name, e.message);
+                    failed += 1;
+                }
+                ErrorKind::Runtime => {
+                    println!("ERROR {} — {}", test.name, e.message);
+                    errored += 1;
+                }
+            },
+        }
+    }
+
+    println!("{} passed, {} failed, {} errored", passed, failed, errored);
+
+    let not_passed = failed + errored;
+    if not_passed > 0 {
+        Err(RuntimeError::new(format!(
+            "{} test(s) did not pass ({} failed, {} errored)",
+            not_passed, failed, errored
+        )))
+    } else {
+        Ok(())
+    }
 }

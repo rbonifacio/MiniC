@@ -67,7 +67,7 @@ pub fn eval_expr(expr: &CheckedExpr, env: &mut Environment<Value>) -> Result<Val
         Expr::Add(l, r) => numeric_binop(eval_expr(l, env)?, eval_expr(r, env)?, |a, b| a + b, |a, b| a + b),
         Expr::Sub(l, r) => numeric_binop(eval_expr(l, env)?, eval_expr(r, env)?, |a, b| a - b, |a, b| a - b),
         Expr::Mul(l, r) => numeric_binop(eval_expr(l, env)?, eval_expr(r, env)?, |a, b| a * b, |a, b| a * b),
-        Expr::Div(l, r) => numeric_binop(eval_expr(l, env)?, eval_expr(r, env)?, |a, b| a / b, |a, b| a / b),
+        Expr::Div(l, r) => div_binop(eval_expr(l, env)?, eval_expr(r, env)?),
 
         Expr::Lt(l, r) => numeric_cmp(eval_expr(l, env)?, eval_expr(r, env)?, |a, b| a < b, |a, b| a < b),
         Expr::Le(l, r) => numeric_cmp(eval_expr(l, env)?, eval_expr(r, env)?, |a, b| a <= b, |a, b| a <= b),
@@ -189,6 +189,15 @@ fn eval_literal(lit: &Literal) -> Value {
         Literal::Bool(b) => Value::Bool(*b),
         Literal::Str(s) => Value::Str(s.clone()),
     }
+}
+
+/// Division, guarding integer division by zero (which would otherwise panic).
+/// Float division by zero yields the IEEE infinity, as in Rust.
+fn div_binop(lv: Value, rv: Value) -> Result<Value, RuntimeError> {
+    if let Value::Int(0) = &rv {
+        return Err(RuntimeError::new("division by zero"));
+    }
+    numeric_binop(lv, rv, |a, b| a / b, |a, b| a / b)
 }
 
 fn numeric_binop(

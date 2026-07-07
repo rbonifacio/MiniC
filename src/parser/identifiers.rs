@@ -28,7 +28,9 @@ use nom::{
 };
 
 /// Reserved words: boolean literals and type names.
-const RESERVED: &[&str] = &["true", "false", "int", "float", "bool", "str", "void", "return"];
+const RESERVED: &[&str] = &[
+    "true", "false", "int", "float", "bool", "str", "void", "return", "assert", "test",
+];
 
 /// Parse an identifier (variable name).
 /// Must start with letter or underscore; subsequent chars may be letter, digit, or underscore.

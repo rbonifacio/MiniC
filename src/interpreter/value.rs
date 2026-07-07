@@ -128,15 +128,43 @@ impl fmt::Display for Value {
     }
 }
 
-/// A runtime error produced during interpretation.
+/// Classifies *why* interpretation failed, so callers (notably the test
+/// runner) can tell a **failed assertion** apart from a **genuine execution
+/// fault**.
+///
+/// This distinction matters in `--test` mode: a `false` assertion is an
+/// expected *test failure* (the code under test is wrong), whereas a runtime
+/// fault (undefined variable, division by zero, out-of-bounds index, …) means
+/// the test itself blew up before it could conclude.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ErrorKind {
+    /// An `assert` expression evaluated to `false`. A *test failure*.
+    Assertion,
+    /// Any other fault during execution (undefined variable, division by
+    /// zero, bad array index, non-bool condition, …). A *runtime error*.
+    Runtime,
+}
+
+/// A runtime error produced during interpretation, tagged with its [`ErrorKind`].
 #[derive(Debug, Clone, PartialEq)]
 pub struct RuntimeError {
+    pub kind: ErrorKind,
     pub message: String,
 }
 
 impl RuntimeError {
+    /// A generic runtime fault (default kind). Existing call sites use this.
     pub fn new(msg: impl Into<String>) -> Self {
         Self {
+            kind: ErrorKind::Runtime,
+            message: msg.into(),
+        }
+    }
+
+    /// A failed `assert` — a test failure rather than an execution fault.
+    pub fn assertion(msg: impl Into<String>) -> Self {
+        Self {
+            kind: ErrorKind::Assertion,
             message: msg.into(),
         }
     }
@@ -144,7 +172,11 @@ impl RuntimeError {
 
 impl fmt::Display for RuntimeError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "RuntimeError: {}", self.message)
+        let label = match self.kind {
+            ErrorKind::Assertion => "AssertionError",
+            ErrorKind::Runtime => "RuntimeError",
+        };
+        write!(f, "{}: {}", label, self.message)
     }
 }
 
