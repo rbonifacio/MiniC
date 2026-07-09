@@ -17,3 +17,13 @@ $ ./target/debug/mini_c --check tests/fixtures/cli_type_mismatch.minic
 $ ./target/debug/mini_c --check tests/fixtures/invalid_syntax.minic
 >2 /Type error: program must have a main function/
 >=1
+
+# --check on a valid switch program (int/bool targets, default, no-match-no-default) exits 0
+$ ./target/debug/mini_c --check tests/fixtures/interpreter_switch.minic
+'tests/fixtures/interpreter_switch.minic' is well-typed.
+>=0
+
+# --check on a switch with a non-Int/Bool target exits 1 with a type error on stderr
+$ ./target/debug/mini_c --check tests/fixtures/cli_switch_type_mismatch.minic
+>2 /Type error: switch target must be Int or Bool/
+>=1

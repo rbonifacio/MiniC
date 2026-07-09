@@ -9,7 +9,7 @@
 //! * [`Literal`] — a constant value written directly in source code.
 //! * [`Expr`] / [`ExprD`] — expressions (arithmetic, comparisons, calls, …).
 //! * [`Statement`] / [`StatementD`] — statements (declarations, assignments,
-//!   `if`, `while`, `return`, blocks).
+//!   `if`, `while`, `switch`, `return`, blocks).
 //! * [`FunDecl`] — a single function declaration with its body.
 //! * [`Program`] — the top-level container: a list of function declarations.
 //!
@@ -69,6 +69,13 @@ pub enum Literal {
     Float(f64),
     Str(String),
     Bool(bool),
+}
+
+/// A `switch` case label: either a literal to match against, or the `default` arm.
+#[derive(Debug, Clone, PartialEq)]
+pub enum MatchCase {
+    CaseLiteral(Literal),
+    CaseDefault,
 }
 
 /// Expression with type decoration.
@@ -150,6 +157,11 @@ pub enum Statement<Ty> {
     While {
         cond: Box<ExprD<Ty>>,
         body: Box<StatementD<Ty>>,
+    },
+    /// Switch statement: dispatches to the first matching case, or `default` if none match.
+    Switch {
+        target: Box<ExprD<Ty>>,
+        cases: Vec<(MatchCase, Box<StatementD<Ty>>)>,
     },
     /// Return statement: `return [expr]`.
     Return(Option<Box<ExprD<Ty>>>),

@@ -133,6 +133,23 @@ MiniC allows mixing `int` and `float` in arithmetic:
 The type checker applies these rules automatically. `1 + 3.14` is legal and
 has type `float`.
 
+### Switch statement rules
+
+`switch target { case lit: … default: … }` has a few rules of its own,
+checked in `type_check_stmt`:
+
+- `target`'s type must be `Int` or `Bool` — no other type may be switched on.
+- Each `case` literal's type must be compatible with `target`'s type (an
+  `Int` target rejects a `bool` case label, and vice versa).
+- No two `case` labels may repeat the same literal (`duplicate case label in
+  switch`).
+- At most one `default` arm is allowed.
+
+Each arm's body is type-checked with `type_check_stmt` like any other
+statement — since arms are wrapped in a `Block` by the parser, they get
+their own scope for free (see "Block scoping" above) without any extra
+snapshot/restore logic in the `Switch` case itself.
+
 ### `Type::Any` for `print`
 
 The built-in `print` function must accept any value type. Rather than

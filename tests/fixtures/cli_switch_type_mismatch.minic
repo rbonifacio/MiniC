@@ -1,0 +1,6 @@
+void main() {
+    float x = 1.5;
+    switch x {
+        case 1: print(1);
+    }
+}

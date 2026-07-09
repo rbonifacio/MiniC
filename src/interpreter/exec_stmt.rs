@@ -34,7 +34,7 @@
 //! This gives MiniC correct lexical block scoping without a scope stack.
 
 use crate::environment::Environment;
-use crate::ir::ast::{CheckedExpr, CheckedStmt, Expr, Statement};
+use crate::ir::ast::{CheckedExpr, CheckedStmt, Expr, Literal, MatchCase, Statement};
 
 use super::eval_expr::{eval_call, eval_expr};
 use super::value::{RuntimeError, Value};
@@ -111,6 +111,33 @@ pub fn exec_stmt(stmt: &CheckedStmt, env: &mut Environment<Value>) -> ExecResult
                 }
             }
         },
+        
+        // --- Switch ---
+        // The type checker guarantees no duplicate case labels and at most one
+        // default, so this just finds the first match.
+        Statement::Switch { target, cases } => {
+            let target_val = eval_expr(target, env)?;
+
+            for (case, stmt) in cases {
+                match case {
+                    MatchCase::CaseLiteral(l) => {
+                        let matches = match (l, &target_val) {
+                            (Literal::Int(i), Value::Int(v)) => i == v,
+                            (Literal::Bool(b1), Value::Bool(b2)) => b1 == b2,
+                            _ => false,
+                        };
+                        if matches {
+                            return exec_stmt(stmt, env);
+                        }
+                    }
+                    MatchCase::CaseDefault => {
+                        return exec_stmt(stmt, env);
+                    }
+                }
+            }
+
+            Ok(None) // No case matched, and no default was present.
+        }
 
         // --- Return ---
         Statement::Return(Some(expr)) => {

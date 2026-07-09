@@ -116,6 +116,24 @@ while i < 10 {
 }
 ```
 
+### Switch
+
+```c
+switch x {
+  case 1: print("one");
+  case 2: print("two");
+  default: print("something else");
+}
+```
+
+The target expression must be `int` or `bool`; each `case` label must be a
+literal of that same type (`1`, `true`, …). The first matching `case` runs;
+if none match, `default` runs. Both `case` and `default` are optional and may
+appear zero or more / zero or one times respectively — `default`, if
+present, must come last. A case is *not* fall-through: once a matching arm's
+statements finish, the switch ends (there is no need for `break`). If no
+`case` matches and there is no `default`, the switch does nothing.
+
 ### Function call (as a statement)
 
 ```c

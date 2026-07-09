@@ -1,0 +1,23 @@
+void main() {
+    int x = 2;
+    switch x {
+        case 1: print(100);
+        case 2: print(200);
+        case 3: print(300);
+        default: print(999);
+    }
+
+    bool b = false;
+    switch b {
+        case true: print(1);
+        default: print(0);
+    }
+
+    int y = 5;
+    switch y {
+        case 1: print(1);
+        case 2: print(2);
+    }
+
+    print("done");
+}

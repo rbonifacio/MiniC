@@ -5,7 +5,7 @@
 //! Exposes two public functions:
 //!
 //! * [`statement`] — the top-level entry point; tries each statement form in
-//!   order: `return`, `if`, `while`, call-statement, block, declaration,
+//!   order: `return`, `if`, `while`, `switch`, call-statement, block, declaration,
 //!   assignment.
 //! * [`assignment`] — parses `lvalue = expression ;`; exported separately
 //!   because the test suite uses it directly.
@@ -13,15 +13,16 @@
 //! # Grammar
 //!
 //! ```text
-//! statement  := block | if_stmt | while_stmt | simple ';'
+//! statement  := block | if_stmt | while_stmt | switch_stmt | simple ';'
 //! block      := '{' statement* '}'
 //! if_stmt    := 'if' expr block ['else' block]
 //! while_stmt := 'while' expr block
+//! switch expr { [case literal: statement*]* [default: statement*]? }
 //! simple     := return | decl | call | assign
 //! ```
 //!
 //! Every simple statement is terminated by `;`.
-//! Compound statements (`if`, `while`, block) end with `}` and need no `;`.
+//! Compound statements (`if`, `while`, `switch`, block) end with `}` and need no `;`.
 //!
 //! # Design Decisions
 //!
@@ -40,10 +41,11 @@
 //! suffixes in a loop using the same pattern as the `primary` parser in
 //! `expressions.rs`, producing a left-associative `Index` chain.
 
-use crate::ir::ast::{Expr, ExprD, Statement, StatementD, UncheckedExpr, UncheckedStmt};
+use crate::ir::ast::{MatchCase, Expr, ExprD, Statement, StatementD, UncheckedExpr, UncheckedStmt};
 use crate::parser::expressions::{expression, parse_call};
 use crate::parser::functions::type_name;
 use crate::parser::identifiers::identifier;
+use crate::parser::literals::literal;
 use nom::{
     branch::alt,
     bytes::complete::tag,
@@ -58,7 +60,7 @@ fn wrap(s: Statement<()>) -> UncheckedStmt {
     StatementD { stmt: s, ty: () }
 }
 
-/// Parse any statement: block | if | while | return | decl | call | assignment.
+/// Parse any statement: block | if | while | switch | return | decl | call | assignment.
 pub fn statement(input: &str) -> IResult<&str, UncheckedStmt> {
     preceded(
         multispace0,
@@ -66,6 +68,7 @@ pub fn statement(input: &str) -> IResult<&str, UncheckedStmt> {
             block_statement,
             if_statement,
             while_statement,
+            switch_statement,
             return_statement,
             decl_statement,
             call_statement,
@@ -156,6 +159,56 @@ fn while_statement(input: &str) -> IResult<&str, UncheckedStmt> {
         wrap(Statement::While {
             cond: Box::new(cond),
             body: Box::new(body),
+        }),
+    ))
+}
+
+/// Parse a switch-arm body: zero or more statements, with no `{ }` delimiters —
+/// the arm ends where the next `case`/`default`/`}` begins. Wrapped in a `Block`
+/// so each arm is still a single `StatementD`, matching `block_statement`'s shape.
+fn case_body(input: &str) -> IResult<&str, Box<UncheckedStmt>> {
+    map(many0(statement), |seq| {
+        Box::new(wrap(Statement::Block { seq }))
+    })(input)
+}
+
+/// Parse a switch statement: `switch expr { [case literal: statement*]* [default: statement*]? }`.
+/// `default` is represented as `MatchCase::CaseDefault`. At most one `default`
+/// may appear (a second `default:` is left unconsumed and trips the closing
+/// `}`, so it surfaces as a parse error).
+fn switch_statement(input: &str) -> IResult<&str, UncheckedStmt> {
+    let (rest, _) = preceded(multispace0, tag("switch"))(input)?;
+    let (rest, target) = preceded(multispace0, expression)(rest)?;
+    let (rest, _) = preceded(multispace0, char('{'))(rest)?;
+
+    let (rest, mut cases) = many0(map(
+        tuple((
+            preceded(multispace0, tag("case")),
+            preceded(multispace0, literal),
+            preceded(multispace0, char(':')),
+            preceded(multispace0, case_body),
+        )),
+        |(_, lit, _, body)| (MatchCase::CaseLiteral(lit.into()), body),
+    ))(rest)?;
+
+    let (rest, default) = opt(map(
+        tuple((
+            preceded(multispace0, tag("default")),
+            preceded(multispace0, char(':')),
+            preceded(multispace0, case_body),
+        )),
+        |(_, _, body)| (MatchCase::CaseDefault, body),
+    ))(rest)?;
+
+    cases.extend(default);
+
+    let (rest, _) = preceded(multispace0, char('}'))(rest)?;
+
+    Ok((
+        rest,
+        wrap(Statement::Switch {
+            target: Box::new(target),
+            cases,
         }),
     ))
 }

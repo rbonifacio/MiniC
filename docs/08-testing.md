@@ -85,6 +85,7 @@ validation; omitting `>2` skips stderr validation.
 | `interpreter_hello.minic` | `42 / true / hello` on stdout, exit 0 |
 | `interpreter_factorial.minic` | `120 / 1 / 1` on stdout, exit 0 |
 | `interpreter_array.minic` | `10 / 99 / 30` on stdout, exit 0 |
+| `interpreter_switch.minic` | matched-case, matched-default, and no-match-no-default output on stdout, exit 0 |
 | Program with type error | Type error on stderr, exit 1 |
 
 **`tests/cli/errors.test`** — bad invocations:

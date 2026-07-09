@@ -23,3 +23,16 @@ $ ./target/debug/mini_c --run tests/fixtures/interpreter_array.minic
 $ ./target/debug/mini_c --run tests/fixtures/cli_type_mismatch.minic
 >2 /Type error/
 >=1
+
+# --run on a switch program: matches a case, matches default, falls through
+# silently when no case matches and there is no default
+$ ./target/debug/mini_c --run tests/fixtures/interpreter_switch.minic
+200
+0
+done
+>=0
+
+# --run on a switch with a non-Int/Bool target fails before interpretation
+$ ./target/debug/mini_c --run tests/fixtures/cli_switch_type_mismatch.minic
+>2 /Type error: switch target must be Int or Bool/
+>=1

@@ -254,5 +254,157 @@ fn test_stdlib_pow_float_args() {
     let src = r#"
         void main() { float r = pow(2.0, 3.0); }
     "#;
-    assert!(run(src).is_ok(), "{}", run(src).unwrap_err());
+    assert!(run(src.trim()).is_ok(), "{}", run(src.trim()).unwrap_err());
 }
+
+// ---------------------------------------------------------------------------
+// 7.12 Switch statement execution
+// ---------------------------------------------------------------------------
+#[test]
+fn test_switch_exec_match_case() {
+    let src = r#"
+        int run_switch(int x) {
+            int res = 0;
+            switch x {
+                case 1: res = 10;
+                case 2: res = 20;
+                default: res = 30;
+            }
+            return res;
+        }
+        void main() {
+            int r = run_switch(2);
+            if r != 20 {
+                int[] err = [0];
+                int fail = err[9];
+            }
+        }
+    "#;
+    assert!(run(src.trim()).is_ok(), "{}", run(src.trim()).unwrap_err());
+}
+
+#[test]
+fn test_switch_exec_match_default() {
+    let src = r#"
+        int run_switch(int x) {
+            int res = 0;
+            switch x {
+                case 1: res = 10;
+                case 2: res = 20;
+                default: res = 30;
+            }
+            return res;
+        }
+        void main() {
+            int r = run_switch(5);
+            if r != 30 {
+                int[] err = [0];
+                int fail = err[9];
+            }
+        }
+    "#;
+    assert!(run(src.trim()).is_ok(), "{}", run(src.trim()).unwrap_err());
+}
+
+#[test]
+fn test_switch_exec_early_return() {
+    let src = r#"
+        int run_switch(int x) {
+            switch x {
+                case 1: return 100;
+                case 2: return 200;
+                default: return 300;
+            }
+        }
+        void main() {
+            int r = run_switch(1);
+            if r != 100 {
+                int[] err = [0];
+                int fail = err[9];
+            }
+        }
+    "#;
+    assert!(run(src.trim()).is_ok(), "{}", run(src.trim()).unwrap_err());
+}
+
+#[test]
+fn test_switch_exec_scoping() {
+    let src = r#"
+        void main() {
+            int x = 1;
+            switch x {
+                case 1: int y = 10;
+                default: int y = 20;
+            }
+            y = 30; 
+        }
+    "#;
+    let result = run(src.trim());
+    assert!(result.is_err());
+    assert!(result.unwrap_err().contains("type error: undeclared variable"));
+}
+
+#[test]
+fn test_switch_exec_duplicate_error() {
+    let src = r#"
+        void main() {
+            int x = 1;
+            switch x {
+                case 1: x = 2;
+                case 1: x = 3;
+                default: x = 4;
+            }
+        }
+    "#;
+    let result = run(src.trim());
+    assert!(result.is_err());
+    assert!(result.unwrap_err().contains("duplicate case label"));
+}
+
+#[test]
+fn test_switch_exec_bool_cases() {
+    let src = r#"
+        int check_bool(bool val) {
+            int res = 0;
+            switch val {
+                case true: res = 11;
+                case false: res = 22;
+                default: res = 33;
+            }
+            return res;
+        }
+        void main() {
+            int r1 = check_bool(true);
+            int r2 = check_bool(false);
+            if r1 != 11 or r2 != 22 {
+                int[] err = [0];
+                int fail = err[9];
+            }
+        }
+    "#;
+    assert!(run(src.trim()).is_ok(), "{}", run(src.trim()).unwrap_err());
+}
+
+#[test]
+fn test_switch_exec_complex_target() {
+    let src = r#"
+        int check_complex(int a, int b) {
+            int res = 0;
+            switch a + b {
+                case 5: res = 50;
+                case 10: res = 100;
+                default: res = 999;
+            }
+            return res;
+        }
+        void main() {
+            int r = check_complex(2, 3);
+            if r != 50 {
+                int[] err = [0];
+                int fail = err[9];
+            }
+        }
+    "#;
+    assert!(run(src.trim()).is_ok(), "{}", run(src.trim()).unwrap_err());
+}
+

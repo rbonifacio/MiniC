@@ -94,6 +94,7 @@ executor `exec_stmt` handles each statement form:
 | `{ stmt* }` | Executes each statement in order (with block scoping) |
 | `if cond { s1 } else { s2 }` | Evaluates `cond`; executes `s1` or `s2` |
 | `while cond { body }` | Repeatedly evaluates `cond` and executes `body` |
+| `switch target { case lit: … default: … }` | Evaluates `target`; executes the first matching `case`'s body, or `default` if none match; does nothing if no arm matches and there is no `default` |
 | `return expr` | Evaluates `expr` and signals an early return |
 | `f(args)` | Evaluates arguments, calls `f`, discards the return value |
 

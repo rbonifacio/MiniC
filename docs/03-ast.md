@@ -70,6 +70,23 @@ The same pattern applies to statements: `Statement` holds the structure
 (a `Decl`, `Assign`, `If`, `While`, etc.) and `StatementD` adds the
 decoration slot.
 
+`Statement::Switch` is one variant among these:
+
+```rust
+Switch {
+    target: Box<ExprD<Ty>>,
+    cases:  Vec<(MatchCase, Box<StatementD<Ty>>)>,
+}
+```
+
+`MatchCase` (`CaseLiteral(Literal)` or `CaseDefault`) is a small standalone
+enum, not generic over `Ty` — like `Literal`, a case label carries no type
+decoration of its own; only the target expression and each arm's body do.
+Each arm's body is a single `StatementD<Ty>` node (typically a `Block`, so a
+`case` with several statements is still just one node — the statements live
+in the `Block`'s own `seq`), which is why `cases` doesn't need a nested
+`Vec<StatementD<Ty>>` per arm.
+
 ### `FunDecl` — a function declaration
 
 ```rust

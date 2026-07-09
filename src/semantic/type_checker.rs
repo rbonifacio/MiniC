@@ -49,8 +49,8 @@ use std::collections::HashMap;
 use crate::environment::Environment;
 use crate::ir::ast::{
     CheckedExpr, CheckedFunDecl, CheckedProgram, CheckedStmt, Expr, ExprD, FunDecl, Literal,
-    Program, Statement, StatementD, Type, UncheckedExpr, UncheckedFunDecl, UncheckedProgram,
-    UncheckedStmt,
+    MatchCase, Program, Statement, StatementD, Type, UncheckedExpr, UncheckedFunDecl,
+    UncheckedProgram, UncheckedStmt,
 };
 use crate::stdlib::NativeRegistry;
 
@@ -230,6 +230,67 @@ fn type_check_stmt(
             Statement::While {
                 cond: Box::new(cond_checked),
                 body: Box::new(body_checked),
+            }
+        }
+        Statement::Switch { target, cases } => {
+            let target_checked = type_check_expr_to_typed(target, env)?;
+
+            if !matches!(target_checked.ty, Type::Int | Type::Bool) {
+                return Err(TypeError::new(format!(
+                    "switch target must be Int or Bool, got {:?}",
+                    target_checked.ty
+                )));
+            }
+
+            let mut checked_cases = Vec::with_capacity(cases.len());
+            let mut seen_cases = Vec::new();
+            let mut seen_default = false;
+
+            for (case, stmt) in cases {
+                match case {
+                    MatchCase::CaseLiteral(l) => {
+                        let lit_ty = literal_type(l);
+                        if !matches!(lit_ty, Type::Int | Type::Bool) {
+                            return Err(TypeError::new(format!(
+                                "switch case literal type not supported: {:?}",
+                                l
+                            )));
+                        }
+
+                        if !types_compatible(&target_checked.ty, &lit_ty) {
+                            return Err(TypeError::new(format!(
+                                "switch case literal type mismatch: expected {:?}, got {:?}",
+                                target_checked.ty, lit_ty
+                            )));
+                        }
+
+                        if seen_cases.contains(l) {
+                            return Err(TypeError::new(format!(
+                                "duplicate case label in switch: {:?}", l
+                            )));
+                        }
+                        seen_cases.push(l.clone());
+                    }
+                    MatchCase::CaseDefault => {
+                        if seen_default {
+                            return Err(TypeError::new(
+                                "switch must have at most one default case",
+                            ));
+                        }
+                        seen_default = true;
+                    }
+                }
+
+                // Each case's body is a single statement (typically a Block),
+                // which already creates its own scope.
+                let checked_stmt = type_check_stmt(stmt, env, expected_return)?;
+
+                checked_cases.push((case.clone(), Box::new(checked_stmt)));
+            }
+
+            Statement::Switch {
+                target: Box::new(target_checked),
+                cases: checked_cases,
             }
         }
         Statement::Return(expr) => match expr {

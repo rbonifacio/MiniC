@@ -1,4 +1,4 @@
-use crate::ir::ast::{CheckedProgram, CheckedFunDecl, CheckedStmt, Statement, Expr, CheckedExpr, Literal, Type};
+use crate::ir::ast::{CheckedProgram, CheckedFunDecl, CheckedStmt, Statement, Expr, CheckedExpr, Literal, MatchCase, Type};
 use crate::ir::tac::{TACProgram, Instruction, Address, Operator};
 
 
@@ -91,6 +91,63 @@ pub fn translate_statement(statement: CheckedStmt, env: &mut Environment) -> Vec
             instructions.push(Instruction::Label(label_else));
             instructions.extend(translate_statement(*else_body, env));
             instructions.push(Instruction::Label(label_end_if));
+            instructions
+        },
+        Statement::Switch { target, cases } => {
+            let target_ty = target.ty.clone();
+            let (target_addr, mut instructions) = translate_expression(*target, env);
+            let label_default = env.new_label();
+            let label_end = env.new_label();
+
+            // Only the literal cases need their own label; the default (if
+            // any) reuses `label_default`, allocated above.
+            let cases: Vec<(MatchCase, Option<String>, Box<CheckedStmt>)> = cases
+                .into_iter()
+                .map(|(case, body)| {
+                    let label = match &case {
+                        MatchCase::CaseLiteral(_) => Some(env.new_label()),
+                        MatchCase::CaseDefault => None,
+                    };
+                    (case, label, body)
+                })
+                .collect();
+
+            for (case, label, _) in &cases {
+                if let MatchCase::CaseLiteral(lit) = case {
+                    let lit_addr = Address::Constant(lit.clone(), target_ty.clone());
+                    instructions.push(Instruction::ConditionalJMPRelational(
+                        Operator::EQ,
+                        target_addr.clone(),
+                        lit_addr,
+                        label.clone().unwrap(),
+                    ));
+                }
+            }
+
+            instructions.push(Instruction::JMP(label_default.clone()));
+
+            let mut has_default = false;
+            for (case, label, body) in cases {
+                match case {
+                    MatchCase::CaseLiteral(_) => {
+                        instructions.push(Instruction::Label(label.unwrap()));
+                        instructions.extend(translate_statement(*body, env));
+                        instructions.push(Instruction::JMP(label_end.clone()));
+                    }
+                    MatchCase::CaseDefault => {
+                        has_default = true;
+                        instructions.push(Instruction::Label(label_default.clone()));
+                        instructions.extend(translate_statement(*body, env));
+                    }
+                }
+            }
+
+            // No default arm: the fallback jump above still needs a landing label.
+            if !has_default {
+                instructions.push(Instruction::Label(label_default));
+            }
+
+            instructions.push(Instruction::Label(label_end));
             instructions
         },
         _ => todo!()
