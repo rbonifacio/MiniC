@@ -101,6 +101,15 @@ pub enum Value {
     Bool(bool),
     Str(String),
     Array(Vec<Value>),
+    Struct {
+        identifier: String,
+        fields: std::collections::HashMap<String, Value>,
+    },
+    Enum {
+        identifier: String,
+        variant: String,
+        payload: Option<Box<Value>>,
+    },
     Void,
     Fn(FnValue),
 }
@@ -123,6 +132,17 @@ impl fmt::Display for Value {
                 }
                 write!(f, "]")
             }
+            Value::Struct { identifier, .. } => write!(f, "<struct {}>", identifier),
+            Value::Enum {
+                identifier,
+                variant,
+                payload: None,
+            } => write!(f, "{}.{}", identifier, variant),
+            Value::Enum {
+                identifier,
+                variant,
+                payload: Some(v),
+            } => write!(f, "{}.{}({})", identifier, variant, v),
             Value::Fn(_) => write!(f, "<function>"),
         }
     }

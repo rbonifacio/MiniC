@@ -1,0 +1,8 @@
+enum Kind { int B; A; }
+void main() {
+    enum Kind k = { .B = 42 };
+    match k {
+        case B: { print(B); }
+        case A: { print(0); }
+    }
+}

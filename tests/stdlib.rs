@@ -4,42 +4,43 @@ use mini_c::stdlib::io::print_fn;
 use mini_c::stdlib::math::{pow_fn, sqrt_fn};
 use mini_c::stdlib::NativeRegistry;
 
-// --- io tests ---
+// --- io ---
 
 #[test]
-fn test_print_fn_integer() {
-    let result = print_fn(vec![Value::Int(42)]);
-    assert_eq!(result, Ok(Value::Void));
+fn print_fn_integer() {
+    assert_eq!(print_fn(vec![Value::Int(42)]), Ok(Value::Void));
 }
 
 #[test]
-fn test_print_fn_bool() {
-    let result = print_fn(vec![Value::Bool(true)]);
-    assert_eq!(result, Ok(Value::Void));
+fn print_fn_bool() {
+    assert_eq!(print_fn(vec![Value::Bool(true)]), Ok(Value::Void));
 }
 
 #[test]
-fn test_print_fn_array() {
-    let result = print_fn(vec![Value::Array(vec![Value::Int(1), Value::Int(2)])]);
-    assert_eq!(result, Ok(Value::Void));
+fn print_fn_array() {
+    assert_eq!(
+        print_fn(vec![Value::Array(vec![Value::Int(1), Value::Int(2)])]),
+        Ok(Value::Void)
+    );
 }
 
 #[test]
-fn test_print_fn_no_args() {
-    let result = print_fn(vec![]);
-    assert_eq!(result, Ok(Value::Void));
+fn print_fn_no_args() {
+    assert_eq!(print_fn(vec![]), Ok(Value::Void));
 }
 
-// --- math tests ---
+// --- math ---
 
 #[test]
-fn test_pow_int_args() {
-    let result = pow_fn(vec![Value::Int(2), Value::Int(10)]);
-    assert_eq!(result, Ok(Value::Float(1024.0)));
+fn pow_int_args() {
+    assert_eq!(
+        pow_fn(vec![Value::Int(2), Value::Int(10)]),
+        Ok(Value::Float(1024.0))
+    );
 }
 
 #[test]
-fn test_pow_float_args() {
+fn pow_float_args() {
     let result = pow_fn(vec![Value::Float(2.0), Value::Float(0.5)]);
     match result {
         Ok(Value::Float(v)) => assert!((v - 1.4142135).abs() < 1e-5),
@@ -48,25 +49,25 @@ fn test_pow_float_args() {
 }
 
 #[test]
-fn test_pow_negative_exponent() {
-    let result = pow_fn(vec![Value::Float(2.0), Value::Float(-1.0)]);
-    assert_eq!(result, Ok(Value::Float(0.5)));
+fn pow_negative_exponent() {
+    assert_eq!(
+        pow_fn(vec![Value::Float(2.0), Value::Float(-1.0)]),
+        Ok(Value::Float(0.5))
+    );
 }
 
 #[test]
-fn test_pow_wrong_arity() {
-    let result = pow_fn(vec![Value::Float(2.0)]);
-    assert!(result.is_err());
+fn pow_wrong_arity() {
+    assert!(pow_fn(vec![Value::Float(2.0)]).is_err());
 }
 
 #[test]
-fn test_sqrt_perfect_square() {
-    let result = sqrt_fn(vec![Value::Int(4)]);
-    assert_eq!(result, Ok(Value::Float(2.0)));
+fn sqrt_perfect_square() {
+    assert_eq!(sqrt_fn(vec![Value::Int(4)]), Ok(Value::Float(2.0)));
 }
 
 #[test]
-fn test_sqrt_float() {
+fn sqrt_float() {
     let result = sqrt_fn(vec![Value::Float(2.0)]);
     match result {
         Ok(Value::Float(v)) => assert!((v - 1.4142135).abs() < 1e-5),
@@ -75,21 +76,19 @@ fn test_sqrt_float() {
 }
 
 #[test]
-fn test_sqrt_zero() {
-    let result = sqrt_fn(vec![Value::Int(0)]);
-    assert_eq!(result, Ok(Value::Float(0.0)));
+fn sqrt_zero() {
+    assert_eq!(sqrt_fn(vec![Value::Int(0)]), Ok(Value::Float(0.0)));
 }
 
 #[test]
-fn test_sqrt_wrong_type() {
-    let result = sqrt_fn(vec![Value::Bool(true)]);
-    assert!(result.is_err());
+fn sqrt_wrong_type() {
+    assert!(sqrt_fn(vec![Value::Bool(true)]).is_err());
 }
 
-// --- registry tests ---
+// --- registry ---
 
 #[test]
-fn test_default_registry_contains_all_stdlib() {
+fn default_registry_contains_all_stdlib() {
     let r = NativeRegistry::default();
     assert!(r.lookup("print").is_some());
     assert!(r.lookup("readInt").is_some());
@@ -100,13 +99,13 @@ fn test_default_registry_contains_all_stdlib() {
 }
 
 #[test]
-fn test_lookup_unregistered_returns_none() {
+fn lookup_unregistered_returns_none() {
     let r = NativeRegistry::default();
     assert!(r.lookup("unknown").is_none());
 }
 
 #[test]
-fn test_sqrt_entry_signature() {
+fn sqrt_entry_signature() {
     let r = NativeRegistry::default();
     let entry = r.lookup("sqrt").unwrap();
     assert_eq!(entry.params, vec![Type::Float]);
@@ -114,7 +113,7 @@ fn test_sqrt_entry_signature() {
 }
 
 #[test]
-fn test_print_uses_type_any() {
+fn print_uses_type_any() {
     let r = NativeRegistry::default();
     let entry = r.lookup("print").unwrap();
     assert_eq!(entry.params, vec![Type::Any]);

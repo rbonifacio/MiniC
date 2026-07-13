@@ -13,19 +13,14 @@ The allocation of projects to groups was performed randomly, using a reproducibl
 
 | Project     | Group |
 |-------------|--------|
-| Projeto 10  | Daniel Silvestre de França e Souza<br>João Pedro Barbosa Marins<br>Marcelo Arcoverde Neves Britto de Rezende<br>Rafael Paz Fernandes<br>Vinícius Lima Sá de Melo |
+| Projeto 1   | Valter Sanches, Artur Vinicius<br>Victor Silva, Miguel Gomes, Matheus Ayres|
+| Projeto 2   | Ian Medeiros Melo<br>Victor Mendonça Aguiar<br>Rafael Alves de Azevedo Silva<br>João Victor Fellows Rabelo<br>Guilherme Montenegro de Albuquerque |
+| Projeto 3   | Joana D'Arc, Juliana Silva<br>Leandro Luiz, Paulo Vitor, Thiago Henrique|
+| Projeto 4   | Bruno Antonio dos Santos Bezerra<br>Luan de Oliveira Romancini Leite<br>Leônidas Dantas de Castro Netto<br>Pedro Gabriel Alves da Silva |
+| Projeto 5   | Álvaro Cavalcante Negromonte<br>Gabriel Valença Mayerhofer<br>Henrique César Higino Holanda Cordeiro<br>João Victor Nascimento Lima<br>Vinicius de Souza Rodrigues |
 | Projeto 7   | Enzo Gurgel Bissoli<br>Shellyda de Fatima Silva Barbosa<br>Rodrigo Santos Batista<br>Juliana Serafim da Silva<br>Anderson Vitor Leoncio de Lima |
 | Projeto 8   | Alberto Guevara de Araujo Franca<br>Davi Gonzaga Guerreiro Barboza<br>Fábio Pereira de Miranda<br>Felipe Torres de Macedo |
-| Projeto 2   | Ian Medeiros Melo<br>Victor Mendonça Aguiar<br>Rafael Alves de Azevedo Silva<br>João Victor Fellows Rabelo<br>Guilherme Montenegro de Albuquerque |
-| Projeto 5   | Álvaro Cavalcante Negromonte<br>Gabriel Valença Mayerhofer<br>Henrique César Higino Holanda Cordeiro<br>João Victor Nascimento Lima<br>Vinicius de Souza Rodrigues |
-| Projeto 4   | Bruno Antonio dos Santos Bezerra<br>Luan de Oliveira Romancini Leite<br>Leônidas Dantas de Castro Netto<br>Pedro Gabriel Alves da Silva |
-
-The following projects were not assigned.
-
-   * Project 1
-   * Project 3
-   * Project 6
-   * Project 9
+| Projeto 10  | Daniel Silvestre de França e Souza<br>João Pedro Barbosa Marins<br>Marcelo Arcoverde Neves Britto de Rezende<br>Rafael Paz Fernandes<br>Vinícius Lima Sá de Melo |
    
 ---
 
@@ -391,7 +386,7 @@ A good starting point for any of them is:
 ### Second Milestone: 
 
    * Review the implementation of the type checker and interpreter
-   * Deadline: 11/05
+   * Deadline: 14/06
 
 ### Third Milestone: 
 

@@ -11,6 +11,8 @@
 //! * [`set`](Environment::set) — update an existing binding.
 //! * [`snapshot`](Environment::snapshot) / [`restore`](Environment::restore)
 //!   — save and restore the entire map (used for scoping).
+//! * [`get_type_decl`](Environment::get_type_decl) — look up a user-defined
+//!   type declaration from the shared type-declaration table.
 //!
 //! Additionally, [`names`](Environment::names) and
 //! [`remove_new`](Environment::remove_new) support block-exit cleanup.
@@ -54,18 +56,51 @@
 //! acceptable at MiniC's scale.
 
 use std::collections::{HashMap, HashSet};
+use std::rc::Rc;
+
+use crate::ir::ast::{UDTDecl, UDTKind};
+
+pub type TypeDeclKey = (UDTKind, String);
+pub type TypeDeclMap = HashMap<TypeDeclKey, UDTDecl>;
+
+pub fn build_type_decl_map(decls: &[UDTDecl]) -> TypeDeclMap {
+    let mut type_map = TypeDeclMap::new();
+    for decl in decls {
+        let key = (decl.specifier.clone(), decl.identifier.clone());
+        type_map.insert(key, decl.clone());
+    }
+    type_map
+}
 
 /// Unified parametric environment: maps names to values of type `V`.
 /// Both variable bindings and function bindings are stored in the same map.
 pub struct Environment<V> {
     bindings: HashMap<String, V>,
+    type_decls: Rc<TypeDeclMap>,
 }
 
 impl<V: Clone> Environment<V> {
     pub fn new() -> Self {
         Self {
             bindings: HashMap::new(),
+            type_decls: Rc::new(TypeDeclMap::new()),
         }
+    }
+
+    pub fn with_type_decls(type_decls: TypeDeclMap) -> Self {
+        Self {
+            bindings: HashMap::new(),
+            type_decls: Rc::new(type_decls),
+        }
+    }
+
+    pub fn get_type_decl(&self, specifier: &UDTKind, identifier: &str) -> Option<&UDTDecl> {
+        self.type_decls
+            .get(&(specifier.clone(), identifier.to_string()))
+    }
+
+    pub fn has_type_decl(&self, specifier: &UDTKind, identifier: &str) -> bool {
+        self.get_type_decl(specifier, identifier).is_some()
     }
 
     /// Bind `name` to `value`, overwriting any existing binding.
@@ -106,6 +141,11 @@ impl<V: Clone> Environment<V> {
     /// Remove any binding whose name is not in `outer` (for block-exit cleanup).
     pub fn remove_new(&mut self, outer: &HashSet<String>) {
         self.bindings.retain(|k, _| outer.contains(k));
+    }
+
+    /// Remove a single binding by name.
+    pub fn remove(&mut self, name: &str) {
+        self.bindings.remove(name);
     }
 }
 

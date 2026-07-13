@@ -37,12 +37,13 @@
 use crate::ir::ast::{Expr, ExprD, UncheckedExpr};
 use crate::parser::identifiers::identifier;
 use crate::parser::literals::literal;
+use crate::parser::types::type_definition;
 use nom::{
     branch::alt,
     bytes::complete::tag,
     character::complete::{char, multispace0},
     combinator::map,
-    multi::separated_list0,
+    multi::{separated_list0, separated_list1},
     sequence::{delimited, pair, preceded, tuple},
     IResult,
 };
@@ -65,10 +66,34 @@ pub fn parse_call(input: &str) -> IResult<&str, (String, Vec<UncheckedExpr>)> {
     Ok((rest, (name.to_string(), args)))
 }
 
-/// Atom: literal, call, array literal, identifier, or parenthesized expression.
+/// Atom: literal, struct init, call, array literal, cast, identifier, or parenthesized expression.
 fn atom(input: &str) -> IResult<&str, UncheckedExpr> {
     alt((
         map(literal, |l| wrap(Expr::Literal(l.into()))),
+        // Init: { .field [= expr], ... } (struct fields or enum variants)
+        map(
+            delimited(
+                preceded(multispace0, char('{')),
+                separated_list1(
+                    preceded(multispace0, char(',')),
+                    alt((
+                        map(
+                            pair(
+                                preceded(multispace0, preceded(char('.'), identifier)),
+                                preceded(multispace0, preceded(char('='), expression)),
+                            ),
+                            |(name, val): (&str, UncheckedExpr)| (name.to_string(), Some(val)),
+                        ),
+                        map(
+                            preceded(multispace0, preceded(char('.'), identifier)),
+                            |name: &str| (name.to_string(), None),
+                        ),
+                    )),
+                ),
+                preceded(multispace0, char('}')),
+            ),
+            |fields| wrap(Expr::Init { fields }),
+        ),
         map(parse_call, |(name, args)| wrap(Expr::Call { name, args })),
         map(
             delimited(
@@ -82,6 +107,20 @@ fn atom(input: &str) -> IResult<&str, UncheckedExpr> {
             |elems| wrap(Expr::ArrayLit(elems)),
         ),
         map(identifier, |s: &str| wrap(Expr::Ident(s.to_string()))),
+        // Cast: (type)expr — tried before parenthesized group, binds like unary
+        map(
+            tuple((
+                preceded(multispace0, char('(')),
+                type_definition,
+                preceded(multispace0, char(')')),
+                unary,
+            )),
+            |(_, ty, _, expr)| wrap(Expr::Cast {
+                ty,
+                expr: Box::new(expr),
+            }),
+        ),
+        // Parenthesized expression
         delimited(
             preceded(multispace0, char('(')),
             preceded(multispace0, expression),
@@ -94,33 +133,49 @@ fn atom(input: &str) -> IResult<&str, UncheckedExpr> {
 fn primary(input: &str) -> IResult<&str, UncheckedExpr> {
     let (mut rest, mut acc) = atom(input)?;
     loop {
-        let index_parse = delimited(
+        if let Ok((r, index)) = delimited(
             preceded(multispace0, char('[')),
             preceded(multispace0, expression),
             preceded(multispace0, char(']')),
-        )(rest);
-        match index_parse {
-            Ok((r, index)) => {
-                acc = wrap(Expr::Index {
-                    base: Box::new(acc),
-                    index: Box::new(index),
-                });
-                rest = r;
-            }
-            Err(_) => break,
+        )(rest)
+        {
+            acc = wrap(Expr::Index {
+                base: Box::new(acc),
+                index: Box::new(index),
+            });
+            rest = r;
+            continue;
         }
+
+        if let Ok((r, (_, member))) = pair(
+            preceded(multispace0, char('.')),
+            preceded(multispace0, identifier),
+        )(rest)
+        {
+            acc = wrap(Expr::Member {
+                base: Box::new(acc),
+                member: member.to_string(),
+            });
+            rest = r;
+            continue;
+        }
+
+        break;
     }
     Ok((rest, acc))
 }
 
 /// Unary: optional unary `-` applied to primary.
 fn unary(input: &str) -> IResult<&str, UncheckedExpr> {
-    alt((
-        map(pair(preceded(multispace0, tag("-")), unary), |(_, e)| {
-            wrap(Expr::Neg(Box::new(e)))
-        }),
-        primary,
-    ))(input)
+    preceded(
+        multispace0,
+        alt((
+            map(pair(preceded(multispace0, tag("-")), unary), |(_, e)| {
+                wrap(Expr::Neg(Box::new(e)))
+            }),
+            primary,
+        )),
+    )(input)
 }
 
 /// Multiplicative: unary with `*` and `/` (left-associative).

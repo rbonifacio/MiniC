@@ -54,7 +54,7 @@ pub mod eval_expr;
 pub mod exec_stmt;
 pub mod value;
 
-use crate::environment::Environment;
+use crate::environment::{build_type_decl_map, Environment};
 use crate::ir::ast::CheckedProgram;
 use crate::stdlib::NativeRegistry;
 
@@ -63,7 +63,9 @@ use value::{FnValue, RuntimeError, Value};
 
 /// Interpret a type-checked MiniC program, starting execution at `main`.
 pub fn interpret(program: &CheckedProgram) -> Result<(), RuntimeError> {
-    let mut env = Environment::<Value>::new();
+    let type_map = build_type_decl_map(&program.type_declarations);
+
+    let mut env = Environment::with_type_decls(type_map);
 
     // Register native stdlib functions as Value::Fn(FnValue::Native) bindings.
     let registry = NativeRegistry::default();
@@ -73,7 +75,10 @@ pub fn interpret(program: &CheckedProgram) -> Result<(), RuntimeError> {
 
     // Register user-defined functions as Value::Fn(FnValue::UserDefined) bindings.
     for fun in &program.functions {
-        env.declare(fun.name.clone(), Value::Fn(FnValue::UserDefined(fun.clone())));
+        env.declare(
+            fun.name.clone(),
+            Value::Fn(FnValue::UserDefined(fun.clone())),
+        );
     }
 
     if env.get("main").is_none() {

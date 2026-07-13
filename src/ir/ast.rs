@@ -48,6 +48,13 @@
 //! compatibility check (`types_compatible`) treats `Any` as matching
 //! everything, keeping the special case local to one function.
 
+/// User-defined type kinds: struct or enum.
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum UDTKind {
+    Struct,
+    Enum,
+}
+
 /// MiniC types: scalar, array, function, and Any (for polymorphic native params).
 #[derive(Debug, Clone, PartialEq)]
 pub enum Type {
@@ -57,7 +64,12 @@ pub enum Type {
     Bool,
     Str,
     Array(Box<Type>),
-    Fun(Vec<Type>, Box<Type>),
+    Struct(String),
+    Enum(String),
+    Function {
+        params: Vec<Type>,
+        return_type: Box<Type>,
+    },
     /// Matches any type. Only used as a parameter type in native stdlib registrations.
     Any,
 }
@@ -112,6 +124,26 @@ pub enum Expr<Ty> {
         base: Box<ExprD<Ty>>,
         index: Box<ExprD<Ty>>,
     },
+    /// Member access: `base.member`
+    Member {
+        base: Box<ExprD<Ty>>,
+        member: String,
+    },
+    /// Struct or enum initializer: `{ .field = expr, ... }` or `{ .field, ... }`
+    Init {
+        fields: Vec<(String, Option<ExprD<Ty>>)>,
+    },
+    /// Type cast: `(type)expr`
+    Cast {
+        ty: Type,
+        expr: Box<ExprD<Ty>>,
+    },
+    /// Enum variant literal: `Variant(expr)` (resolved during type checking)
+    EnumVariant {
+        enum_name: Option<String>,
+        variant: String,
+        payload: Option<Box<ExprD<Ty>>>,
+    },
 }
 
 /// Statement with type decoration.
@@ -153,23 +185,56 @@ pub enum Statement<Ty> {
     },
     /// Return statement: `return [expr]`.
     Return(Option<Box<ExprD<Ty>>>),
+    /// Match statement: `match expr { case variant(binding): body ... }`
+    Match {
+        target: Box<ExprD<Ty>>,
+        arms: Vec<MatchArm<Ty>>,
+    },
 }
 
-/// A typed parameter: (name, type).
-pub type Param = (String, Type);
+/// A single arm of a match statement.
+#[derive(Debug, Clone, PartialEq)]
+pub struct MatchArm<Ty> {
+    pub variant: String,
+    pub binding: Option<String>,
+    pub body: Box<StatementD<Ty>>,
+}
+
+/// An identifier with a declared type.
+#[derive(Debug, Clone, PartialEq)]
+pub struct IdentifierDecl {
+    pub name: String,
+    pub ty: Type,
+}
+
+/// A field or enumerator inside a user-defined type declaration.
+#[derive(Debug, Clone, PartialEq)]
+pub enum UDTMember {
+    Field(IdentifierDecl),
+    EnumVariant { name: String, ty: Option<Type> },
+}
+
+/// A user-defined type declaration: struct or enum.
+#[derive(Debug, Clone, PartialEq)]
+pub struct UDTDecl {
+    pub specifier: UDTKind,
+    pub identifier: String,
+    pub members: Vec<UDTMember>,
+}
 
 /// A function declaration.
 #[derive(Debug, Clone, PartialEq)]
 pub struct FunDecl<Ty> {
     pub name: String,
-    pub params: Vec<Param>,
+    pub params: Vec<IdentifierDecl>,
     pub return_type: Type,
     pub body: Box<StatementD<Ty>>,
 }
 
-/// A complete MiniC program: function declarations only. Execution starts at `main`.
+/// A complete MiniC program: top-level type declarations and function declarations.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Program<Ty> {
+    pub type_declarations: Vec<UDTDecl>,
     pub functions: Vec<FunDecl<Ty>>,
 }
 

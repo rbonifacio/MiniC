@@ -23,17 +23,10 @@
 \newcommand{\trStmt}[1]{\mathit{trStmt}(#1)}
 \newcommand{\trCond}[2]{\mathit{trCond}(#1,\;#2)}
 \newcommand{\cat}{\mathbin{+\!\!+}}
-
-%% Placeholder: mathpartir's \inferrule conflicts with beamer fragile frames
-%% when conclusions contain \begin{array}+\\ — disable rules for now.
-\AtBeginDocument{%
-  \renewcommand{\inferrule}[3][]{%
-    \vcenter{\hbox{$\scriptstyle[\text{Rule\ifx#1\empty\else{}: \textsc{#1}\fi}]$}}%
-  }%
-}
+\newcommand{\mln}[1]{\hbox{$\displaystyle\strut#1$}}
 
 %% ── Meta ──────────────────────────────────────────────────────────────────
-\title{MiniC Compiler}
+\title{Code Generation}
 \subtitle{From Annotated AST to Three Address Code}
 \author{}
 \date{\today}
@@ -177,12 +170,12 @@ x  := t1
       \begin{block}{Rule}
         \vspace{0.3em}
         \footnotesize
-        %% TODO: restore inferrule[Add] — \begin{array}+\\ in conclusion
-        %% conflicts with mathpartir's \mpr@makelist inside beamer fragile frames
         \[ \inferrule[Add]
-            { \trExpr{e_1} \Rightarrow (a_1,\ I_1) \and
-              \trExpr{e_2} \Rightarrow (a_2,\ I_2) \and
-              t\ \text{fresh} }
+            {
+              \trExpr{e_1} \Rightarrow (a_1,\ I_1) \\
+              \trExpr{e_2} \Rightarrow (a_2,\ I_2) \\
+              t\ \text{fresh}
+            }
             { \trExpr{e_1 + e_2} \Rightarrow
               \bigl(t,\;I_1 \cat I_2 \cat [\,t := a_1 + a_2\,]\bigr) }
         \]
@@ -232,13 +225,10 @@ x  := t2
               \trStmt{s_1} \Rightarrow I_t \quad
               \trStmt{s_2} \Rightarrow I_f
             }
-            {{
-              \begin{array}{l}
-                \trStmt{\texttt{if}\,(c)\;s_1\;\texttt{else}\;s_2}
-                \;\Rightarrow \\
-                \quad I_c \cat I_t \cat [\texttt{goto}\ L_{\mathrm{end}}] \\
-                \quad\cat [L_e\texttt{:}] \cat I_f \cat [L_{\mathrm{end}}\texttt{:}]
-              \end{array}
+            {\vcenter{
+              \mln{\trStmt{\texttt{if}\,(c)\;s_1\;\texttt{else}\;s_2} \;\Rightarrow}
+              \mln{\quad I_c \cat I_t \cat [\texttt{goto}\ L_{\mathrm{end}}]}
+              \mln{\quad\cat [L_e\texttt{:}] \cat I_f \cat [L_{\mathrm{end}}\texttt{:}]}
             }}
         \]
         \vspace{0.2em}
@@ -284,12 +274,9 @@ L2:
               \trExpr{e_1} \Rightarrow (a_1,\ I_1) \\
               \trExpr{e_2} \Rightarrow (a_2,\ I_2)
             }
-            {{
-              \begin{array}{l}
-                \trCond{e_1\ \mathit{op}\ e_2}{L_f} \;\Rightarrow \\
-                \quad I_1 \cat I_2 \cat
-                [\texttt{if}\ a_1\ \overline{\mathit{op}}\ a_2\ \texttt{goto}\ L_f]
-              \end{array}
+            {\vcenter{
+              \mln{\trCond{e_1\ \mathit{op}\ e_2}{L_f} \;\Rightarrow}
+              \mln{\quad I_1 \cat I_2 \cat [\texttt{if}\ a_1\ \overline{\mathit{op}}\ a_2\ \texttt{goto}\ L_f]}
             }}
         \]
         \vspace{0.2em}
@@ -352,11 +339,9 @@ if x >= y goto Lf
         \[
           \inferrule[CondIdent]
             { }
-            {{
-              \begin{array}{l}
-                \trCond{x}{L_f} \;\Rightarrow \\
-                \quad[\,\texttt{if\_false}\ x\ \texttt{goto}\ L_f\,]
-              \end{array}
+            {\vcenter{
+              \mln{\trCond{x}{L_f} \;\Rightarrow}
+              \mln{\quad[\,\texttt{if\_false}\ x\ \texttt{goto}\ L_f\,]}
             }}
         \]
         \vspace{0.2em}
@@ -444,12 +429,10 @@ if y >= 10 goto Lf
               \trExpr{e_1} \Rightarrow (a_1,\ I_1) \\
               \trCond{e_2}{L_f} \Rightarrow I_2
             }
-            {{
-              \begin{array}{l}
-                \trCond{e_1 \mathbin{\texttt{||}} e_2}{L_f} \;\Rightarrow \\
-                \quad I_1 \cat [\texttt{if}\ a_1\ \texttt{goto}\ L_{\mathrm{skip}}] \\
-                \quad\cat I_2 \cat [L_{\mathrm{skip}}\texttt{:}]
-              \end{array}
+            {\vcenter{
+              \mln{\trCond{e_1 \mathbin{\texttt{||}} e_2}{L_f} \;\Rightarrow}
+              \mln{\quad I_1 \cat [\texttt{if}\ a_1\ \texttt{goto}\ L_{\mathrm{skip}}]}
+              \mln{\quad\cat I_2 \cat [L_{\mathrm{skip}}\texttt{:}]}
             }}
         \]
         \vspace{0.2em}
@@ -559,13 +542,11 @@ if flag goto Lf
               \trExpr{e} \Rightarrow (a,\ I) \\
               t,\ L_f,\ L_e\ \text{fresh}
             }
-            {{
-              \begin{array}{l}
-                \trExpr{\texttt{!}e} \;\Rightarrow\; \bigl(t,\; I \\
-                \cat [\texttt{if\_false}\ a\ \texttt{goto}\ L_f] \\
-                \cat [\,t := \texttt{false},\;\texttt{goto}\ L_e\,] \\
-                \cat [\,L_f\texttt{:},\;t := \texttt{true},\;L_e\texttt{:}\,]\bigr)
-              \end{array}
+            {\vcenter{
+              \mln{\trExpr{\texttt{!}e} \;\Rightarrow\; \bigl(t,\; I}
+              \mln{\cat [\texttt{if\_false}\ a\ \texttt{goto}\ L_f]}
+              \mln{\cat [\,t := \texttt{false},\;\texttt{goto}\ L_e\,]}
+              \mln{\cat [\,L_f\texttt{:},\;t := \texttt{true},\;L_e\texttt{:}\,]\bigr)}
             }}
         \]
         \vspace{0.2em}
@@ -610,14 +591,12 @@ x := t1
               \trExpr{e_2} \Rightarrow (a_2,\ I_2) \\
               t,\ L_f,\ L_e\ \text{fresh}
             }
-            {{
-              \begin{array}{l}
-                \trExpr{e_1 \mathbin{\texttt{\&\&}} e_2} \;\Rightarrow\; \bigl(t,\; I_1 \\
-                \cat [\texttt{if\_false}\ a_1\ \texttt{goto}\ L_f] \\
-                \cat\; I_2 \cat [\texttt{if\_false}\ a_2\ \texttt{goto}\ L_f] \\
-                \cat [\,t := \texttt{true},\;\texttt{goto}\ L_e\,] \\
-                \cat [\,L_f\texttt{:},\;t := \texttt{false},\;L_e\texttt{:}\,]\bigr)
-              \end{array}
+            {\vcenter{
+              \mln{\trExpr{e_1 \mathbin{\texttt{\&\&}} e_2} \;\Rightarrow\; \bigl(t,\; I_1}
+              \mln{\cat [\texttt{if\_false}\ a_1\ \texttt{goto}\ L_f]}
+              \mln{\cat\; I_2 \cat [\texttt{if\_false}\ a_2\ \texttt{goto}\ L_f]}
+              \mln{\cat [\,t := \texttt{true},\;\texttt{goto}\ L_e\,]}
+              \mln{\cat [\,L_f\texttt{:},\;t := \texttt{false},\;L_e\texttt{:}\,]\bigr)}
             }}
         \]
         \vspace{0.1em}
@@ -662,15 +641,13 @@ x := t1
               \trExpr{e_2} \Rightarrow (a_2,\ I_2) \\
               t,\ L_t,\ L_f,\ L_e\ \text{fresh}
             }
-            {{
-              \begin{array}{l}
-                \trExpr{e_1 \mathbin{\texttt{||}} e_2} \;\Rightarrow\; \bigl(t,\; I_1 \\
-                \cat [\texttt{if\_false}\ a_1\ \texttt{goto}\ L_f,\;\texttt{goto}\ L_t] \\
-                \cat [\,L_f\texttt{:}\,] \cat\; I_2 \\
-                \cat [\texttt{if}\ a_2\ \texttt{goto}\ L_t] \\
-                \cat [\,t := \texttt{false},\;\texttt{goto}\ L_e\,] \\
-                \cat [\,L_t\texttt{:},\;t := \texttt{true},\;L_e\texttt{:}\,]\bigr)
-              \end{array}
+            {\vcenter{
+              \mln{\trExpr{e_1 \mathbin{\texttt{||}} e_2} \;\Rightarrow\; \bigl(t,\; I_1}
+              \mln{\cat [\texttt{if\_false}\ a_1\ \texttt{goto}\ L_f,\;\texttt{goto}\ L_t]}
+              \mln{\cat [\,L_f\texttt{:}\,] \cat\; I_2}
+              \mln{\cat [\texttt{if}\ a_2\ \texttt{goto}\ L_t]}
+              \mln{\cat [\,t := \texttt{false},\;\texttt{goto}\ L_e\,]}
+              \mln{\cat [\,L_t\texttt{:},\;t := \texttt{true},\;L_e\texttt{:}\,]\bigr)}
             }}
         \]
         \vspace{0.1em}

@@ -1,10 +1,16 @@
 use std::{env, fs, process};
 
-use mini_c::{interpreter::interpret, parser::program, semantic::type_check};
+use mini_c::{
+    codegen::tac_code_gen::{translate_program, Environment},
+    interpreter::interpret,
+    parser::program,
+    semantic::type_check,
+};
 
 fn usage() -> ! {
     eprintln!("Usage: minic --check <file.minic>");
     eprintln!("       minic --run   <file.minic>");
+    eprintln!("       minic --tac   <file.minic>");
     process::exit(1);
 }
 
@@ -56,6 +62,12 @@ fn main() {
             if let Err(e) = interpret(&checked) {
                 eprintln!("{}", e);
                 process::exit(1);
+            }
+        }
+        "--tac" => {
+            let mut env = Environment::new();
+            for instruction in translate_program(checked, &mut env) {
+                println!("{}", instruction);
             }
         }
         // Task 1.1: unknown flag

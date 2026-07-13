@@ -40,7 +40,7 @@
 //! for more detail on this mechanism.
 
 use crate::environment::Environment;
-use crate::ir::ast::{CheckedExpr, Expr, Literal};
+use crate::ir::ast::{CheckedExpr, Expr, Literal, Type};
 
 use super::exec_stmt::exec_stmt;
 use super::value::{FnValue, RuntimeError, Value};
@@ -64,15 +64,55 @@ pub fn eval_expr(expr: &CheckedExpr, env: &mut Environment<Value>) -> Result<Val
             ))),
         },
 
-        Expr::Add(l, r) => numeric_binop(eval_expr(l, env)?, eval_expr(r, env)?, |a, b| a + b, |a, b| a + b),
-        Expr::Sub(l, r) => numeric_binop(eval_expr(l, env)?, eval_expr(r, env)?, |a, b| a - b, |a, b| a - b),
-        Expr::Mul(l, r) => numeric_binop(eval_expr(l, env)?, eval_expr(r, env)?, |a, b| a * b, |a, b| a * b),
-        Expr::Div(l, r) => numeric_binop(eval_expr(l, env)?, eval_expr(r, env)?, |a, b| a / b, |a, b| a / b),
+        Expr::Add(l, r) => numeric_binop(
+            eval_expr(l, env)?,
+            eval_expr(r, env)?,
+            |a, b| a + b,
+            |a, b| a + b,
+        ),
+        Expr::Sub(l, r) => numeric_binop(
+            eval_expr(l, env)?,
+            eval_expr(r, env)?,
+            |a, b| a - b,
+            |a, b| a - b,
+        ),
+        Expr::Mul(l, r) => numeric_binop(
+            eval_expr(l, env)?,
+            eval_expr(r, env)?,
+            |a, b| a * b,
+            |a, b| a * b,
+        ),
+        Expr::Div(l, r) => numeric_binop(
+            eval_expr(l, env)?,
+            eval_expr(r, env)?,
+            |a, b| a / b,
+            |a, b| a / b,
+        ),
 
-        Expr::Lt(l, r) => numeric_cmp(eval_expr(l, env)?, eval_expr(r, env)?, |a, b| a < b, |a, b| a < b),
-        Expr::Le(l, r) => numeric_cmp(eval_expr(l, env)?, eval_expr(r, env)?, |a, b| a <= b, |a, b| a <= b),
-        Expr::Gt(l, r) => numeric_cmp(eval_expr(l, env)?, eval_expr(r, env)?, |a, b| a > b, |a, b| a > b),
-        Expr::Ge(l, r) => numeric_cmp(eval_expr(l, env)?, eval_expr(r, env)?, |a, b| a >= b, |a, b| a >= b),
+        Expr::Lt(l, r) => numeric_cmp(
+            eval_expr(l, env)?,
+            eval_expr(r, env)?,
+            |a, b| a < b,
+            |a, b| a < b,
+        ),
+        Expr::Le(l, r) => numeric_cmp(
+            eval_expr(l, env)?,
+            eval_expr(r, env)?,
+            |a, b| a <= b,
+            |a, b| a <= b,
+        ),
+        Expr::Gt(l, r) => numeric_cmp(
+            eval_expr(l, env)?,
+            eval_expr(r, env)?,
+            |a, b| a > b,
+            |a, b| a > b,
+        ),
+        Expr::Ge(l, r) => numeric_cmp(
+            eval_expr(l, env)?,
+            eval_expr(r, env)?,
+            |a, b| a >= b,
+            |a, b| a >= b,
+        ),
 
         Expr::Eq(l, r) => {
             let lv = eval_expr(l, env)?;
@@ -147,6 +187,69 @@ pub fn eval_expr(expr: &CheckedExpr, env: &mut Environment<Value>) -> Result<Val
                 args.iter().map(|a| eval_expr(a, env)).collect();
             eval_call(name, arg_vals?, env)
         }
+
+        Expr::Member { base, member } => {
+            let base_val = eval_expr(base, env)?;
+            match &base.ty {
+                Type::Struct(identifier) => match base_val {
+                    Value::Struct { fields, .. } => {
+                        fields.get(member).cloned().ok_or_else(|| {
+                            RuntimeError::new(format!(
+                                "missing struct member '{}.{}'",
+                                identifier, member
+                            ))
+                        })
+                    }
+                    other => Err(RuntimeError::new(format!(
+                        "expected struct runtime value for {}, got {}",
+                        identifier, other
+                    ))),
+                },
+                other => Err(RuntimeError::new(format!(
+                    "member access requires struct base type, got {:?}",
+                    other
+                ))),
+            }
+        }
+        Expr::Init { fields } => {
+            let struct_name = match &expr.ty {
+                Type::Struct(name) => name.clone(),
+                _ => return Err(RuntimeError::new("struct init has non-struct type")),
+            };
+            let mut vals = std::collections::HashMap::new();
+            for (name, fe_opt) in fields {
+                let fe = fe_opt.as_ref().ok_or_else(|| {
+                    RuntimeError::new(format!(
+                        "struct field '{}' has no value",
+                        name
+                    ))
+                })?;
+                vals.insert(name.clone(), eval_expr(fe, env)?);
+            }
+            Ok(Value::Struct {
+                identifier: struct_name,
+                fields: vals,
+            })
+        }
+        Expr::Cast { ty, expr } => {
+            let val = eval_expr(expr, env)?;
+            Ok(cast_value(ty, val))
+        }
+        Expr::EnumVariant {
+            enum_name,
+            variant,
+            payload,
+        } => {
+            let pl = match payload {
+                Some(e) => Some(Box::new(eval_expr(e, env)?)),
+                None => None,
+            };
+            Ok(Value::Enum {
+                identifier: enum_name.clone().unwrap_or_default(),
+                variant: variant.clone(),
+                payload: pl,
+            })
+        }
     }
 }
 
@@ -168,8 +271,8 @@ pub fn eval_call(
                 )));
             }
             let snapshot = env.snapshot();
-            for ((param_name, _), val) in decl.params.iter().zip(args.into_iter()) {
-                env.declare(param_name.clone(), val);
+            for (param, val) in decl.params.iter().zip(args.into_iter()) {
+                env.declare(param.name.clone(), val);
             }
             let result = exec_stmt(&decl.body, env)?;
             env.restore(snapshot);
@@ -181,7 +284,6 @@ pub fn eval_call(
 }
 
 // --- Helpers ---
-
 fn eval_literal(lit: &Literal) -> Value {
     match lit {
         Literal::Int(n) => Value::Int(*n),
@@ -235,6 +337,30 @@ fn values_equal(a: &Value, b: &Value) -> bool {
         (Value::Float(x), Value::Int(y)) => *x == (*y as f64),
         (Value::Bool(x), Value::Bool(y)) => x == y,
         (Value::Str(x), Value::Str(y)) => x == y,
+        (Value::Struct { identifier: ida, fields: fa },
+         Value::Struct { identifier: idb, fields: fb }) => {
+            ida == idb
+                && fa.len() == fb.len()
+                && fa.iter().all(|(k, v)| fb.get(k).map_or(false, |w| values_equal(v, w)))
+        }
+        (Value::Enum { identifier: ida, variant: va, payload: pa },
+         Value::Enum { identifier: idb, variant: vb, payload: pb }) => {
+            ida == idb
+                && va == vb
+                && match (pa, pb) {
+                    (Some(a), Some(b)) => values_equal(a, b),
+                    (None, None) => true,
+                    _ => false,
+                }
+        }
         _ => false,
+    }
+}
+
+fn cast_value(ty: &Type, val: Value) -> Value {
+    match (ty, &val) {
+        (Type::Int, Value::Float(x)) => Value::Int(*x as i64),
+        (Type::Float, Value::Int(n)) => Value::Float(*n as f64),
+        _ => val,
     }
 }

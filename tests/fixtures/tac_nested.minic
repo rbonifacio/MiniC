@@ -1,0 +1,5 @@
+enum Inner { int V; None; }
+struct Outer { enum Inner field; }
+void main() {
+    struct Outer o = { .field = { .V = 42 } };
+}

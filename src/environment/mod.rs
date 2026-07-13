@@ -21,4 +21,4 @@
 
 pub mod env;
 
-pub use env::Environment;
+pub use env::{build_type_decl_map, Environment, TypeDeclKey, TypeDeclMap};

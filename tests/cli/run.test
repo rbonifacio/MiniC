@@ -19,6 +19,12 @@ $ ./target/debug/mini_c --run tests/fixtures/interpreter_array.minic
 30
 >=0
 
+# --run executes user type fixture with match and prints bool/payload
+$ ./target/debug/mini_c --run tests/fixtures/data_types.minic
+true
+42
+>=0
+
 # --run on a type-error program fails before interpretation
 $ ./target/debug/mini_c --run tests/fixtures/cli_type_mismatch.minic
 >2 /Type error/

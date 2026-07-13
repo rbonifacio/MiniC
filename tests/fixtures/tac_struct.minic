@@ -1,0 +1,5 @@
+struct Point { bool valid; int x; }
+void main() {
+    struct Point p = { .valid = true, .x = 42 };
+    print(p.valid);
+}

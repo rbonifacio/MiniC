@@ -34,10 +34,12 @@
 //! This gives MiniC correct lexical block scoping without a scope stack.
 
 use crate::environment::Environment;
-use crate::ir::ast::{CheckedExpr, CheckedStmt, Expr, Statement};
+use crate::ir::ast::{CheckedExpr, CheckedStmt, Expr, Statement, Type, UDTKind, UDTMember};
 
 use super::eval_expr::{eval_call, eval_expr};
 use super::value::{RuntimeError, Value};
+
+use std::collections::HashMap;
 
 /// `None` = normal fall-through; `Some(v)` = early return with value.
 pub type ExecResult = Result<Option<Value>, RuntimeError>;
@@ -46,9 +48,16 @@ pub type ExecResult = Result<Option<Value>, RuntimeError>;
 pub fn exec_stmt(stmt: &CheckedStmt, env: &mut Environment<Value>) -> ExecResult {
     match &stmt.stmt {
         // --- Variable declaration ---
-        Statement::Decl { name, init, .. } => {
-            let val = eval_expr(init, env)?;
-            env.declare(name.clone(), val);
+        Statement::Decl { name, ty, init } => {
+            let init_val = eval_expr(init, env)?;
+            let stored = match ty {
+                Type::Struct(_) => init_val,
+                Type::Enum(identifier) => {
+                    build_user_defined_type_value(&UDTKind::Enum, identifier, init_val, env)?
+                }
+                _ => init_val,
+            };
+            env.declare(name.clone(), stored);
             Ok(None)
         }
 
@@ -126,6 +135,39 @@ pub fn exec_stmt(stmt: &CheckedStmt, env: &mut Environment<Value>) -> ExecResult
             eval_call(name, arg_vals?, env)?;
             Ok(None)
         }
+        Statement::Match { target, arms } => {
+            let val = eval_expr(target, env)?;
+            let (variant, payload) = match val {
+                Value::Enum {
+                    variant, payload, ..
+                } => (variant, payload),
+                other => {
+                    return Err(RuntimeError::new(format!(
+                        "match target must be enum, got {}",
+                        other
+                    )))
+                }
+            };
+            for arm in arms {
+                if arm.variant == variant {
+                    let saved = arm.binding.as_ref().and_then(|b| env.get(b).cloned());
+                    if let (Some(b), Some(p)) = (&arm.binding, &payload) {
+                        env.declare(b.clone(), (**p).clone());
+                    }
+                    let r = exec_stmt(&arm.body, env)?;
+                    if let (Some(b), Some(orig)) = (&arm.binding, saved) {
+                        env.declare(b.clone(), orig);
+                    } else if let Some(b) = &arm.binding {
+                        env.remove(b);
+                    }
+                    return Ok(r);
+                }
+            }
+            Err(RuntimeError::new(format!(
+                "no matching arm for variant '{}'",
+                variant
+            )))
+        }
     }
 }
 
@@ -158,6 +200,7 @@ fn assign_lvalue(
             };
             assign_index(base, idx, val, env)
         }
+        Expr::Member { base, member } => assign_member(base, member, val, env),
         _ => Err(RuntimeError::new("invalid assignment target".to_string())),
     }
 }
@@ -249,6 +292,108 @@ fn assign_index(
             }
         }
         _ => Err(RuntimeError::new("invalid assignment target".to_string())),
+    }
+}
+
+fn assign_member(
+    base: &CheckedExpr,
+    member: &str,
+    val: Value,
+    env: &mut Environment<Value>,
+) -> Result<(), RuntimeError> {
+    match &base.exp {
+        Expr::Ident(name) => {
+            let current = env
+                .get(name)
+                .cloned()
+                .ok_or_else(|| RuntimeError::new(format!("undefined variable '{}'", name)))?;
+            let updated = match current {
+                Value::Struct {
+                    identifier,
+                    mut fields,
+                } => {
+                    fields.insert(member.to_string(), val);
+                    Value::Struct { identifier, fields }
+                }
+                other => {
+                    return Err(RuntimeError::new(format!(
+                        "cannot assign member on non-struct value: {}",
+                        other
+                    )))
+                }
+            };
+            env.set(name, updated);
+            Ok(())
+        }
+        _ => Err(RuntimeError::new(
+            "member assignment currently requires a simple variable base".to_string(),
+        )),
+    }
+}
+
+fn build_user_defined_type_value(
+    specifier: &UDTKind,
+    identifier: &str,
+    init_val: Value,
+    env: &Environment<Value>,
+) -> Result<Value, RuntimeError> {
+    let decl = env.get_type_decl(specifier, identifier).ok_or_else(|| {
+        RuntimeError::new(format!(
+            "unknown user-defined type at runtime: {:?} {}",
+            specifier, identifier
+        ))
+    })?;
+
+    match specifier {
+        UDTKind::Struct => {
+            let mut fields = HashMap::new();
+            for member in &decl.members {
+                if let UDTMember::Field(field) = member {
+                    fields.insert(field.name.clone(), default_value_for_type(&field.ty, env)?);
+                }
+            }
+            Ok(Value::Struct {
+                identifier: identifier.to_string(),
+                fields,
+            })
+        }
+        UDTKind::Enum => {
+            if let Value::Enum {
+                variant, payload, ..
+            } = init_val
+            {
+                Ok(Value::Enum {
+                    identifier: identifier.to_string(),
+                    variant,
+                    payload,
+                })
+            } else {
+                Err(RuntimeError::new(format!(
+                    "enum initializer must be an enum variant, got {}",
+                    init_val
+                )))
+            }
+        }
+    }
+}
+
+fn default_value_for_type(ty: &Type, env: &Environment<Value>) -> Result<Value, RuntimeError> {
+    match ty {
+        Type::Unit => Ok(Value::Void),
+        Type::Int => Ok(Value::Int(0)),
+        Type::Float => Ok(Value::Float(0.0)),
+        Type::Bool => Ok(Value::Bool(false)),
+        Type::Str => Ok(Value::Str(String::new())),
+        Type::Array(_) => Ok(Value::Array(vec![])),
+        Type::Struct(identifier) => {
+            build_user_defined_type_value(&UDTKind::Struct, identifier, Value::Int(0), env)
+        }
+        Type::Enum(identifier) => {
+            build_user_defined_type_value(&UDTKind::Enum, identifier, Value::Int(0), env)
+        }
+        Type::Function { .. } | Type::Any => Err(RuntimeError::new(
+            "cannot create default runtime value for this type",
+        )),
     }
 }
 

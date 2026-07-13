@@ -1,0 +1,39 @@
+# --tac on struct init
+$ ./target/debug/mini_c --tac tests/fixtures/tac_struct.minic
+main:
+p.valid = true
+p.x = 42
+param p.valid
+call print, 1
+>=0
+
+# --tac on enum init + match
+$ ./target/debug/mini_c --tac tests/fixtures/tac_enum.minic
+main:
+k.tag = 0
+k.payload = 42
+if k.tag != 0 goto Label2:
+_match1 = k.payload
+param _match1
+call print, 1
+goto Label1:
+Label2:
+if k.tag != 1 goto Label3:
+param 0
+call print, 1
+goto Label1:
+Label3:
+Label1:
+>=0
+
+# --tac on nested types
+$ ./target/debug/mini_c --tac tests/fixtures/tac_nested.minic
+main:
+o.field.tag = 0
+o.field.payload = 42
+>=0
+
+# --tac on a type-error program fails before TAC generation
+$ ./target/debug/mini_c --tac tests/fixtures/cli_type_mismatch.minic
+>2 /Type error/
+>=1
