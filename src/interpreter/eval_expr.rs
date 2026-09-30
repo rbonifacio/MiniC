@@ -147,6 +147,32 @@ pub fn eval_expr(expr: &CheckedExpr, env: &mut Environment<Value>) -> Result<Val
                 args.iter().map(|a| eval_expr(a, env)).collect();
             eval_call(name, arg_vals?, env)
         }
+        Expr::AddrOf(elem) => eval_addr_of(elem, env),
+        Expr::Deref(elem) => eval_deref(elem, env),
+    }
+}
+
+fn eval_addr_of(elem: &CheckedExpr, env: &Environment<Value>) -> Result<Value, RuntimeError> {
+    match &elem.exp {
+        Expr::Ident(name) => {
+            if let Some(addr) = env.get_address(name) {
+                Ok(Value::Ptr(addr))
+            } else {
+                Err(RuntimeError::new(format!("undefined variable '{}'", name)))
+            }
+        }
+        _ => Err(RuntimeError::new("can only take address of variables")),
+    }
+}
+
+fn eval_deref(elem: &CheckedExpr, env: &mut Environment<Value>) -> Result<Value, RuntimeError> {
+    let ptr_val = eval_expr(elem, env)?;
+    if let Value::Ptr(addr) = ptr_val {
+        env.read_store(addr).cloned().ok_or_else(|| {
+            RuntimeError::new(format!("dereference of invalid address '{}'", addr))
+        })
+    } else {
+        Err(RuntimeError::new("cannot dereference non-pointer value"))
     }
 }
 
@@ -167,12 +193,17 @@ pub fn eval_call(
                     args.len()
                 )));
             }
+            
             let snapshot = env.snapshot();
+
             for ((param_name, _), val) in decl.params.iter().zip(args.into_iter()) {
                 env.declare(param_name.clone(), val);
             }
+            
             let result = exec_stmt(&decl.body, env)?;
+            
             env.restore(snapshot);
+            
             Ok(result.unwrap_or(Value::Void))
         }
         Some(_) => Err(RuntimeError::new(format!("'{}' is not a function", name))),
@@ -235,6 +266,7 @@ fn values_equal(a: &Value, b: &Value) -> bool {
         (Value::Float(x), Value::Int(y)) => *x == (*y as f64),
         (Value::Bool(x), Value::Bool(y)) => x == y,
         (Value::Str(x), Value::Str(y)) => x == y,
+        (Value::Ptr(x), Value::Ptr(y)) => x == y,
         _ => false,
     }
 }

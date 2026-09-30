@@ -1,7 +1,9 @@
 //! Integration tests for the MiniC type checker.
 
+use std::path::Path;
+
 use nom::combinator::all_consuming;
-use mini_c::ir::ast::{CheckedProgram, Type};
+use mini_c::ir::ast::{CheckedProgram, Expr, Statement, Type};
 use mini_c::parser::program;
 use mini_c::semantic::type_check;
 
@@ -12,6 +14,14 @@ fn parse_and_type_check(src: &str) -> Result<CheckedProgram, mini_c::semantic::T
         }
     })?;
     type_check(&prog)
+}
+
+fn parse_and_type_check_fixture(name: &str) -> Result<CheckedProgram, mini_c::semantic::TypeError> {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("tests/fixtures")
+        .join(name);
+    let src = std::fs::read_to_string(&path).expect("fixture file should exist");
+    parse_and_type_check(src.trim())
 }
 
 #[test]
@@ -201,4 +211,146 @@ fn test_type_check_sqrt_wrong_arity() {
 fn test_type_check_print_wrong_arity() {
     let result = parse_and_type_check("void main() { print(1, 2); }");
     assert!(result.is_err(), "expected arity error for print(1, 2)");
+}
+
+// ---------------------------------------------------------------------------
+// Pointers
+// ---------------------------------------------------------------------------
+#[test]
+fn test_type_check_pointer_init_fixture() {
+    assert!(
+        parse_and_type_check_fixture("pointer_init.minic").is_ok(),
+        "{}",
+        parse_and_type_check_fixture("pointer_init.minic")
+            .unwrap_err()
+            .message
+    );
+}
+
+#[test]
+fn test_type_check_pointer_feature_fixture() {
+    assert!(parse_and_type_check_fixture("pointer_feature.minic").is_ok());
+}
+
+#[test]
+fn test_type_check_pointer_function_fixture() {
+    assert!(parse_and_type_check_fixture("pointer_function.minic").is_ok());
+}
+
+#[test]
+fn test_type_check_addr_of_and_deref_types() {
+    let prog = parse_and_type_check(
+        "void main() { int x = 1; int* p = &x; int y = *p; }",
+    )
+    .expect("pointer decl and deref should type-check");
+
+    let main_fn = prog.functions.iter().find(|f| f.name == "main").unwrap();
+    let Statement::Block { seq } = &main_fn.body.stmt else {
+        panic!("expected block body");
+    };
+
+    let p_init = match &seq[1].stmt {
+        Statement::Decl { init, .. } => init,
+        _ => panic!("expected int* p = &x decl"),
+    };
+    assert_eq!(p_init.ty, Type::Pointer(Box::new(Type::Int)));
+    assert!(matches!(p_init.exp, Expr::AddrOf(_)));
+
+    let y_init = match &seq[2].stmt {
+        Statement::Decl { init, .. } => init,
+        _ => panic!("expected int y = *p decl"),
+    };
+    assert_eq!(y_init.ty, Type::Int);
+    assert!(matches!(y_init.exp, Expr::Deref(_)));
+}
+
+#[test]
+fn test_type_check_pointer_param_and_deref_assign() {
+    let prog = parse_and_type_check(
+        "void bump(int* p) { *p = *p + 1; }\nvoid main() { int x = 0; bump(&x); }",
+    )
+    .expect("pointer param and assignment through deref");
+
+    let bump = prog.functions.iter().find(|f| f.name == "bump").unwrap();
+    assert_eq!(
+        bump.params,
+        vec![("p".to_string(), Type::Pointer(Box::new(Type::Int)))]
+    );
+}
+
+#[test]
+fn test_type_check_pointer_return_type() {
+    let prog = parse_and_type_check(
+        "int* id(int* p) { return p; }\nvoid main() { int x = 1; int* q = id(&x); }",
+    )
+    .expect("pointer return");
+
+    let id_fn = prog.functions.iter().find(|f| f.name == "id").unwrap();
+    assert_eq!(id_fn.return_type, Type::Pointer(Box::new(Type::Int)));
+}
+
+#[test]
+fn test_type_check_pointer_rebind() {
+    assert!(parse_and_type_check(
+        "void main() { int x = 1; int y = 2; int* a = &x; int* b = &y; a = b; }",
+    )
+    .is_ok());
+}
+
+#[test]
+fn test_type_check_deref_non_pointer() {
+    let result = parse_and_type_check("void main() { int x = 1; int y = *x; }");
+    assert!(result.is_err());
+    assert!(
+        result.unwrap_err().message.contains("cannot dereference non-pointer")
+    );
+}
+
+#[test]
+fn test_type_check_addr_of_non_variable() {
+    let result = parse_and_type_check("void main() { int x = 1; int* p = &(x + 1); }");
+    assert!(result.is_err());
+    assert!(
+        result
+            .unwrap_err()
+            .message
+            .contains("can only take address of variables")
+    );
+}
+
+#[test]
+fn test_type_check_deref_assign_type_mismatch() {
+    let result = parse_and_type_check(
+        "void main() { int x = 1; int* p = &x; *p = true; }",
+    );
+    assert!(result.is_err());
+    assert!(
+        result
+            .unwrap_err()
+            .message
+            .contains("assignment through pointer")
+    );
+}
+
+#[test]
+fn test_type_check_call_expects_pointer_arg() {
+    let result = parse_and_type_check(
+        "void take(int* p) { *p = 1; }\nvoid main() { int x = 0; take(x); }",
+    );
+    assert!(result.is_err());
+    assert!(result.unwrap_err().message.contains("argument"));
+}
+
+#[test]
+fn test_type_check_assign_int_from_pointer() {
+    let result = parse_and_type_check(
+        "void main() { int x = 1; int* p = &x; int y = p; }",
+    );
+    assert!(result.is_err());
+    let err = result.unwrap_err();
+    assert!(
+        err.message.contains("declaration"),
+        "unexpected error: {}",
+        err.message
+    );
 }

@@ -1,0 +1,10 @@
+void increment(int* p) {
+    *p = *p + 1;
+}
+
+void main() {
+    int x = 10;
+    int* y = &x;
+    increment(&x);
+    print(x);
+}

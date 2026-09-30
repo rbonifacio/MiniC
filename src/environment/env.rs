@@ -53,59 +53,77 @@
 //! language. The cost — cloning the entire map on each function call — is
 //! acceptable at MiniC's scale.
 
-use std::collections::{HashMap, HashSet};
+use std::collections::{HashMap};
 
-/// Unified parametric environment: maps names to values of type `V`.
-/// Both variable bindings and function bindings are stored in the same map.
+/// Unified parametric environment representing program state.
+/// It separates lexical bindings (`scopes`) from physical memory (`store`).
 pub struct Environment<V> {
-    bindings: HashMap<String, V>,
+    scopes: HashMap<String, usize>,
+    store: HashMap<usize, V>,
+    next_address: usize,
 }
 
 impl<V: Clone> Environment<V> {
     pub fn new() -> Self {
         Self {
-            bindings: HashMap::new(),
+            scopes: HashMap::new(),
+            store: HashMap::new(),
+            next_address: 1,
         }
     }
 
-    /// Bind `name` to `value`, overwriting any existing binding.
+    /// Allocates a new address in the store for `value`, and binds `name` to this address.
     pub fn declare(&mut self, name: impl Into<String>, value: V) {
-        self.bindings.insert(name.into(), value);
+        let addr = self.next_address;
+        self.next_address += 1;
+        self.store.insert(addr, value);
+        self.scopes.insert(name.into(), addr);
     }
 
-    /// Look up a binding by name.
+    /// Looks up the value currently bound to `name` by resolving its physical address.
     pub fn get(&self, name: &str) -> Option<&V> {
-        self.bindings.get(name)
+        let addr = self.scopes.get(name)?;
+        self.store.get(addr)
     }
 
-    /// Update an existing binding. Returns `false` if the name is not bound.
+    /// Updates the value at the address currently bound to `name`. Returns `false` if the name is not found.
     pub fn set(&mut self, name: &str, value: V) -> bool {
-        if self.bindings.contains_key(name) {
-            self.bindings.insert(name.to_string(), value);
+        if let Some(&addr) = self.scopes.get(name) {
+            self.store.insert(addr, value);
             true
         } else {
             false
         }
     }
 
-    /// Capture a full clone of the current bindings (for function call scoping).
-    pub fn snapshot(&self) -> HashMap<String, V> {
-        self.bindings.clone()
+    /// Returns the physical address (usize) bound to `name`.
+    pub fn get_address(&self, name: &str) -> Option<usize> {
+        self.scopes.get(name).copied()
     }
 
-    /// Replace all bindings with the given snapshot (for function call scoping).
-    pub fn restore(&mut self, snapshot: HashMap<String, V>) {
-        self.bindings = snapshot;
+    /// Reads a value directly from the memory store using its physical address.
+    pub fn read_store(&self, addr: usize) -> Option<&V> {
+        self.store.get(&addr)
     }
 
-    /// Return the set of currently bound names (for block-entry capture).
-    pub fn names(&self) -> HashSet<String> {
-        self.bindings.keys().cloned().collect()
+    /// Writes a value directly to the memory store at the given physical address.
+    pub fn write_store(&mut self, addr: usize, value: V) -> bool {
+        if self.store.contains_key(&addr) {
+            self.store.insert(addr, value);
+            true
+        } else {
+            false
+        }
     }
 
-    /// Remove any binding whose name is not in `outer` (for block-exit cleanup).
-    pub fn remove_new(&mut self, outer: &HashSet<String>) {
-        self.bindings.retain(|k, _| outer.contains(k));
+    /// Captures a clone of the current lexical scope (names to addresses).
+    pub fn snapshot(&self) -> HashMap<String, usize> {
+        self.scopes.clone()
+    }
+
+    /// Replaces the current lexical scope with a previously saved snapshot.
+    pub fn restore(&mut self, snapshot: HashMap<String, usize>) {
+        self.scopes = snapshot;
     }
 }
 

@@ -58,6 +58,7 @@ pub enum Type {
     Str,
     Array(Box<Type>),
     Fun(Vec<Type>, Box<Type>),
+    Pointer(Box<Type>),
     /// Matches any type. Only used as a parameter type in native stdlib registrations.
     Any,
 }
@@ -112,6 +113,9 @@ pub enum Expr<Ty> {
         base: Box<ExprD<Ty>>,
         index: Box<ExprD<Ty>>,
     },
+    /// Pointer operations
+    AddrOf(Box<ExprD<Ty>>),
+    Deref(Box<ExprD<Ty>>),
 }
 
 /// Statement with type decoration.

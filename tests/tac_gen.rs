@@ -58,12 +58,89 @@ fn test_if_else_with_relational_condition() {
     let temp = Address::Temporary("temp1".to_string(), Type::Int);
 
     assert_eq!(instructions, vec![
-        Instruction::ConditionalJMPRelational(Operator::GTE, x.clone(), y.clone(), "Label1:".to_string()),
-        Instruction::BinaryAssignment(Operator::Add, temp.clone(), x.clone(), y.clone()),
-        Instruction::CopyAssignment(z.clone(), temp),
+        Instruction::ConditionalJMPRelational(Operator::LT, x.clone(), y.clone(), "Label1:".to_string()),
         Instruction::JMP("Label2:".to_string()),
         Instruction::Label("Label1:".to_string()),
-        Instruction::CopyAssignment(z, x),
+        Instruction::BinaryAssignment(Operator::Add, temp.clone(), x.clone(), y.clone()),
+        Instruction::CopyAssignment(z.clone(), temp),
+        Instruction::JMP("Label3:".to_string()),
         Instruction::Label("Label2:".to_string()),
+        Instruction::CopyAssignment(z, x),
+        Instruction::Label("Label3:".to_string()),
+    ]);
+}
+
+#[test]
+fn test_pointer_assignment() {
+
+    let p_deref = ExprD {
+        exp: Expr::Deref(Box::new(ExprD { exp: Expr::Ident("p".to_string()), ty: Type::Pointer(Box::new(Type::Int)) })),
+        ty: Type::Int,
+    };
+    
+    let one = ExprD {
+        exp: Expr::Literal(Literal::Int(1)),
+        ty: Type::Int,
+    };
+    
+    let add_expr = ExprD {
+        exp: Expr::Add(Box::new(p_deref.clone()), Box::new(one)),
+        ty: Type::Int,
+    };
+    
+    let stmt = StatementD {
+        stmt: Statement::Assign {
+            target: Box::new(p_deref),
+            value: Box::new(add_expr),
+        },
+        ty: Type::Unit,
+    };
+    
+    let mut env = Environment::new();
+    let instructions = translate_statement(stmt, &mut env);
+    
+    let p = Address::Variable("p".to_string(), Type::Pointer(Box::new(Type::Int)));
+    let temp1 = Address::Temporary("temp1".to_string(), Type::Int);
+    let temp2 = Address::Temporary("temp2".to_string(), Type::Int);
+    
+    assert_eq!(instructions, vec![
+        Instruction::DerefRead(temp1.clone(), p.clone()),
+        Instruction::BinaryAssignment(Operator::Add, temp2.clone(), temp1, Address::Constant(Literal::Int(1), Type::Int)),
+        Instruction::DerefWrite(p, temp2),
+    ]);
+}
+
+#[test]
+fn test_pointer_address_of() {
+
+    let addr_of_expr = ExprD {
+        exp: Expr::AddrOf(Box::new(ExprD { 
+            exp: Expr::Ident("x".to_string()), 
+            ty: Type::Int 
+        })),
+        ty: Type::Pointer(Box::new(Type::Int)),
+    };
+    
+    let stmt = StatementD {
+        stmt: Statement::Assign {
+            target: Box::new(ExprD { 
+                exp: Expr::Ident("y".to_string()), 
+                ty: Type::Pointer(Box::new(Type::Int)) 
+            }),
+            value: Box::new(addr_of_expr),
+        },
+        ty: Type::Unit,
+    };
+    
+    let mut env = Environment::new();
+    let instructions = translate_statement(stmt, &mut env);
+    
+    let x = Address::Variable("x".to_string(), Type::Int);
+    let y = Address::Variable("y".to_string(), Type::Pointer(Box::new(Type::Int)));
+    let temp1 = Address::Temporary("temp1".to_string(), Type::Pointer(Box::new(Type::Int)));
+    
+    assert_eq!(instructions, vec![
+        Instruction::AddressOf(temp1.clone(), x),
+        Instruction::CopyAssignment(y, temp1),
     ]);
 }

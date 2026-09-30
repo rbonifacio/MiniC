@@ -119,6 +119,12 @@ fn unary(input: &str) -> IResult<&str, UncheckedExpr> {
         map(pair(preceded(multispace0, tag("-")), unary), |(_, e)| {
             wrap(Expr::Neg(Box::new(e)))
         }),
+        map(pair(preceded(multispace0, tag("&")), unary), |(_, e)| {
+            wrap(Expr::AddrOf(Box::new(e)))
+        }),
+        map(pair(preceded(multispace0, tag("*")), unary), |(_, e)| {
+            wrap(Expr::Deref(Box::new(e)))
+        }),
         primary,
     ))(input)
 }

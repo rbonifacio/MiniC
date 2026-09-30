@@ -23,7 +23,7 @@
           ];
 
           shellHook = ''
-            export PS1="MiniC ❄️  > "
+            export PS1="MiniC ❄️ \[\033[01;34m\]\w\[\033[00m\] > "
           '';
         };
       }

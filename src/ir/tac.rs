@@ -26,6 +26,9 @@ pub enum Instruction {
     Store(Address, Address, Address),     // x[i] = y
     Load(Address, Address, Address),      // x = y[i]
     Return(Option<Address>),
+    AddressOf(Address, Address), // x = &y
+    DerefRead(Address, Address), // x = *y
+    DerefWrite(Address, Address), // *x = y
 }
 
 #[derive(Debug, Clone, PartialEq)]
