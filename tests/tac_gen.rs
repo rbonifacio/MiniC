@@ -31,9 +31,10 @@ fn assign(name: &str, value: CheckedExpr) -> CheckedStmt {
 // Fixture: if (x < y) { z = x + y; } else { z = x; }
 //
 // Expected TAC:
-//   if x >= y goto Label1:    <- negated relational jumps to else
-//   temp1 = x + y
-//   z = temp1
+//   temp1 = x < y
+//   ifFalse temp1 goto Label1:
+//   temp2 = x + y
+//   z = temp2
 //   goto Label2:
 //   Label1:
 //   z = x
@@ -55,18 +56,18 @@ fn test_if_else_with_relational_condition() {
     let x    = Address::Variable("x".to_string(), Type::Int);
     let y    = Address::Variable("y".to_string(), Type::Int);
     let z    = Address::Variable("z".to_string(), Type::Int);
-    let temp = Address::Temporary("temp1".to_string(), Type::Int);
+    let cond = Address::Temporary("temp1".to_string(), Type::Bool);
+    let temp = Address::Temporary("temp2".to_string(), Type::Int);
 
     assert_eq!(instructions, vec![
-        Instruction::ConditionalJMPRelational(Operator::LT, x.clone(), y.clone(), "Label1:".to_string()),
-        Instruction::JMP("Label2:".to_string()),
-        Instruction::Label("Label1:".to_string()),
+        Instruction::BinaryAssignment(Operator::LT, cond.clone(), x.clone(), y.clone()),
+        Instruction::ConditionalJMPFalse(cond, "Label1:".to_string()),
         Instruction::BinaryAssignment(Operator::Add, temp.clone(), x.clone(), y.clone()),
         Instruction::CopyAssignment(z.clone(), temp),
-        Instruction::JMP("Label3:".to_string()),
-        Instruction::Label("Label2:".to_string()),
+        Instruction::JMP("Label2:".to_string()),
+        Instruction::Label("Label1:".to_string()),
         Instruction::CopyAssignment(z, x),
-        Instruction::Label("Label3:".to_string()),
+        Instruction::Label("Label2:".to_string()),
     ]);
 }
 

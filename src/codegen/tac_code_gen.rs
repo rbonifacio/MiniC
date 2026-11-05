@@ -91,11 +91,9 @@ pub fn translate_statement(statement: CheckedStmt, env: &mut Environment) -> Vec
             instructions
         }
         Statement::If{cond, then_branch: then_body, else_branch: Some(else_body)} => {
-            let label_then = env.new_label();
             let label_else = env.new_label();
             let label_end_if = env.new_label();
-            let mut instructions = translate_conditional(*cond, env, label_then.clone(), label_else.clone());
-            instructions.push(Instruction::Label(label_then));
+            let mut instructions = translate_conditional(*cond, env, label_else.clone());
             instructions.extend(translate_statement(*then_body, env));
             instructions.push(Instruction::JMP(label_end_if.clone()));
             instructions.push(Instruction::Label(label_else));
@@ -167,14 +165,14 @@ fn translate_expression(expression: CheckedExpr, env: &mut Environment) -> (Addr
             (temp, instructions)
         },
         // Arithmetic Expressions
-        Expr::Add(left, right) => {
-            let (l_addr, l_instructions) = translate_expression(*left, env);
-            let (r_addr, r_instructions) = translate_expression(*right, env);
-            let mut instructions = [l_instructions, r_instructions].concat();
-            let temp = Address::Temporary(env.new_temporary(), expression.ty);
-            instructions.push(Instruction::BinaryAssignment(Operator::Add, temp.clone(), l_addr, r_addr));
-            (temp, instructions)
-        },
+        Expr::Add(left, right) => translate_binary(Operator::Add, *left, *right, expression.ty, env),
+        // Relational Expressions
+        Expr::Lt(left, right) => translate_binary(Operator::LT,  *left, *right, expression.ty, env),
+        Expr::Le(left, right) => translate_binary(Operator::LTE, *left, *right, expression.ty, env),
+        Expr::Gt(left, right) => translate_binary(Operator::GT,  *left, *right, expression.ty, env),
+        Expr::Ge(left, right) => translate_binary(Operator::GTE, *left, *right, expression.ty, env),
+        Expr::Eq(left, right) => translate_binary(Operator::EQ,  *left, *right, expression.ty, env),
+        Expr::Ne(left, right) => translate_binary(Operator::NE,  *left, *right, expression.ty, env),
         Expr::AddrOf(inner) => {
             let (inner_addr, mut instructions) = translate_expression(*inner, env);
             let temp = Address::Temporary(env.new_temporary(), expression.ty);
@@ -191,50 +189,21 @@ fn translate_expression(expression: CheckedExpr, env: &mut Environment) -> (Addr
     }
 }
 
-fn translate_conditional(expression: CheckedExpr, env: &mut Environment, true_label: String, false_label: String) -> Vec<Instruction> {
-    match expression.exp {
-        Expr::Literal(Literal::Bool(true))  => vec![Instruction::JMP(true_label)],
-        Expr::Literal(Literal::Bool(false)) => vec![Instruction::JMP(false_label)],
-        Expr::Ident(name) => {
-            let addr = Address::Variable(name.to_string(), expression.ty);
-            vec![Instruction::ConditionalJMP(addr, true_label), Instruction::JMP(false_label)]
-        },
-        Expr::And(left, right) => {
-            let label_right = env.new_label();
-            let mut instructions = translate_conditional(*left, env, label_right.clone(), false_label.clone());
-            instructions.push(Instruction::Label(label_right));
-            instructions.extend(translate_conditional(*right, env, true_label, false_label));
-            instructions
-        },
-        Expr::Or(left, right) => {
-            let label_right = env.new_label();
-            let mut instructions = translate_conditional(*left, env, true_label.clone(), label_right.clone());
-            instructions.push(Instruction::Label(label_right));
-            instructions.extend(translate_conditional(*right, env, true_label, false_label));
-            instructions
-        },
-        Expr::Not(expr) => translate_conditional(*expr, env, false_label, true_label),
-        Expr::Lt(left, right) => translate_relational(*left, *right, Operator::LT,  true_label, false_label, env),
-        Expr::Le(left, right) => translate_relational(*left, *right, Operator::LTE, true_label, false_label, env),
-        Expr::Gt(left, right) => translate_relational(*left, *right, Operator::GT,  true_label, false_label, env),
-        Expr::Ge(left, right) => translate_relational(*left, *right, Operator::GTE, true_label, false_label, env),
-        Expr::Eq(left, right) => translate_relational(*left, *right, Operator::EQ,  true_label, false_label, env),
-        Expr::Ne(left, right) => translate_relational(*left, *right, Operator::NE,  true_label, false_label, env),
-        _ => {
-            let (addr, mut instructions) = translate_expression(expression, env);
-            instructions.push(Instruction::ConditionalJMP(addr, true_label));
-            instructions.push(Instruction::JMP(false_label));
-            instructions
-        }
-    }
+// Evaluates the condition and jumps to 'false_label' when it does not hold.
+// When it holds, execution falls through to the next instruction.
+// Short-circuit evaluation of 'and', 'or', and 'not' is handled by
+// translate_expression.
+fn translate_conditional(expression: CheckedExpr, env: &mut Environment, false_label: String) -> Vec<Instruction> {
+    let (addr, mut instructions) = translate_expression(expression, env);
+    instructions.push(Instruction::ConditionalJMPFalse(addr, false_label));
+    instructions
 }
 
-fn translate_relational(left: CheckedExpr, right: CheckedExpr, op: Operator, true_label: String, false_label: String, env: &mut Environment) -> Vec<Instruction> {
+fn translate_binary(op: Operator, left: CheckedExpr, right: CheckedExpr, ty: Type, env: &mut Environment) -> (Address, Vec<Instruction>) {
     let (l_addr, l_instructions) = translate_expression(left, env);
     let (r_addr, r_instructions) = translate_expression(right, env);
-    let mut instructions = l_instructions;
-    instructions.extend(r_instructions);
-    instructions.push(Instruction::ConditionalJMPRelational(op, l_addr, r_addr, true_label));
-    instructions.push(Instruction::JMP(false_label));
-    instructions
+    let mut instructions = [l_instructions, r_instructions].concat();
+    let temp = Address::Temporary(env.new_temporary(), ty);
+    instructions.push(Instruction::BinaryAssignment(op, temp.clone(), l_addr, r_addr));
+    (temp, instructions)
 }
