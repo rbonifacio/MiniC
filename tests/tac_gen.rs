@@ -145,3 +145,122 @@ fn test_pointer_address_of() {
         Instruction::CopyAssignment(y, temp1),
     ]);
 }
+
+// Fixture: while (i < n) { i = i + 1; }
+//
+// Expected TAC:
+//   Label1:
+//   temp1 = i < n
+//   ifFalse temp1 goto Label2:
+//   temp2 = i + 1
+//   i = temp2
+//   goto Label1:
+//   Label2:
+#[test]
+fn test_while_with_relational_condition() {
+    let one = ExprD { exp: Expr::Literal(Literal::Int(1)), ty: Type::Int };
+    let stmt = StatementD {
+        stmt: Statement::While {
+            cond: Box::new(lt(int_var("i"), int_var("n"))),
+            body: Box::new(assign("i", add(int_var("i"), one))),
+        },
+        ty: Type::Unit,
+    };
+
+    let mut env = Environment::new();
+    let instructions = translate_statement(stmt, &mut env);
+
+    let i    = Address::Variable("i".to_string(), Type::Int);
+    let n    = Address::Variable("n".to_string(), Type::Int);
+    let c1   = Address::Constant(Literal::Int(1), Type::Int);
+    let cond = Address::Temporary("temp1".to_string(), Type::Bool);
+    let temp = Address::Temporary("temp2".to_string(), Type::Int);
+
+    assert_eq!(instructions, vec![
+        Instruction::Label("Label1:".to_string()),
+        Instruction::BinaryAssignment(Operator::LT, cond.clone(), i.clone(), n),
+        Instruction::ConditionalJMPFalse(cond, "Label2:".to_string()),
+        Instruction::BinaryAssignment(Operator::Add, temp.clone(), i.clone(), c1),
+        Instruction::CopyAssignment(i, temp),
+        Instruction::JMP("Label1:".to_string()),
+        Instruction::Label("Label2:".to_string()),
+    ]);
+}
+
+// Fixture: if (x < y) { z = x; }
+//
+// Expected TAC:
+//   temp1 = x < y
+//   ifFalse temp1 goto Label1:
+//   z = x
+//   Label1:
+#[test]
+fn test_if_without_else() {
+    let stmt = StatementD {
+        stmt: Statement::If {
+            cond:        Box::new(lt(int_var("x"), int_var("y"))),
+            then_branch: Box::new(assign("z", int_var("x"))),
+            else_branch: None,
+        },
+        ty: Type::Unit,
+    };
+
+    let mut env = Environment::new();
+    let instructions = translate_statement(stmt, &mut env);
+
+    let x    = Address::Variable("x".to_string(), Type::Int);
+    let y    = Address::Variable("y".to_string(), Type::Int);
+    let z    = Address::Variable("z".to_string(), Type::Int);
+    let cond = Address::Temporary("temp1".to_string(), Type::Bool);
+
+    assert_eq!(instructions, vec![
+        Instruction::BinaryAssignment(Operator::LT, cond.clone(), x.clone(), y),
+        Instruction::ConditionalJMPFalse(cond, "Label1:".to_string()),
+        Instruction::CopyAssignment(z, x),
+        Instruction::Label("Label1:".to_string()),
+    ]);
+}
+
+fn call(name: &str, args: Vec<CheckedExpr>) -> CheckedExpr {
+    ExprD { exp: Expr::Call { name: name.to_string(), args }, ty: Type::Int }
+}
+
+// Fixture: x = f(a + 1, g(b));
+//
+// Expected TAC (all arguments are evaluated before any 'param' of f):
+//   temp1 = a + 1
+//   param b
+//   temp2 = call g, 1
+//   param temp1
+//   param temp2
+//   temp3 = call f, 2
+//   x = temp3
+#[test]
+fn test_nested_call_expression() {
+    let one = ExprD { exp: Expr::Literal(Literal::Int(1)), ty: Type::Int };
+    let stmt = assign("x", call("f", vec![
+        add(int_var("a"), one),
+        call("g", vec![int_var("b")]),
+    ]));
+
+    let mut env = Environment::new();
+    let instructions = translate_statement(stmt, &mut env);
+
+    let a  = Address::Variable("a".to_string(), Type::Int);
+    let b  = Address::Variable("b".to_string(), Type::Int);
+    let x  = Address::Variable("x".to_string(), Type::Int);
+    let c1 = Address::Constant(Literal::Int(1), Type::Int);
+    let t1 = Address::Temporary("temp1".to_string(), Type::Int);
+    let t2 = Address::Temporary("temp2".to_string(), Type::Int);
+    let t3 = Address::Temporary("temp3".to_string(), Type::Int);
+
+    assert_eq!(instructions, vec![
+        Instruction::BinaryAssignment(Operator::Add, t1.clone(), a, c1),
+        Instruction::Param(b),
+        Instruction::Call(Some(t2.clone()), "g".to_string(), 1),
+        Instruction::Param(t1),
+        Instruction::Param(t2),
+        Instruction::Call(Some(t3.clone()), "f".to_string(), 2),
+        Instruction::CopyAssignment(x, t3),
+    ]);
+}

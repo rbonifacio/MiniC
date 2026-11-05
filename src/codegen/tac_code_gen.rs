@@ -78,16 +78,9 @@ pub fn translate_statement(statement: CheckedStmt, env: &mut Environment) -> Vec
             }
         },
         Statement::Call{name, args} => {
-            // addresses_and_instructions :: [(Address, [Instruction])]
-            let addresses_and_instructions = args.into_iter().map(|expr| translate_expression(expr, env)).collect::<Vec<_>>();
-            let mut instructions = addresses_and_instructions.iter().fold(vec![], |mut acc, (_, inst)| {acc.extend(inst.clone()); acc});
-
-            // includes a 'param' instruction to the
-            // every addresses built from the arguments.
-            for (addr, _) in &addresses_and_instructions {
-                instructions.push(Instruction::Param(addr.clone()));
-            }
-            instructions.push(Instruction::Call(None, name, addresses_and_instructions.len()));
+            // As a statement, the returned value (if any) is discarded.
+            let (mut instructions, n) = translate_arguments(args, env);
+            instructions.push(Instruction::Call(None, name, n));
             instructions
         }
         Statement::If{cond, then_branch: then_body, else_branch: Some(else_body)} => {
@@ -101,6 +94,23 @@ pub fn translate_statement(statement: CheckedStmt, env: &mut Environment) -> Vec
             instructions.push(Instruction::Label(label_end_if));
             instructions
         },
+        Statement::If{cond, then_branch: then_body, else_branch: None} => {
+            let label_end_if = env.new_label();
+            res.extend(translate_conditional(*cond, env, label_end_if.clone()));
+            res.extend(translate_statement(*then_body, env));
+            res.push(Instruction::Label(label_end_if));
+            res
+        },
+        Statement::While { cond, body } => {
+            let label_loop = env.new_label();
+            let label_end  = env.new_label();
+            res.push(Instruction::Label(label_loop.clone()));
+            res.extend(translate_conditional(*cond, env, label_end.clone()));
+            res.extend(translate_statement(*body, env));
+            res.push(Instruction::JMP(label_loop));
+            res.push(Instruction::Label(label_end));
+            res
+        }
         _ => todo!()
     }
 }
@@ -185,6 +195,13 @@ fn translate_expression(expression: CheckedExpr, env: &mut Environment) -> (Addr
             instructions.push(Instruction::DerefRead(temp.clone(), inner_addr));
             (temp, instructions)
         },
+        // As an expression, the returned value goes into a fresh temporary.
+        Expr::Call{name, args} => {
+            let (mut instructions, n) = translate_arguments(args, env);
+            let temp = Address::Temporary(env.new_temporary(), expression.ty);
+            instructions.push(Instruction::Call(Some(temp.clone()), name, n));
+            (temp, instructions)
+        },
         _ => todo!()
     }
 }
@@ -206,4 +223,20 @@ fn translate_binary(op: Operator, left: CheckedExpr, right: CheckedExpr, ty: Typ
     let temp = Address::Temporary(env.new_temporary(), ty);
     instructions.push(Instruction::BinaryAssignment(op, temp.clone(), l_addr, r_addr));
     (temp, instructions)
+}
+
+// Evaluates all arguments (left to right) and then emits one 'param'
+// per argument. Returns the instructions and the number of arguments,
+// which the caller uses to build the 'call' instruction.
+fn translate_arguments(args: Vec<CheckedExpr>, env: &mut Environment) -> (Vec<Instruction>, usize) {
+    // addresses_and_instructions :: [(Address, [Instruction])]
+    let addresses_and_instructions = args.into_iter().map(|expr| translate_expression(expr, env)).collect::<Vec<_>>();
+    let mut instructions = addresses_and_instructions.iter().fold(vec![], |mut acc, (_, inst)| {acc.extend(inst.clone()); acc});
+
+    // includes a 'param' instruction for
+    // every address built from the arguments.
+    for (addr, _) in &addresses_and_instructions {
+        instructions.push(Instruction::Param(addr.clone()));
+    }
+    (instructions, addresses_and_instructions.len())
 }
