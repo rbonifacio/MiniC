@@ -1,8 +1,8 @@
 //! Integration tests for the MiniC TAC code generator.
 
-use mini_c::ir::ast::{CheckedExpr, CheckedStmt, ExprD, Expr, Literal, Statement, StatementD, Type};
+use mini_c::ir::ast::{CheckedExpr, CheckedStmt, ExprD, Expr, FunDecl, Literal, Program, Statement, StatementD, Type};
 use mini_c::ir::tac::{Address, Instruction, Operator};
-use mini_c::codegen::tac_code_gen::{Environment, translate_statement};
+use mini_c::codegen::tac_code_gen::{Environment, translate_program, translate_statement};
 
 // --- Helpers to build type-annotated AST nodes ---
 
@@ -262,5 +262,75 @@ fn test_nested_call_expression() {
         Instruction::Param(t2),
         Instruction::Call(Some(t3.clone()), "f".to_string(), 2),
         Instruction::CopyAssignment(x, t3),
+    ]);
+}
+
+fn stmt(s: Statement<Type>) -> CheckedStmt {
+    StatementD { stmt: s, ty: Type::Unit }
+}
+
+// Fixture:
+//   int sum(int a, int b) { return a + b; }
+//   void main() { int x = sum(1, 2); return; }
+//
+// Expected TAC (parameters are received through Jimple-style
+// identity statements):
+//   sum:
+//   a = @parameter0
+//   b = @parameter1
+//   temp1 = a + b
+//   return temp1
+//   main:
+//   param 1
+//   param 2
+//   temp2 = call sum, 2
+//   x = temp2
+//   return
+#[test]
+fn test_program_with_two_functions() {
+    let int_lit = |n| ExprD { exp: Expr::Literal(Literal::Int(n)), ty: Type::Int };
+    let sum = FunDecl {
+        name: "sum".to_string(),
+        params: vec![("a".to_string(), Type::Int), ("b".to_string(), Type::Int)],
+        return_type: Type::Int,
+        body: Box::new(stmt(Statement::Block { seq: vec![
+            stmt(Statement::Return(Some(Box::new(add(int_var("a"), int_var("b")))))),
+        ]})),
+    };
+    let main = FunDecl {
+        name: "main".to_string(),
+        params: vec![],
+        return_type: Type::Unit,
+        body: Box::new(stmt(Statement::Block { seq: vec![
+            stmt(Statement::Decl {
+                name: "x".to_string(),
+                ty: Type::Int,
+                init: Box::new(call("sum", vec![int_lit(1), int_lit(2)])),
+            }),
+            stmt(Statement::Return(None)),
+        ]})),
+    };
+
+    let mut env = Environment::new();
+    let instructions = translate_program(Program { functions: vec![sum, main] }, &mut env);
+
+    let a  = Address::Variable("a".to_string(), Type::Int);
+    let b  = Address::Variable("b".to_string(), Type::Int);
+    let x  = Address::Variable("x".to_string(), Type::Int);
+    let t1 = Address::Temporary("temp1".to_string(), Type::Int);
+    let t2 = Address::Temporary("temp2".to_string(), Type::Int);
+
+    assert_eq!(instructions, vec![
+        Instruction::Label("sum".to_string()),
+        Instruction::CopyAssignment(a.clone(), Address::Identity("parameter0".to_string(), Type::Int)),
+        Instruction::CopyAssignment(b.clone(), Address::Identity("parameter1".to_string(), Type::Int)),
+        Instruction::BinaryAssignment(Operator::Add, t1.clone(), a, b),
+        Instruction::Return(Some(t1)),
+        Instruction::Label("main".to_string()),
+        Instruction::Param(Address::Constant(Literal::Int(1), Type::Int)),
+        Instruction::Param(Address::Constant(Literal::Int(2), Type::Int)),
+        Instruction::Call(Some(t2.clone()), "sum".to_string(), 2),
+        Instruction::CopyAssignment(x, t2),
+        Instruction::Return(None),
     ]);
 }

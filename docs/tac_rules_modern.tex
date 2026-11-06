@@ -282,6 +282,7 @@
       Unconditional jump             & \tc{goto L}                        & always jump to $L$                 \\
       Label                          & \tc{L:}                            & marks a jump target                \\
       Procedure call                 & \tc{param a} \quad \tc{t := call f, n} & pass argument; call $f$ with $n$ args \\
+      Identity (parameter)           & \tc{x := @parameter0}              & $x$ receives the first argument    \\
       Return                         & \tc{return} \quad \tc{return a}    & leave the current function         \\
       \bottomrule
     \end{tabular}
@@ -289,7 +290,8 @@
 
   \smallskip
   \textbf{Addresses} are one of: a variable name, a constant literal,
-  or a fresh temporary (\tc{t1}, \tc{t2}, \ldots).
+  a fresh temporary (\tc{t1}, \tc{t2}, \ldots), or a parameter identity
+  (\tc{@parameter0}, \ldots).
 \end{frame}
 
 
@@ -595,7 +597,9 @@ x  := t3
       \begin{itemize}
         \item A function becomes a \textbf{label} with its name,
               followed by the code of its body.
-        \item Parameters are ordinary variables inside the body.
+        \item Each parameter receives its argument through an
+              \textbf{identity statement}, \tc{x := @parameter$i$},
+              as in Jimple (Soot). After that, it is an ordinary variable.
         \item \tc{return e} evaluates \tc{e} and emits \tc{return a};
               a plain \tc{return} emits just \tc{return}.
       \end{itemize}
@@ -610,8 +614,8 @@ int sq_sum(int a, int b) {
         \vspace{0.3em}
         \begin{minted}[fontsize=\small]{text}
 sq_sum:
-a := param0
-b := param1
+a := @parameter0
+b := @parameter1
 t1 := a * a
 t2 := b * b
 t3 := t1 + t2
@@ -968,7 +972,8 @@ a[t1] := t2
   \[
     \inferrule[Fun]
       { \trStmt{s} \Rightarrow I }
-      { \trFun{T\ f(p_1,\ldots,p_n)\ s} \Rightarrow [\,f\texttt{:}\,] \cat I }
+      { \trFun{T\ f(p_1,\ldots,p_n)\ s} \Rightarrow
+        [\,f\texttt{:},\;\; p_1 := \texttt{@parameter0}, \ldots,\;\; p_n := \texttt{@parameter}(n{-}1)\,] \cat I }
   \]
 \end{frame}
 

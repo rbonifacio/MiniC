@@ -9,6 +9,7 @@ pub enum Address {
     Variable(Name, Type),
     Constant(Literal, Type),
     Temporary(Name, Type),
+    Identity(Name, Type),   // @parameter0, @parameter1, ... (as in Jimple)
 }
 
 #[derive(Debug, Clone, PartialEq)]

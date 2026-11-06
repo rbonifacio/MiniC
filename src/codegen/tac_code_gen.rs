@@ -27,25 +27,25 @@ impl Environment {
     }
 }
 
-#[allow(dead_code)]
-fn translate_program(program: CheckedProgram, env: &mut Environment) -> TACProgram {
-    let main_fn = program.main_function();
-    match main_fn {
-        None => unreachable!("[Impossible] program must have a main function"),
-        Some(f) => translate_function(f.clone(), env),
-    }
-
+// A program is the concatenation of the code of all its functions.
+pub fn translate_program(program: CheckedProgram, env: &mut Environment) -> TACProgram {
+    program.functions.into_iter().fold(vec![], |mut acc, f| {acc.extend(translate_function(f, env)); acc})
 }
 
-#[allow(dead_code)]
-fn translate_function(function: CheckedFunDecl, env: &mut Environment) -> TACProgram {
-    let mut instructions =
-        if let Statement::Block { seq : stmts } = function.body.stmt {
-            stmts.into_iter().flat_map(|stmt| translate_statement(stmt, env)).collect::<Vec<_>>()
-        } else {
-            translate_statement(*(function.body), env)
-        };
-    instructions.insert(0, Instruction::Label(function.name.clone()));
+// A function starts with a label carrying its name, followed by one
+// identity statement per parameter (as in Jimple), and then its body:
+//
+//   f:
+//   a = @parameter0
+//   b = @parameter1
+//   <body>
+pub fn translate_function(function: CheckedFunDecl, env: &mut Environment) -> TACProgram {
+    let mut instructions = vec![Instruction::Label(function.name)];
+    for (i, (name, ty)) in function.params.into_iter().enumerate() {
+        let parameter = Address::Identity(format!("parameter{}", i), ty.clone());
+        instructions.push(Instruction::CopyAssignment(Address::Variable(name, ty), parameter));
+    }
+    instructions.extend(translate_statement(*function.body, env));
     instructions
 }
 
@@ -55,6 +55,12 @@ pub fn translate_statement(statement: CheckedStmt, env: &mut Environment) -> Vec
     match statement.stmt {
         Statement::Block{seq} => {
             seq.into_iter().flat_map(|s| translate_statement(s, env)).collect::<Vec<_>>()
+        },
+        Statement::Decl { name, ty, init } => {
+            let (init_addr, instrs) = translate_expression(*init, env);
+            res.extend(instrs);
+            res.push(Instruction::CopyAssignment(Address::Variable(name, ty), init_addr));
+            res
         },
         Statement::Assign { target, value } => {
             match target.exp {
@@ -110,8 +116,13 @@ pub fn translate_statement(statement: CheckedStmt, env: &mut Environment) -> Vec
             res.push(Instruction::JMP(label_loop));
             res.push(Instruction::Label(label_end));
             res
-        }
-        _ => todo!()
+        },
+        Statement::Return(Some(value)) => {
+            let (addr, mut instructions) = translate_expression(*value, env);
+            instructions.push(Instruction::Return(Some(addr)));
+            instructions
+        },
+        Statement::Return(None) => vec![Instruction::Return(None)],
     }
 }
 
